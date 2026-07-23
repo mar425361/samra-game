@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لعبة السمرة - شاشة العرض</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
         body {
@@ -69,18 +69,11 @@
         <!-- الـ QR Code -->
         <div class="qr-section">
             <div id="qrcode"></div>
-            <div class="status" id="statusText">جاري الاتصال بالسيرفر... ⏳</div>
+            <div class="status" id="statusText">جاري تجهيز الرابط... ⏳</div>
         </div>
     </div>
 
     <script>
-        const roomId = 'samra_room_' + Math.floor(1000 + Math.random() * 9000);
-        
-        const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
-        const mobileUrl = baseUrl + '/mobile.html?room=' + roomId;
-
-        new QRCode(document.getElementById("qrcode"), { text: mobileUrl, width: 140, height: 140 });
-
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -99,35 +92,37 @@
             }
         }
 
-        const client = new Paho.MQTT.Client("broker.hivemq.com", 8884, "screen_" + parseInt(Math.random() * 10000, 10));
+        // إنشاء اتصال PeerJS مباشر
+        const peer = new Peer();
 
-        client.onConnectionLost = function (responseObject) {
-            document.getElementById('statusText').innerText = "قطع الاتصال! جاري الإعادة...";
-        };
+        peer.on('open', (id) => {
+            const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+            const mobileUrl = baseUrl + '/mobile.html?peer=' + id;
 
-        client.onMessageArrived = function (message) {
-            const data = JSON.parse(message.payloadString);
-            if (data.action === 'SET_Q') {
-                document.getElementById('categoryTag').innerText = data.cat;
-                document.getElementById('questionText').innerText = data.q;
-                document.getElementById('answerText').innerText = "💡 الإجابة: " + data.a;
-                document.getElementById('answerText').style.display = 'none';
-                playSound('new_q');
-            } else if (data.action === 'SHOW_A') {
-                document.getElementById('answerText').style.display = 'block';
-                playSound('correct');
-            } else if (data.action === 'SCORE') {
-                document.getElementById('score1').innerText = data.s1;
-                document.getElementById('score2').innerText = data.s2;
-            }
-        };
+            document.getElementById("qrcode").innerHTML = "";
+            new QRCode(document.getElementById("qrcode"), { text: mobileUrl, width: 140, height: 140 });
+            document.getElementById('statusText').innerText = "جاهز للمسح من الجوال! 🟢";
+            document.getElementById('statusText').style.color = "#10b981";
+        });
 
-        client.connect({
-            onSuccess: function () {
-                document.getElementById('statusText').innerText = "متصل وجاهز! 🟢";
-                client.subscribe(roomId);
-            },
-            useSSL: true
+        peer.on('connection', (conn) => {
+            document.getElementById('statusText').innerText = "تم اتصال الجوال بنجاح! 📱✨";
+            
+            conn.on('data', (data) => {
+                if (data.action === 'SET_Q') {
+                    document.getElementById('categoryTag').innerText = data.cat;
+                    document.getElementById('questionText').innerText = data.q;
+                    document.getElementById('answerText').innerText = "💡 الإجابة: " + data.a;
+                    document.getElementById('answerText').style.display = 'none';
+                    playSound('new_q');
+                } else if (data.action === 'SHOW_A') {
+                    document.getElementById('answerText').style.display = 'block';
+                    playSound('correct');
+                } else if (data.action === 'SCORE') {
+                    document.getElementById('score1').innerText = data.s1;
+                    document.getElementById('score2').innerText = data.s2;
+                }
+            });
         });
     </script>
 </body>
