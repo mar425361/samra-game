@@ -5,40 +5,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ريموت لعبة السمرة</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
-        body { background: #0f172a; color: #fff; min-height: 100vh; padding: 20px; display: flex; flex-direction: column; gap: 15px; text-align: center; }
-        h2 { color: #f59e0b; }
-        .status { font-size: 1rem; color: #38bdf8; font-weight: bold; }
-        .box { background: rgba(255,255,255,0.08); padding: 15px; border-radius: 12px; text-align: right; border: 1px solid #3b82f6; }
-        .ans-box { color: #10b981; font-weight: bold; font-size: 1.2rem; margin-top: 10px; }
-        .btn { width: 100%; padding: 18px; font-size: 1.2rem; font-weight: bold; border: none; border-radius: 12px; cursor: pointer; margin-top: 5px; }
-        .btn-next { background: #3b82f6; color: white; }
-        .btn-show { background: #10b981; color: white; }
-        .btn-score { background: #f59e0b; color: #000; width: 48%; }
-        .score-btns { display: flex; justify-content: space-between; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+        body { background: #0f172a; color: #fff; min-height: 100vh; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; background: rgba(30,41,59,0.9); padding: 12px 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); }
+        h2 { color: #f59e0b; font-size: 1.2rem; }
+        .status { font-size: 0.9rem; color: #34d399; font-weight: 700; }
+
+        /* قسم تعديل الأسماء */
+        .names-box { background: rgba(30,41,59,0.6); padding: 12px; border-radius: 14px; border: 1px solid rgba(59,130,246,0.3); display: flex; flex-direction: column; gap: 8px; }
+        .names-row { display: flex; gap: 8px; }
+        input { flex: 1; background: rgba(15,23,42,0.8); border: 1px solid #3b82f6; border-radius: 8px; padding: 8px 12px; color: #fff; font-size: 0.9rem; }
+        .btn-update { background: #3b82f6; color: white; border: none; border-radius: 8px; padding: 0 15px; font-weight: 700; font-size: 0.85rem; cursor: pointer; }
+
+        /* شاشة عرض السؤال الحالي بالريموت */
+        .box { background: rgba(30,41,59,0.8); padding: 15px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); text-align: right; }
+        .ans-box { color: #34d399; font-weight: 700; font-size: 1.1rem; margin-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px; }
+
+        /* الأزرار */
+        .btn { width: 100%; padding: 16px; font-size: 1.1rem; font-weight: 700; border: none; border-radius: 14px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: 0.2s; }
+        .btn:active { transform: scale(0.97); }
+        .btn-next { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
+        .btn-show { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        
+        .score-section-title { font-size: 1rem; color: #f59e0b; margin-top: 5px; font-weight: 700; text-align: center; }
+        .score-btns { display: flex; gap: 10px; }
+        .btn-score { background: #f59e0b; color: #000; flex: 1; padding: 14px; font-size: 1rem; border-radius: 12px; font-weight: 900; border: none; cursor: pointer; }
+        .btn-score-minus { background: #ef4444; color: #fff; width: 45px; border-radius: 12px; font-weight: 900; border: none; cursor: pointer; font-size: 1.1rem; }
+        
+        .team-control-group { display: flex; gap: 6px; flex: 1; }
     </style>
 </head>
 <body>
 
-    <h2>📱 ريموت المقدم</h2>
-    <div class="status" id="connStatus">جاري الاتصال... ⏳</div>
+    <div class="header">
+        <h2>📱 ريموت المقدم</h2>
+        <div class="status" id="connStatus">متصل 🟢</div>
+    </div>
+
+    <!-- تعديل أسماء الفرق -->
+    <div class="names-box">
+        <div style="font-size: 0.85rem; color: #94a3b8; font-weight: 700;">تسمية الفرق:</div>
+        <div class="names-row">
+            <input type="text" id="team1Input" value="فريق الصقور" placeholder="اسم الفريق 1">
+            <input type="text" id="team2Input" value="فريق النمور" placeholder="اسم الفريق 2">
+            <button class="btn-update" onclick="updateTeamNames()">حفظ</button>
+        </div>
+    </div>
 
     <div class="box">
-        <div id="mCategory" style="color:#38bdf8; font-weight:bold;">التصنيف</div>
-        <div id="mQuestion" style="font-size:1.1rem; margin-top:5px;">اضغط "سحب سؤال" للبدء</div>
-        <div id="mAnswer" class="ans-box">💡 الإجابة المخفية: -</div>
+        <div id="mCategory" style="color:#38bdf8; font-weight:700; font-size:0.95rem;">التصنيف</div>
+        <div id="mQuestion" style="font-size: 1.1rem; margin-top: 4px; font-weight: 700;">اضغط "سحب سؤال جديد" للبدء</div>
+        <div id="mAnswer" class="ans-box">💡 الإجابة: -</div>
     </div>
 
     <button class="btn btn-next" onclick="nextQ()">🎲 سحب سؤال جديد</button>
     <button class="btn btn-show" onclick="showA()">👁️ إظهار الإجابة للشاشة</button>
 
-    <hr style="opacity: 0.2; margin: 10px 0;">
-
-    <h3>النقاط:</h3>
+    <div class="score-section-title">إدارة النقاط</div>
+    
     <div class="score-btns">
-        <button class="btn btn-score" onclick="addScore(1)">+10 فريق 1</button>
-        <button class="btn btn-score" onclick="addScore(2)">+10 فريق 2</button>
+        <div class="team-control-group">
+            <button class="btn-score-minus" onclick="addScore(1, -10)">-</button>
+            <button class="btn-score" id="btnTeam1Name" onclick="addScore(1, 10)">+10 فريق 1</button>
+        </div>
+        <div class="team-control-group">
+            <button class="btn-score-minus" onclick="addScore(2, -10)">-</button>
+            <button class="btn-score" id="btnTeam2Name" onclick="addScore(2, 10)">+10 فريق 2</button>
+        </div>
     </div>
 
     <script>
@@ -46,39 +82,48 @@
         const roomId = urlParams.get('room') || "room_default";
         
         let questionsData = {
-            "أمثال وألغاز": [
-                { "q": "ما هو الشيء الذي كلما أخذت منه كبر؟", "a": "الحفرة" },
-                { "q": "ما هو الشيء الذي يتكلم جميع اللغات بدون لسان؟", "a": "الصدى" }
+            "أمثال شعبية": [
+                { "q": "من طال غيابه...", "a": "ما جاب الغنايم" },
+                { "q": "اطبخ يا طباخ...", "a": "وأنا كلفني الإكل" }
+            ],
+            "ألغاز ذكاء": [
+                { "q": "ما هو الشيء الذي يمشي بلا أرجل ويطير بلا أجنحة؟", "a": "السحاب" },
+                { "q": "حاجة تذوب إذا دخلت الماء فما هي؟", "a": "السكر أو الملح" }
             ]
         };
         let s1 = 0, s2 = 0;
+        let t1Name = "فريق الصقور";
+        let t2Name = "فريق النمور";
 
         fetch('questions.json')
             .then(r => r.json())
             .then(d => { questionsData = d; })
             .catch(() => {});
 
-        const socket = io("https://samra-server.onrender.com", {
-            transports: ['websocket', 'polling']
-        });
+        const socket = io("https://samra-server.onrender.com", { transports: ['websocket', 'polling'] });
 
         socket.on('connect', () => {
             document.getElementById('connStatus').innerText = "متصل بالشاشة 🟢";
-            document.getElementById('connStatus').style.color = "#10b981";
             socket.emit('join_room', roomId);
+            updateTeamNames(); // إرسال الأسماء الافتراضية أول ما يشبك
         });
 
         socket.on('disconnect', () => {
             document.getElementById('connStatus').innerText = "انقطع الاتصال 🔴";
-            document.getElementById('connStatus').style.color = "#ef4444";
         });
 
         function sendCmd(action, extraData = {}) {
-            socket.emit('game_action', {
-                roomId: roomId,
-                action: action,
-                ...extraData
-            });
+            socket.emit('game_action', { roomId: roomId, action: action, ...extraData });
+        }
+
+        function updateTeamNames() {
+            t1Name = document.getElementById('team1Input').value || "الفريق 1";
+            t2Name = document.getElementById('team2Input').value || "الفريق 2";
+            
+            document.getElementById('btnTeam1Name').innerText = "+10 " + t1Name;
+            document.getElementById('btnTeam2Name').innerText = "+10 " + t2Name;
+
+            sendCmd('UPDATE_NAMES', { t1: t1Name, t2: t2Name });
         }
 
         function nextQ() {
@@ -90,7 +135,7 @@
 
             document.getElementById('mCategory').innerText = cat;
             document.getElementById('mQuestion').innerText = qObj.q;
-            document.getElementById('mAnswer').innerText = "💡 الإجابة المخفية: " + qObj.a;
+            document.getElementById('mAnswer').innerText = "💡 الإجابة: " + qObj.a;
 
             sendCmd('SET_Q', { cat: cat, q: qObj.q, a: qObj.a });
         }
@@ -99,9 +144,15 @@
             sendCmd('SHOW_A');
         }
 
-        function addScore(team) {
-            if (team === 1) s1 += 10;
-            if (team === 2) s2 += 10;
+        function addScore(team, points) {
+            if (team === 1) {
+                s1 += points;
+                if(s1 < 0) s1 = 0;
+            }
+            if (team === 2) {
+                s2 += points;
+                if(s2 < 0) s2 = 0;
+            }
             sendCmd('SCORE', { s1: s1, s2: s2 });
         }
     </script>
