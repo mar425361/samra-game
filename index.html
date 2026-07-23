@@ -4,107 +4,252 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لعبة السمرة 🎲</title>
+    <!-- مكتبة توليد الـ QR Code -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        body {
+        * {
+            box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1a1a2e;
-            color: #ffffff;
-            text-align: center;
+        }
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            margin: 0;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            color: #f43f5e;
+            font-size: 2.2rem;
             margin: 0;
         }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: #16213e;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        .main-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            max-width: 1000px;
+            width: 100%;
+            justify-content: center;
         }
-        h1 {
-            color: #e94560;
+        .game-card {
+            background: #1e293b;
+            border-radius: 16px;
+            padding: 25px;
+            flex: 2;
+            min-width: 300px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .qr-card {
+            background: #1e293b;
+            border-radius: 16px;
+            padding: 20px;
+            flex: 1;
+            min-width: 250px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .controls {
+            margin-bottom: 15px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 8px;
+            color: #cbd5e1;
+        }
+        select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-bottom: 15px;
         }
         .question-box {
-            background: #0f3460;
-            padding: 20px;
-            border-radius: 10px;
-            font-size: 1.3rem;
-            margin: 20px 0;
-            min-height: 80px;
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 12px;
+            padding: 25px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            text-align: center;
+            min-height: 120px;
             display: flex;
             align-items: center;
             justify-content: center;
+            margin: 15px 0;
+            color: #e2e8f0;
+        }
+        .buttons-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
         .btn {
-            background-color: #e94560;
-            color: white;
+            flex: 1;
+            padding: 14px;
             border: none;
-            padding: 12px 25px;
-            font-size: 1.1rem;
             border-radius: 8px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .btn:hover {
-            background-color: #0f3460;
-        }
-        .answer {
-            margin-top: 15px;
+            font-size: 1.1rem;
             font-weight: bold;
-            color: #4ecca3;
+            cursor: pointer;
+            transition: 0.2s;
+            min-width: 130px;
+        }
+        .btn-primary { background: #f43f5e; color: white; }
+        .btn-primary:hover { background: #e11d48; }
+        .btn-secondary { background: #3b82f6; color: white; }
+        .btn-secondary:hover { background: #2563eb; }
+        .answer-box {
+            margin-top: 15px;
+            padding: 15px;
+            background: #064e3b;
+            color: #6ee7b7;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
             display: none;
+        }
+        #qrcode {
+            background: white;
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>🎲 أسئلة السمرة</h1>
-        <div class="question-box" id="question">اضغط على الزر لعرض سؤال جديد!</div>
-        <button class="btn" onclick="nextQuestion()">سؤال جديد 🔄</button>
-        <br><br>
-        <button class="btn" style="background-color: #0f3460;" onclick="toggleAnswer()">إظهار/إخفاء الإجابة 👁️</button>
-        <div class="answer" id="answer"></div>
+    <div class="header">
+        <h1>🎲 لعبة السمرة</h1>
+    </div>
+
+    <div class="main-container">
+        <!-- كارت اللعبة والأسئلة -->
+        <div class="game-card">
+            <div class="controls">
+                <label for="categorySelect">اختر التصنيف:</label>
+                <select id="categorySelect" onchange="filterQuestions()">
+                    <option value="الكل">جميع التصنيفات 🌟</option>
+                </select>
+            </div>
+
+            <div class="question-box" id="questionText">اضغط على زر "سؤال جديد" للبدء! 🚀</div>
+
+            <div class="buttons-group">
+                <button class="btn btn-primary" onclick="nextQuestion()">سؤال جديد 🔄</button>
+                <button class="btn btn-secondary" onclick="toggleAnswer()">عرض الإجابة 👁️</button>
+            </div>
+
+            <div class="answer-box" id="answerText"></div>
+        </div>
+
+        <!-- كارت الـ QR Code للانضمام من الجوال -->
+        <div class="qr-card">
+            <h3 style="margin-top: 0; color: #f43f5e;">امسح بالكميرا للعب 📱</h3>
+            <div id="qrcode"></div>
+            <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0; margin-top: 15px;">شارك الصفحة مع الموجودين!</p>
+        </div>
     </div>
 
     <script>
-        // كائن البيانات للأسئلة
+        // قعدة البيانات المنسقة للأسئلة
         const allData = {
-            "أسئلة عامة": [
-                { "id": "q1", "q": "ما هي عاصمة المملكة العربية السعودية؟", "a": "الرياض" },
-                { "id": "q2", "q": "كم عدد سور القرآن الكريم؟", "a": "114 سورة" },
-                { "id": "q3", "q": "ما هو أطول نهر في العالم؟", "a": "نهر النيل" }
+            "أنمي ون بيس ⚔️": [
+                { "id": "op_1", "q": "من هو سياف طاقم قبعة القش؟", "a": "رورونوا زورو" },
+                { "id": "op_2", "q": "ما اسم السفينة الأولى لطاقم لوفي؟", "a": "جوينج ميري (Going Merry)" },
+                { "id": "op_3", "q": "من هو ملقب بـ 'ملك الوحوش'؟", "a": "كايدو" }
             ],
-            "أنمي": [
-                { "id": "op_1", "q": "من هو سياف طاقم قبعة القش في ون بيس؟", "a": "رورونوا زورو" },
-                { "id": "op_2", "q": "ما اسم قائد الفرقة الأولى في البليتش؟", "a": "ياماموتو" }
+            "أنمي بليتش ⚔️": [
+                { "id": "bleach_1", "q": "ما اسم الزانبكتو الخاص بـ إيتشيغو؟", "a": "زانجيتسو" },
+                { "id": "bleach_2", "q": "من هو قائد الفرقة الأولى في مجتمع الأرواح؟", "a": "ياماموتو" }
+            ],
+            "أسئلة عامة وثقافة 💡": [
+                { "id": "gen_1", "q": "ما هي عاصمة المملكة العربية السعودية؟", "a": "الرياض" },
+                { "id": "gen_2", "q": "ما هو أطول نهر في العالم؟", "a": "نهر النيل" },
+                { "id": "gen_3", "q": "كم عدد كواكب المجموعة الشمسية؟", "a": "8 كواكب" }
             ]
         };
 
-        // تجميع جميع الأسئلة في مصفوفة واحدة
-        let questionsList = [];
-        for (let category in allData) {
-            questionsList = questionsList.concat(allData[category]);
-        }
-
+        let currentQuestions = [];
         let currentQuestion = null;
 
-        function nextQuestion() {
-            const randomIndex = Math.floor(Math.random() * questionsList.length);
-            currentQuestion = questionsList[randomIndex];
-            document.getElementById('question').innerText = currentQuestion.q;
-            document.getElementById('answer').innerText = "الجواب: " + currentQuestion.a;
-            document.getElementById('answer').style.display = 'none';
+        // تهيئة قائمة التصنيفات
+        function initCategories() {
+            const select = document.getElementById('categorySelect');
+            for (let cat in allData) {
+                let opt = document.createElement('option');
+                opt.value = cat;
+                opt.innerText = cat;
+                select.appendChild(opt);
+            }
+            filterQuestions();
         }
 
-        function toggleAnswer() {
-            const ansDiv = document.getElementById('answer');
-            if (ansDiv.style.display === 'none' || ansDiv.style.display === '') {
-                ansDiv.style.display = 'block';
+        // تصفية الأسئلة حسب القسم المختاط
+        function filterQuestions() {
+            const selectedCat = document.getElementById('categorySelect').value;
+            currentQuestions = [];
+
+            if (selectedCat === "الكل") {
+                for (let cat in allData) {
+                    currentQuestions = currentQuestions.concat(allData[cat]);
+                }
             } else {
-                ansDiv.style.display = 'none';
+                currentQuestions = allData[selectedCat] || [];
             }
         }
+
+        // إظهار سؤال عشوائي
+        function nextQuestion() {
+            if (currentQuestions.length === 0) return;
+            const randomIndex = Math.floor(Math.random() * currentQuestions.length);
+            currentQuestion = currentQuestions[randomIndex];
+
+            document.getElementById('questionText').innerText = currentQuestion.q;
+            document.getElementById('answerText').innerText = "الجواب: " + currentQuestion.a;
+            document.getElementById('answerText').style.display = 'none';
+        }
+
+        // إظهار أو إخفاء الإجابة
+        function toggleAnswer() {
+            const ansBox = document.getElementById('answerText');
+            if (!currentQuestion) return;
+            
+            if (ansBox.style.display === 'none' || ansBox.style.display === '') {
+                ansBox.style.display = 'block';
+            } else {
+                ansBox.style.display = 'none';
+            }
+        }
+
+        // توليد الـ QR Code تلقائياً بناءً على رابط الصفحة الحالي
+        window.onload = function() {
+            initCategories();
+            new QRCode(document.getElementById("qrcode"), {
+                text: window.location.href,
+                width: 150,
+                height: 150
+            });
+        };
     </script>
 </body>
 </html>
