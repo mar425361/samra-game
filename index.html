@@ -23,52 +23,56 @@
             100% { background-position: 0% 50%; }
         }
 
-        h1 { font-size: 2.5rem; color: #f59e0b; text-shadow: 0 0 20px rgba(245, 158, 11, 0.4); font-weight: 900; letter-spacing: 1px; }
+        h1 { font-size: 2.2rem; color: #f59e0b; text-shadow: 0 0 20px rgba(245, 158, 11, 0.4); font-weight: 900; }
         
         .main-container { display: flex; width: 98%; max-width: 1400px; gap: 20px; align-items: stretch; margin: auto; }
         
-        /* بطاقة السؤال / التحدي */
         .card {
-            flex: 2.5; background: rgba(30, 41, 59, 0.75); backdrop-filter: blur(12px);
+            flex: 2.5; background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(12px);
             border: 2px solid rgba(59, 130, 246, 0.4); border-radius: 24px; padding: 40px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.6); display: flex; flex-direction: column;
-            justify-content: center; align-items: center; text-align: center; min-height: 450px;
+            justify-content: center; align-items: center; text-align: center; min-height: 480px;
             position: relative; overflow: hidden;
         }
         .card::before {
             content: ''; position: absolute; top: 0; right: 0; width: 100%; height: 6px;
             background: linear-gradient(90deg, #3b82f6, #f59e0b, #10b981);
         }
-        .category-tag { font-size: 1.6rem; color: #38bdf8; font-weight: 700; margin-bottom: 20px; background: rgba(56, 189, 248, 0.1); padding: 8px 25px; border-radius: 50px; border: 1px solid rgba(56,189,248,0.3); }
-        .question-text { font-size: 2.2rem; line-height: 1.5; color: #f8fafc; font-weight: 700; margin-bottom: 25px; display: none; }
+        
+        .category-tag { font-size: 1.5rem; color: #38bdf8; font-weight: 700; margin-bottom: 25px; background: rgba(56, 189, 248, 0.1); padding: 8px 25px; border-radius: 50px; border: 1px solid rgba(56,189,248,0.3); }
+        
+        /* واجهة التصادم بين المرشحين */
+        .clash-container {
+            display: flex; align-items: center; justify-content: center; gap: 25px; width: 100%; margin: 15px 0;
+        }
+        .fighter {
+            font-size: 1.8rem; font-weight: 900; padding: 20px 30px; border-radius: 16px; background: rgba(15, 23, 42, 0.9);
+            border: 2px solid #3b82f6; box-shadow: 0 0 20px rgba(59,130,246,0.3); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 40%; word-break: break-word;
+        }
+        .fighter.team2 { border-color: #f59e0b; box-shadow: 0 0 20px rgba(245,158,11,0.3); }
+        .vs-badge { font-size: 2.5rem; font-weight: 900; color: #ef4444; text-shadow: 0 0 20px rgba(239,68,68,0.6); }
+
+        /* منطقة السؤال والإجابة المنظمة */
+        .content-box { display: none; width: 100%; flex-direction: column; gap: 20px; align-items: center; }
+        .question-text { font-size: 2.2rem; line-height: 1.5; color: #f8fafc; font-weight: 700; }
         .answer-text {
             font-size: 1.8rem; color: #34d399; background: rgba(16, 185, 129, 0.15);
             padding: 12px 30px; border-radius: 16px; border: 2px dashed #10b981; display: none;
             animation: popUp 0.4s ease-in-out; box-shadow: 0 0 20px rgba(16,185,129,0.2);
         }
 
-        /* واجهة التصادم بين المرشحين */
-        .clash-container {
-            display: flex; align-items: center; justify-content: center; gap: 30px; width: 100%; margin: 20px 0;
-        }
-        .fighter {
-            font-size: 2rem; font-weight: 900; padding: 20px 30px; border-radius: 16px; background: rgba(15, 23, 42, 0.8);
-            border: 2px solid #3b82f6; box-shadow: 0 0 20px rgba(59,130,246,0.3); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .fighter.team2 { border-color: #f59e0b; box-shadow: 0 0 20px rgba(245,158,11,0.3); }
-        .vs-badge { font-size: 2.5rem; font-weight: 900; color: #ef4444; text-shadow: 0 0 20px rgba(239,68,68,0.6); }
-
-        /* أنيميشن التصادم العنيف */
-        .clash-active .fighter.team1 { transform: translateX(120px) scale(1.15) rotate(-5deg); }
-        .clash-active .fighter.team2 { transform: translateX(-120px) scale(1.15) rotate(5deg); }
+        /* أنيميشن التصادم */
+        .clash-active .fighter.team1 { transform: translateX(80px) scale(1.1) rotate(-3deg); }
+        .clash-active .fighter.team2 { transform: translateX(-80px) scale(1.1) rotate(3deg); }
         .screen-shake { animation: shake 0.4s ease-in-out; }
 
         @keyframes shake {
             0%, 100% { transform: translate(0, 0); }
-            20% { transform: translate(-15px, 5px); }
-            40% { transform: translate(15px, -5px); }
-            60% { transform: translate(-10px, -5px); }
-            80% { transform: translate(10px, 5px); }
+            20% { transform: translate(-12px, 4px); }
+            40% { transform: translate(12px, -4px); }
+            60% { transform: translate(-8px, -4px); }
+            80% { transform: translate(8px, 4px); }
         }
 
         @keyframes popUp {
@@ -76,10 +80,10 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        /* لوحة النقاط */
+        /* لوحة النقاط الجانبية */
         .scores-section { flex: 1; display: flex; flex-direction: column; gap: 15px; justify-content: center; }
         .score-box {
-            background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255,255,255,0.1);
             border-radius: 20px; padding: 25px; display: flex; flex-direction: column;
             align-items: center; gap: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); position: relative; overflow: hidden;
         }
@@ -89,17 +93,16 @@
         .team-name { font-size: 1.4rem; color: #94a3b8; font-weight: 700; }
         .team-score { font-size: 3rem; font-weight: 900; color: #fff; text-shadow: 0 0 15px rgba(255,255,255,0.3); }
 
-        /* قسم الـ QR */
         .qr-section {
             flex: 0.9; background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px;
             padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        #qrcode { background: #fff; padding: 12px; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
-        .status { font-size: 1rem; color: #34d399; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+        #qrcode { background: #fff; padding: 10px; border-radius: 14px; margin-bottom: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+        .status { font-size: 0.9rem; color: #34d399; font-weight: 700; display: flex; align-items: center; gap: 6px; }
     </style>
 </head>
-<body id="bodyRoot">
+<body>
 
     <h1>🌙 سهرة العائلة والاصدقاء - تحدي الخبراء</h1>
 
@@ -107,14 +110,18 @@
         <div class="card" id="mainCard">
             <div class="category-tag" id="categoryTag">امسح الـ QR للبدء 📱</div>
             
+            <!-- قسم التصادم بين المرشحين -->
             <div class="clash-container" id="clashContainer">
                 <div class="fighter team1" id="displayPlayer1">الفريق الأول</div>
                 <div class="vs-badge" id="vsBadge">VS</div>
                 <div class="fighter team2" id="displayPlayer2">الفريق الثاني</div>
             </div>
 
-            <div class="question-text" id="questionText">في انتظار ترشيح الخبراء وبدء التحدي...</div>
-            <div class="answer-text" id="answerText">الإجابة تظهر هنا</div>
+            <!-- قسم عرض السؤال والإجابة بشكل مرتب -->
+            <div class="content-box" id="questionContentBox">
+                <div class="question-text" id="questionText">نص السؤال يظهر هنا...</div>
+                <div class="answer-text" id="answerText">💡 الإجابة: ...</div>
+            </div>
         </div>
 
         <div class="scores-section">
@@ -130,7 +137,7 @@
 
         <div class="qr-section">
             <div id="qrcode"></div>
-            <div class="status" id="statusText"><span>🟢</span> جاري الاتصال بالسيرفر...</div>
+            <div class="status" id="statusText"><span>🟢</span> جاري الاتصال...</div>
         </div>
     </div>
 
@@ -143,7 +150,6 @@
             osc.connect(gain); gain.connect(audioCtx.destination);
 
             if (type === 'clash') {
-                // صوت تصادم وانفجار حماسي
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(120, audioCtx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.3);
@@ -166,30 +172,30 @@
         const baseUrl = "https://mar425361.github.io/samra-game";
         const mobileUrl = baseUrl + '/mobile.html?room=' + roomId;
         
-        new QRCode(document.getElementById("qrcode"), { text: mobileUrl, width: 130, height: 130, colorDark: "#0f172a", colorLight: "#ffffff" });
+        new QRCode(document.getElementById("qrcode"), { text: mobileUrl, width: 120, height: 120, colorDark: "#0f172a", colorLight: "#ffffff" });
 
         const socket = io("https://samra-server.onrender.com", { transports: ['websocket', 'polling'] });
 
         socket.on('connect', () => {
-            document.getElementById('statusText').innerHTML = "<span>🟢</span> الشاشة متصلة وجاهزة";
+            document.getElementById('statusText').innerHTML = "<span>🟢</span> الشاشة متصلة";
             socket.emit('join_room', roomId);
         });
 
         socket.on('disconnect', () => {
-            document.getElementById('statusText').innerHTML = "<span>🔴</span> انقطع الاتصال بالسيرفر";
+            document.getElementById('statusText').innerHTML = "<span>🔴</span> انقطع الاتصال";
         });
 
         socket.on('game_update', (data) => {
             if (data.action === 'NOMINATE') {
-                // مرحلة ترشيح الخبراء وعرضهم
+                // إظهار واجهة التصادم وإخفاء السؤال
                 document.getElementById('categoryTag').innerText = "🎯 الفئة: " + data.cat;
                 document.getElementById('displayPlayer1').innerText = data.p1;
                 document.getElementById('displayPlayer2').innerText = data.p2;
+                
                 document.getElementById('clashContainer').style.display = 'flex';
-                document.getElementById('questionText').style.display = 'none';
-                document.getElementById('answerText').style.display = 'none';
+                document.getElementById('questionContentBox').style.display = 'none';
 
-                // تشغيل تأثير التصادم واهتزاز الشاشة العنيف
+                // تشغيل تأثير التصادم واهتزاز الشاشة
                 document.getElementById('mainCard').classList.add('clash-active', 'screen-shake');
                 playSound('clash');
 
@@ -198,9 +204,9 @@
                 }, 400);
 
             } else if (data.action === 'SHOW_Q') {
-                // إظهار السؤال بعد التصادم
+                // إخفاء التصادم وإظهار السؤال بوضوح
                 document.getElementById('clashContainer').style.display = 'none';
-                document.getElementById('questionText').style.display = 'block';
+                document.getElementById('questionContentBox').style.display = 'flex';
                 document.getElementById('questionText').innerText = data.q;
                 document.getElementById('answerText').innerText = "💡 الإجابة: " + data.a;
                 document.getElementById('answerText').style.display = 'none';
@@ -215,6 +221,7 @@
                 document.getElementById('score2').innerText = data.s2;
 
             } else if (data.action === 'UPDATE_NAMES') {
+                // تحديث اسماء الفرق فوراً على الشاشة الجانبية
                 document.getElementById('displayTeamName1').innerText = data.t1;
                 document.getElementById('displayTeamName2').innerText = data.t2;
             }
