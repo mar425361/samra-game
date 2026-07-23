@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لعبة السمرة - شاشة العرض</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
         body {
@@ -16,11 +16,11 @@
         h1 { font-size: 3rem; color: #f59e0b; text-shadow: 0 0 15px rgba(245, 158, 11, 0.5); }
         .main-container { display: flex; width: 95%; max-width: 1300px; gap: 20px; align-items: stretch; margin: auto; }
         
-        /* قسم السؤال والنتائج */
         .card {
             flex: 2; background: rgba(30, 41, 59, 0.85); border: 2px solid #3b82f6;
             border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            min-height: 400px;
         }
         .category-tag { font-size: 1.8rem; color: #38bdf8; font-weight: bold; margin-bottom: 15px; }
         .question-text { font-size: 2.5rem; line-height: 1.4; color: #f8fafc; margin-bottom: 25px; }
@@ -29,7 +29,6 @@
             padding: 15px 30px; border-radius: 12px; border: 2px dashed #10b981; display: none;
         }
 
-        /* لوحة النقاط */
         .scores-section {
             flex: 1; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.1);
             border-radius: 20px; padding: 20px; display: flex; flex-direction: column; align-items: center;
@@ -37,52 +36,54 @@
         .scores-title { font-size: 1.6rem; color: #f59e0b; margin-bottom: 15px; }
         .score-box {
             width: 100%; background: rgba(255,255,255,0.05); border-radius: 12px;
-            padding: 12px 20px; margin-bottom: 10px; display: flex; justify-content: space-between; font-size: 1.3rem;
+            padding: 15px 20px; margin-bottom: 10px; display: flex; justify-content: space-between; font-size: 1.5rem;
         }
 
-        /* الـ QR Code */
         .qr-section {
             flex: 0.8; background: rgba(255, 255, 255, 0.05); border-radius: 20px;
             padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         #qrcode { background: #fff; padding: 10px; border-radius: 12px; margin-bottom: 10px; }
-        .status { font-size: 1rem; color: #38bdf8; }
+        .status { font-size: 1rem; color: #38bdf8; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-    <h1>🎲 لعبة السمرة</h1>
+    <h1>🎲 لعبة السمرة - شاشة العرض</h1>
 
     <div class="main-container">
-        <!-- كارت السؤال والإجابة -->
+        <!-- السؤال والإجابة -->
         <div class="card">
             <div class="category-tag" id="categoryTag">امسح الـ QR لبدء اللعبة!</div>
             <div class="question-text" id="questionText">في انتظار التحكم من الجوال...</div>
             <div class="answer-text" id="answerText">الإجابة تظهر هنا</div>
         </div>
 
-        <!-- لوحة عرض النقاط -->
+        <!-- النقاط -->
         <div class="scores-section">
             <div class="scores-title">🏆 لائحة النقاط</div>
-            <div class="score-box"><span>الفريق الأول:</span> <b id="score1">0</b></div>
-            <div class="score-box"><span>الفريق الثاني:</span> <b id="score2">0</b></div>
+            <div class="score-box"><span>الفريق 1:</span> <b id="score1" style="color:#f59e0b;">0</b></div>
+            <div class="score-box"><span>الفريق 2:</span> <b id="score2" style="color:#f59e0b;">0</b></div>
         </div>
 
         <!-- الـ QR Code -->
         <div class="qr-section">
             <div id="qrcode"></div>
-            <div class="status" id="statusText">جاري التجهيز...</div>
+            <div class="status" id="statusText">جاري الاتصال بالسيرفر...</div>
         </div>
     </div>
 
     <script>
-        // 1. إنشاء غرفة ربط PeerJS
-        const roomId = 'samra-game-' + Math.floor(1000 + Math.random() * 9000);
-        const mobileUrl = window.location.origin + window.location.pathname.replace('index.html', '') + 'mobile.html?room=' + roomId;
+        // غرفة ربط عشوائية ثابتة للجلسة
+        const roomId = 'samra_room_' + Math.floor(1000 + Math.random() * 9000);
+        
+        // رابط الجوال مع رقم الغرفة
+        const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+        const mobileUrl = baseUrl + '/mobile.html?room=' + roomId;
 
         new QRCode(document.getElementById("qrcode"), { text: mobileUrl, width: 140, height: 140 });
 
-        // 2. المؤثرات الصوتية
+        // الأصوات
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -101,32 +102,36 @@
             }
         }
 
-        // 3. الاتصال ونسخ الأوامر من الجوال
-        let team1Score = 0, team2Score = 0;
-        const peer = new Peer(roomId);
+        // الاتصال بسيرفر MQTT الفوري
+        const client = new Paho.MQTT.Client("broker.hivemq.com", 8000, "screen_" + parseInt(Math.random() * 100, 10));
 
-        peer.on('open', () => { document.getElementById('statusText').innerText = "جاهز للربط 🟢"; });
-        peer.on('connection', (conn) => {
-            document.getElementById('statusText').innerText = "تم اتصال الجوال 📱✨";
+        client.onConnectionLost = function (responseObject) {
+            document.getElementById('statusText').innerText = "قطع الاتصال! جاري الإعادة...";
+        };
 
-            conn.on('data', (data) => {
-                if (data.action === 'SET_QUESTION') {
-                    document.getElementById('categoryTag').innerText = data.category;
-                    document.getElementById('questionText').innerText = data.question;
-                    document.getElementById('answerText').innerText = "💡 الإجابة: " + data.answer;
-                    document.getElementById('answerText').style.display = 'none';
-                    playSound('new_q');
-                } else if (data.action === 'SHOW_ANSWER') {
-                    document.getElementById('answerText').style.display = 'block';
-                    playSound('correct');
-                } else if (data.action === 'ADD_SCORE_1') {
-                    team1Score += 10;
-                    document.getElementById('score1').innerText = team1Score;
-                } else if (data.action === 'ADD_SCORE_2') {
-                    team2Score += 10;
-                    document.getElementById('score2').innerText = team2Score;
-                }
-            });
+        client.onMessageArrived = function (message) {
+            const data = JSON.parse(message.payloadString);
+            if (data.action === 'SET_Q') {
+                document.getElementById('categoryTag').innerText = data.cat;
+                document.getElementById('questionText').innerText = data.q;
+                document.getElementById('answerText').innerText = "💡 الإجابة: " + data.a;
+                document.getElementById('answerText').style.display = 'none';
+                playSound('new_q');
+            } else if (data.action === 'SHOW_A') {
+                document.getElementById('answerText').style.display = 'block';
+                playSound('correct');
+            } else if (data.action === 'SCORE') {
+                document.getElementById('score1').innerText = data.s1;
+                document.getElementById('score2').innerText = data.s2;
+            }
+        };
+
+        client.connect({
+            onSuccess: function () {
+                document.getElementById('statusText').innerText = "جاهز للعب والمزامنة! 🟢";
+                client.subscribe(roomId);
+            },
+            useSSL: false
         });
     </script>
 </body>
