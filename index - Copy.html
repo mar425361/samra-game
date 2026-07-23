@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة السمرة 🎲</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a2e;
+            color: #ffffff;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #16213e;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        h1 {
+            color: #e94560;
+        }
+        .question-box {
+            background: #0f3460;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 1.3rem;
+            margin: 20px 0;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn {
+            background-color: #e94560;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn:hover {
+            background-color: #0f3460;
+        }
+        .answer {
+            margin-top: 15px;
+            font-weight: bold;
+            color: #4ecca3;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🎲 أسئلة السمرة</h1>
+        <div class="question-box" id="question">اضغط على الزر لعرض سؤال جديد!</div>
+        <button class="btn" onclick="nextQuestion()">سؤال جديد 🔄</button>
+        <br><br>
+        <button class="btn" style="background-color: #0f3460;" onclick="toggleAnswer()">إظهار/إخفاء الإجابة 👁️</button>
+        <div class="answer" id="answer"></div>
+    </div>
+
+    <script>
+        // كائن البيانات للأسئلة
+        const allData = {
+            "أسئلة عامة": [
+                { "id": "q1", "q": "ما هي عاصمة المملكة العربية السعودية؟", "a": "الرياض" },
+                { "id": "q2", "q": "كم عدد سور القرآن الكريم؟", "a": "114 سورة" },
+                { "id": "q3", "q": "ما هو أطول نهر في العالم؟", "a": "نهر النيل" }
+            ],
+            "أنمي": [
+                { "id": "op_1", "q": "من هو سياف طاقم قبعة القش في ون بيس؟", "a": "رورونوا زورو" },
+                { "id": "op_2", "q": "ما اسم قائد الفرقة الأولى في البليتش؟", "a": "ياماموتو" }
+            ]
+        };
+
+        // تجميع جميع الأسئلة في مصفوفة واحدة
+        let questionsList = [];
+        for (let category in allData) {
+            questionsList = questionsList.concat(allData[category]);
+        }
+
+        let currentQuestion = null;
+
+        function nextQuestion() {
+            const randomIndex = Math.floor(Math.random() * questionsList.length);
+            currentQuestion = questionsList[randomIndex];
+            document.getElementById('question').innerText = currentQuestion.q;
+            document.getElementById('answer').innerText = "الجواب: " + currentQuestion.a;
+            document.getElementById('answer').style.display = 'none';
+        }
+
+        function toggleAnswer() {
+            const ansDiv = document.getElementById('answer');
+            if (ansDiv.style.display === 'none' || ansDiv.style.display === '') {
+                ansDiv.style.display = 'block';
+            } else {
+                ansDiv.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
