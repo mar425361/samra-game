@@ -3,226 +3,225 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة السمرة 🎲</title>
-    <!-- مكتبة الـ QR Code -->
+    <title>لعبة السمرة - شاشة العرض</title>
+    <!-- مكتبة لتوليد الـ QR Code تلقائياً -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
+
         body {
-            background-color: #0f172a;
-            color: #f8fafc;
-            margin: 0;
-            padding: 20px;
+            background: linear-gradient(135deg, #0f172a, #1e1b4b);
+            color: #ffffff;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
+            justify-content: space-between;
+            padding: 20px;
+            overflow: hidden;
         }
-        .header h1 {
-            color: #f43f5e;
-            font-size: 2.2rem;
-            margin-bottom: 20px;
+
+        header {
+            text-align: center;
+            margin-top: 10px;
         }
+
+        h1 {
+            font-size: 3rem;
+            color: #f59e0b;
+            text-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
+        }
+
         .main-container {
             display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            max-width: 1000px;
-            width: 100%;
+            width: 90%;
+            max-width: 1200px;
+            gap: 30px;
+            align-items: center;
             justify-content: center;
+            margin: auto;
         }
-        .game-card {
-            background: #1e293b;
-            border-radius: 16px;
-            padding: 25px;
+
+        /* كارت السؤال والاجابة */
+        .card {
             flex: 2;
-            min-width: 300px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .qr-card {
-            background: #1e293b;
-            border-radius: 16px;
-            padding: 20px;
-            flex: 1;
-            min-width: 250px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            background: rgba(30, 41, 59, 0.8);
+            border: 2px solid #3b82f6;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             text-align: center;
+            min-height: 350px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
         }
-        select {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #334155;
-            background: #0f172a;
-            color: #fff;
-            font-size: 1rem;
-            cursor: pointer;
+
+        .category-tag {
+            font-size: 1.5rem;
+            color: #38bdf8;
             margin-bottom: 15px;
+            font-weight: bold;
         }
-        .question-box {
-            background: #0f172a;
-            border: 2px solid #334155;
+
+        .question-text {
+            font-size: 2.5rem;
+            line-height: 1.4;
+            margin-bottom: 25px;
+            color: #f8fafc;
+        }
+
+        .answer-text {
+            font-size: 2rem;
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+            padding: 15px 30px;
             border-radius: 12px;
-            padding: 25px;
-            font-size: 1.4rem;
-            font-weight: bold;
-            text-align: center;
-            min-height: 120px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 15px 0;
-            color: #e2e8f0;
-            line-height: 1.6;
+            border: 1px dashed #10b981;
+            display: none; /* مخفي حتى يتم الضغط على زر الإجابة */
         }
-        .buttons-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .btn {
+
+        /* الـ QR Code جانب الشاشة */
+        .qr-section {
             flex: 1;
-            padding: 14px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-            min-width: 130px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .btn-primary { background: #f43f5e; color: white; }
-        .btn-primary:hover { background: #e11d48; }
-        .btn-secondary { background: #3b82f6; color: white; }
-        .btn-secondary:hover { background: #2563eb; }
-        .answer-box {
-            margin-top: 15px;
-            padding: 15px;
-            background: #064e3b;
-            color: #6ee7b7;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 1.2rem;
-            font-weight: bold;
-            display: none;
-        }
+
         #qrcode {
-            background: white;
-            padding: 12px;
-            border-radius: 10px;
-            margin-top: 10px;
+            background: #ffffff;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+        }
+
+        .qr-text {
+            font-size: 1.2rem;
+            color: #cbd5e1;
+            text-align: center;
+        }
+
+        footer {
+            font-size: 1.2rem;
+            color: #94a3b8;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>🎲 لعبة السمرة</h1>
-    </div>
+    <header>
+        <h1>🎲 سمرة - شاشة العرض الرئيسية</h1>
+    </header>
 
     <div class="main-container">
-        <div class="game-card">
-            <div class="controls">
-                <label style="color:#cbd5e1; font-weight:bold;">اختر التصنيف:</label>
-                <select id="categorySelect" onchange="filterQuestions()">
-                    <option value="الكل">جميع التصنيفات 🌟</option>
-                </select>
-            </div>
-
-            <div class="question-box" id="questionText">جاري تحميل الأسئلة... ⏳</div>
-
-            <div class="buttons-group">
-                <button class="btn btn-primary" onclick="nextQuestion()">سؤال جديد 🔄</button>
-                <button class="btn btn-secondary" onclick="toggleAnswer()">إظهار/إخفاء الإجابة 👁️</button>
-            </div>
-
-            <div class="answer-box" id="answerText"></div>
+        <!-- قسم السؤال والإجابة -->
+        <div class="card" id="displayCard">
+            <div class="category-tag" id="categoryTag">امسح الـ QR للبدء!</div>
+            <div class="question-text" id="questionText">انتظار التحكم من الجوال...</div>
+            <div class="answer-text" id="answerText">الإجابة تظهر هنا</div>
         </div>
 
-        <div class="qr-card">
-            <h3 style="margin-top: 0; color: #f43f5e;">امسح بالكاميرا للعب 📱</h3>
+        <!-- قسم الـ QR Code -->
+        <div class="qr-section">
             <div id="qrcode"></div>
-            <p style="font-size: 0.85rem; color: #94a3b8; margin-top: 15px;">شارك اللعبة مع الشباب!</p>
+            <div class="qr-text">امسح الكود بجوالك<br>للسحب والتحكم باللعبة 📱</div>
         </div>
     </div>
 
+    <footer>تم الربط التفاعلي جاهز للعب المباشر ✨</footer>
+
     <script>
-        let allData = {};
-        let currentQuestions = [];
-        let currentQuestion = null;
+        // 1. إنشاء الـ QR Code تلقائياً برابط الصفحة الحالية (الجوال يفتح نفس الرابط)
+        const qrContainer = document.getElementById("qrcode");
+        new QRCode(qrContainer, {
+            text: window.location.href,
+            width: 180,
+            height: 180
+        });
 
-        // جلب الأسئلة من ملف questions.json الخارجي
-        async function loadQuestions() {
-            try {
-                const response = await fetch('questions.json');
-                allData = await response.json();
-                
-                initCategories();
-                document.getElementById('questionText').innerText = 'اضغط على "سؤال جديد" للبدء! 🚀';
-            } catch (error) {
-                document.getElementById('questionText').innerText = 'حدث خطأ في تحميل الأسئلة!';
-                console.error(error);
+        // 2. إعداد المؤثرات الصوتية بواسطة Web Audio API (بدون ملفات خارجية)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'new_question') {
+                // صوت سحب سؤال جديد (نغمة تصاعدية)
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.2);
+            } else if (type === 'show_answer') {
+                // صوت كشف الإجابة (نغمة نجاح)
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // Do
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // Mi
+                gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
             }
         }
 
-        function initCategories() {
-            const select = document.getElementById('categorySelect');
-            select.innerHTML = '<option value="الكل">جميع التصنيفات 🌟</option>';
-            for (let cat in allData) {
-                let opt = document.createElement('option');
-                opt.value = cat;
-                opt.innerText = cat + ` (${allData[cat].length})`;
-                select.appendChild(opt);
-            }
-            filterQuestions();
-        }
+        // 3. بنك الأسئلة الشامل من questions.json
+        let questionsData = {};
+        fetch('questions.json')
+            .then(res => res.json())
+            .then(data => { questionsData = data; })
+            .catch(() => console.log('جاري تحميل الأسئلة...'));
 
-        function filterQuestions() {
-            const selectedCat = document.getElementById('categorySelect').value;
-            currentQuestions = [];
+        // 4. قنوات الاتصال والتحكم بين الشاشة والجوال (BroadcastChannel)
+        const channel = new BroadcastChannel('samra_game_channel');
 
-            if (selectedCat === "الكل") {
-                for (let cat in allData) {
-                    currentQuestions = currentQuestions.concat(allData[cat]);
+        channel.onmessage = (event) => {
+            const data = event.data;
+
+            if (data.action === 'NEXT_QUESTION') {
+                // اختيار سؤال عشوائي من ملف questions.json
+                const categories = Object.keys(questionsData);
+                if (categories.length === 0) return;
+
+                const randomCat = categories[Math.floor(Math.random() * categories.length)];
+                const qList = questionsData[randomCat];
+                const randomQ = qList[Math.floor(Math.random() * qList.length)];
+
+                // تحديث الشاشة
+                document.getElementById('categoryTag').innerText = randomCat;
+                document.getElementById('questionText').innerText = randomQ.q;
+                document.getElementById('answerText').innerText = "💡 الإجابة: " + randomQ.a;
+                document.getElementById('answerText').style.display = 'none'; // إخفاء الإجابة
+
+                playSound('new_question'); // تشغيل صوت السؤال
+
+            } else if (data.action === 'SHOW_ANSWER') {
+                const answerElem = document.getElementById('answerText');
+                if (answerElem.style.display === 'none' || answerElem.style.display === '') {
+                    answerElem.style.display = 'block';
+                    playSound('show_answer'); // تشغيل صوت الإجابة
                 }
-            } else {
-                currentQuestions = allData[selectedCat] || [];
             }
-        }
-
-        function nextQuestion() {
-            if (currentQuestions.length === 0) return;
-            const randomIndex = Math.floor(Math.random() * currentQuestions.length);
-            currentQuestion = currentQuestions[randomIndex];
-
-            document.getElementById('questionText').innerText = currentQuestion.q;
-            document.getElementById('answerText').innerText = "الجواب: " + currentQuestion.a;
-            document.getElementById('answerText').style.display = 'none';
-        }
-
-        function toggleAnswer() {
-            const ansBox = document.getElementById('answerText');
-            if (!currentQuestion) return;
-            ansBox.style.display = (ansBox.style.display === 'none' || ansBox.style.display === '') ? 'block' : 'none';
-        }
-
-        window.onload = function() {
-            loadQuestions();
-            new QRCode(document.getElementById("qrcode"), {
-                text: window.location.href,
-                width: 140,
-                height: 140
-            });
         };
     </script>
 </body>
