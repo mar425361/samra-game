@@ -4,75 +4,85 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لعبة السمرة - شاشة العرض</title>
-    <!-- مكتبات الـ QR والربط المباشر PeerJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
         body {
             background: linear-gradient(135deg, #0f172a, #1e1b4b);
             color: #ffffff; min-height: 100vh; display: flex; flex-direction: column;
             align-items: center; justify-content: space-between; padding: 20px; overflow: hidden;
         }
-        h1 { font-size: 3rem; color: #f59e0b; text-shadow: 0 0 15px rgba(245, 158, 11, 0.5); margin-top: 10px; }
-        .main-container { display: flex; width: 90%; max-width: 1200px; gap: 30px; align-items: center; justify-content: center; margin: auto; }
+        h1 { font-size: 3rem; color: #f59e0b; text-shadow: 0 0 15px rgba(245, 158, 11, 0.5); }
+        .main-container { display: flex; width: 95%; max-width: 1300px; gap: 20px; align-items: stretch; margin: auto; }
+        
+        /* قسم السؤال والنتائج */
         .card {
-            flex: 2; background: rgba(30, 41, 59, 0.8); border: 2px solid #3b82f6;
-            border-radius: 20px; padding: 40px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            text-align: center; min-height: 380px; display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
+            flex: 2; background: rgba(30, 41, 59, 0.85); border: 2px solid #3b82f6;
+            border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
         }
-        .category-tag { font-size: 1.8rem; color: #38bdf8; margin-bottom: 15px; font-weight: bold; }
-        .question-text { font-size: 2.5rem; line-height: 1.4; margin-bottom: 25px; color: #f8fafc; }
+        .category-tag { font-size: 1.8rem; color: #38bdf8; font-weight: bold; margin-bottom: 15px; }
+        .question-text { font-size: 2.5rem; line-height: 1.4; color: #f8fafc; margin-bottom: 25px; }
         .answer-text {
-            font-size: 2rem; color: #10b981; background: rgba(16, 185, 129, 0.1);
-            padding: 15px 30px; border-radius: 12px; border: 1px dashed #10b981; display: none;
+            font-size: 2rem; color: #10b981; background: rgba(16, 185, 129, 0.15);
+            padding: 15px 30px; border-radius: 12px; border: 2px dashed #10b981; display: none;
         }
+
+        /* لوحة النقاط */
+        .scores-section {
+            flex: 1; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px; padding: 20px; display: flex; flex-direction: column; align-items: center;
+        }
+        .scores-title { font-size: 1.6rem; color: #f59e0b; margin-bottom: 15px; }
+        .score-box {
+            width: 100%; background: rgba(255,255,255,0.05); border-radius: 12px;
+            padding: 12px 20px; margin-bottom: 10px; display: flex; justify-content: space-between; font-size: 1.3rem;
+        }
+
+        /* الـ QR Code */
         .qr-section {
-            flex: 1; background: rgba(255, 255, 255, 0.05); border-radius: 20px;
-            padding: 20px; display: flex; flex-direction: column; align-items: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            flex: 0.8; background: rgba(255, 255, 255, 0.05); border-radius: 20px;
+            padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        #qrcode { background: #ffffff; padding: 15px; border-radius: 15px; margin-bottom: 10px; }
-        .qr-text { font-size: 1.2rem; color: #cbd5e1; text-align: center; }
-        .status { font-size: 1rem; color: #f59e0b; margin-top: 5px; }
-        footer { font-size: 1.2rem; color: #94a3b8; margin-bottom: 10px; }
+        #qrcode { background: #fff; padding: 10px; border-radius: 12px; margin-bottom: 10px; }
+        .status { font-size: 1rem; color: #38bdf8; }
     </style>
 </head>
 <body>
 
-    <h1>🎲 سمرة - شاشة العرض الرئيسية</h1>
+    <h1>🎲 لعبة السمرة</h1>
 
     <div class="main-container">
+        <!-- كارت السؤال والإجابة -->
         <div class="card">
-            <div class="category-tag" id="categoryTag">امسح الـ QR للبدء!</div>
-            <div class="question-text" id="questionText">في انتظار اتصال الجوال...</div>
+            <div class="category-tag" id="categoryTag">امسح الـ QR لبدء اللعبة!</div>
+            <div class="question-text" id="questionText">في انتظار التحكم من الجوال...</div>
             <div class="answer-text" id="answerText">الإجابة تظهر هنا</div>
         </div>
 
+        <!-- لوحة عرض النقاط -->
+        <div class="scores-section">
+            <div class="scores-title">🏆 لائحة النقاط</div>
+            <div class="score-box"><span>الفريق الأول:</span> <b id="score1">0</b></div>
+            <div class="score-box"><span>الفريق الثاني:</span> <b id="score2">0</b></div>
+        </div>
+
+        <!-- الـ QR Code -->
         <div class="qr-section">
             <div id="qrcode"></div>
-            <div class="qr-text">امسح الكود بجوالك<br>للسحب والتحكم باللعبة 📱</div>
-            <div class="status" id="statusText">جاري تجهيز اتصال الشاشة...</div>
+            <div class="status" id="statusText">جاري التجهيز...</div>
         </div>
     </div>
 
-    <footer>تم الربط التفاعلي جاهز للعب المباشر ✨</footer>
-
     <script>
-        // 1. توليد كود غرفة عشوائي للشاشة
-        const roomId = 'samra-' + Math.floor(1000 + Math.random() * 9000);
-        
-        // رابط التحكم بالجوال محمل برقم الغرفة
+        // 1. إنشاء غرفة ربط PeerJS
+        const roomId = 'samra-game-' + Math.floor(1000 + Math.random() * 9000);
         const mobileUrl = window.location.origin + window.location.pathname.replace('index.html', '') + 'mobile.html?room=' + roomId;
 
-        new QRCode(document.getElementById("qrcode"), {
-            text: mobileUrl,
-            width: 180,
-            height: 180
-        });
+        new QRCode(document.getElementById("qrcode"), { text: mobileUrl, width: 140, height: 140 });
 
-        // 2. إعداد الأصوات
+        // 2. المؤثرات الصوتية
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -80,62 +90,41 @@
             const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
 
-            if (type === 'new_question') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+            if (type === 'new_q') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(300, audioCtx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.2);
-                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.2);
-            } else if (type === 'show_answer') {
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+            } else if (type === 'correct') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
                 osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.4, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.3);
             }
         }
 
-        // 3. جلب الأسئلة من ملف questions.json
-        let questionsData = {};
-        fetch('questions.json')
-            .then(res => res.json())
-            .then(data => { questionsData = data; })
-            .catch(() => console.log('جاري تحميل الأسئلة...'));
-
-        // 4. الاتصال عبر PeerJS
+        // 3. الاتصال ونسخ الأوامر من الجوال
+        let team1Score = 0, team2Score = 0;
         const peer = new Peer(roomId);
 
-        peer.on('open', (id) => {
-            document.getElementById('statusText').innerText = "الشاشة جاهزة للاتصال! 🟢";
-        });
-
+        peer.on('open', () => { document.getElementById('statusText').innerText = "جاهز للربط 🟢"; });
         peer.on('connection', (conn) => {
-            document.getElementById('statusText').innerText = "تم اتصالات الجوال بنجاح! 📱✨";
+            document.getElementById('statusText').innerText = "تم اتصال الجوال 📱✨";
 
             conn.on('data', (data) => {
-                if (data.action === 'NEXT_QUESTION') {
-                    const categories = Object.keys(questionsData);
-                    if (categories.length === 0) return;
-
-                    const randomCat = categories[Math.floor(Math.random() * categories.length)];
-                    const qList = questionsData[randomCat];
-                    const randomQ = qList[Math.floor(Math.random() * qList.length)];
-
-                    document.getElementById('categoryTag').innerText = randomCat;
-                    document.getElementById('questionText').innerText = randomQ.q;
-                    document.getElementById('answerText').innerText = "💡 الإجابة: " + randomQ.a;
+                if (data.action === 'SET_QUESTION') {
+                    document.getElementById('categoryTag').innerText = data.category;
+                    document.getElementById('questionText').innerText = data.question;
+                    document.getElementById('answerText').innerText = "💡 الإجابة: " + data.answer;
                     document.getElementById('answerText').style.display = 'none';
-
-                    playSound('new_question');
-
+                    playSound('new_q');
                 } else if (data.action === 'SHOW_ANSWER') {
-                    const answerElem = document.getElementById('answerText');
-                    if (answerElem.style.display === 'none' || answerElem.style.display === '') {
-                        answerElem.style.display = 'block';
-                        playSound('show_answer');
-                    }
+                    document.getElementById('answerText').style.display = 'block';
+                    playSound('correct');
+                } else if (data.action === 'ADD_SCORE_1') {
+                    team1Score += 10;
+                    document.getElementById('score1').innerText = team1Score;
+                } else if (data.action === 'ADD_SCORE_2') {
+                    team2Score += 10;
+                    document.getElementById('score2').innerText = team2Score;
                 }
             });
         });
