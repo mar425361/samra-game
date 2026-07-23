@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ريموت لعبة السمرة</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
         body {
@@ -11,28 +12,51 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             padding: 20px; gap: 20px; text-align: center;
         }
-        h2 { color: #f59e0b; margin-bottom: 20px; font-size: 2rem; }
+        h2 { color: #f59e0b; font-size: 2rem; }
+        .status { font-size: 1.2rem; color: #38bdf8; }
         .btn {
-            width: 100%; max-width: 350px; padding: 25px; font-size: 1.5rem;
+            width: 100%; max-width: 320px; padding: 22px; font-size: 1.4rem;
             font-weight: bold; border: none; border-radius: 16px; cursor: pointer;
             box-shadow: 0 8px 20px rgba(0,0,0,0.4); transition: transform 0.1s;
         }
-        .btn:active { transform: scale(0.96); }
+        .btn:active { transform: scale(0.95); }
         .btn-next { background: #3b82f6; color: white; }
         .btn-answer { background: #10b981; color: white; }
     </style>
 </head>
 <body>
 
-    <h2>📱 ريموت التحكم للشاشة</h2>
+    <h2>📱 ريموت تحكم السمرة</h2>
+    <div class="status" id="connStatus">جاري الاتصال بالشاشة... ⏳</div>
 
-    <button class="btn btn-next" onclick="send('NEXT_QUESTION')">🎲 سؤال جديد للشاشة</button>
-    <button class="btn btn-answer" onclick="send('SHOW_ANSWER')">💡 إظهار الإجابة</button>
+    <button class="btn btn-next" onclick="sendAction('NEXT_QUESTION')">🎲 سؤال جديد للشاشة</button>
+    <button class="btn btn-answer" onclick="sendAction('SHOW_ANSWER')">💡 إظهار الإجابة</button>
 
     <script>
-        const channel = new BroadcastChannel('samra_game_channel');
-        function send(actionType) {
-            channel.postMessage({ action: actionType });
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomId = urlParams.get('room');
+
+        const peer = new Peer();
+        let conn = null;
+
+        peer.on('open', () => {
+            if (roomId) {
+                conn = peer.connect(roomId);
+                conn.on('open', () => {
+                    document.getElementById('connStatus').innerText = "متصل بالشاشة الآن! 🟢";
+                    document.getElementById('connStatus').style.color = "#10b981";
+                });
+            } else {
+                document.getElementById('connStatus').innerText = "يرجى مسح الـ QR من الشاشة أولاً! ❌";
+            }
+        });
+
+        function sendAction(actionType) {
+            if (conn && conn.open) {
+                conn.send({ action: actionType });
+            } else {
+                alert("لم يتم الاتصال بالشاشة بعد، تأكد من مسح الـ QR من جديد!");
+            }
         }
     </script>
 </body>
