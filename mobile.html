@@ -3,41 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ريموت لعبة السمرة</title>
+    <title>ريموت المقدم - لعبة السمرة</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-        body {
-            background: #0f172a; color: #fff; min-height: 100vh;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 20px; gap: 20px; text-align: center;
-        }
-        h2 { color: #f59e0b; font-size: 2rem; }
-        .status { font-size: 1.2rem; color: #38bdf8; }
-        .btn {
-            width: 100%; max-width: 320px; padding: 22px; font-size: 1.4rem;
-            font-weight: bold; border: none; border-radius: 16px; cursor: pointer;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4); transition: transform 0.1s;
-        }
-        .btn:active { transform: scale(0.95); }
+        body { background: #0f172a; color: #fff; min-height: 100vh; padding: 20px; display: flex; flex-direction: column; gap: 15px; text-align: center; }
+        h2 { color: #f59e0b; }
+        .box { background: rgba(255,255,255,0.08); padding: 15px; border-radius: 12px; text-align: right; }
+        .ans-box { color: #10b981; font-weight: bold; font-size: 1.2rem; margin-top: 10px; }
+        .btn { width: 100%; padding: 18px; font-size: 1.2rem; font-weight: bold; border: none; border-radius: 12px; cursor: pointer; margin-top: 5px; }
         .btn-next { background: #3b82f6; color: white; }
-        .btn-answer { background: #10b981; color: white; }
+        .btn-show { background: #10b981; color: white; }
+        .btn-score { background: #f59e0b; color: #000; width: 48%; }
+        .score-btns { display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
 
-    <h2>📱 ريموت تحكم السمرة</h2>
-    <div class="status" id="connStatus">جاري الاتصال بالشاشة... ⏳</div>
+    <h2>📱 لوحة تحكم المُقدّم</h2>
+    <div id="connStatus" style="color:#38bdf8;">جاري الاتصال بالشاشة... ⏳</div>
 
-    <button class="btn btn-next" onclick="sendAction('NEXT_QUESTION')">🎲 سؤال جديد للشاشة</button>
-    <button class="btn btn-answer" onclick="sendAction('SHOW_ANSWER')">💡 إظهار الإجابة</button>
+    <!-- كارت يظهر فيه السؤال والإجابة للمقدم فقط -->
+    <div class="box">
+        <div id="mCategory" style="color:#38bdf8; font-weight:bold;">التصنيف</div>
+        <div id="mQuestion" style="font-size:1.1rem; margin-top:5px;">اضغط سحب سؤال للبدء</div>
+        <div id="mAnswer" class="ans-box">💡 الإجابة المخفية: -</div>
+    </div>
+
+    <button class="btn btn-next" onclick="nextQuestion()">🎲 سحب سؤال جديد</button>
+    <button class="btn btn-show" onclick="showAnswer()">👁️ إظهار الإجابة على الشاشة</button>
+
+    <hr style="opacity: 0.2; margin: 10px 0;">
+
+    <h3>إضافة نقاط للمتسابقين:</h3>
+    <div class="score-btns">
+        <button class="btn btn-score" onclick="addScore(1)">+10 للفريق 1</button>
+        <button class="btn btn-score" onclick="addScore(2)">+10 للفريق 2</button>
+    </div>
 
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const roomId = urlParams.get('room');
-
+        const roomId = new URLSearchParams(window.location.search).get('room');
         const peer = new Peer();
-        let conn = null;
+        let conn = null, questionsData = {}, currentQ = null;
+
+        fetch('questions.json').then(r => r.json()).then(d => questionsData = d);
 
         peer.on('open', () => {
             if (roomId) {
@@ -46,17 +55,31 @@
                     document.getElementById('connStatus').innerText = "متصل بالشاشة الآن! 🟢";
                     document.getElementById('connStatus').style.color = "#10b981";
                 });
-            } else {
-                document.getElementById('connStatus').innerText = "يرجى مسح الـ QR من الشاشة أولاً! ❌";
             }
         });
 
-        function sendAction(actionType) {
-            if (conn && conn.open) {
-                conn.send({ action: actionType });
-            } else {
-                alert("لم يتم الاتصال بالشاشة بعد، تأكد من مسح الـ QR من جديد!");
-            }
+        function nextQuestion() {
+            const cats = Object.keys(questionsData);
+            if (!cats.length) return;
+            const cat = cats[Math.floor(Math.random() * cats.length)];
+            const list = questionsData[cat];
+            currentQ = list[Math.floor(Math.random() * list.length)];
+
+            // عرض الإجابة في الجوال فقط
+            document.getElementById('mCategory').innerText = cat;
+            document.getElementById('mQuestion').innerText = currentQ.q;
+            document.getElementById('mAnswer').innerText = "💡 الإجابة المخفية: " + currentQ.a;
+
+            // إرسال السؤال للشاشة بدون إجابة
+            if (conn) conn.send({ action: 'SET_QUESTION', category: cat, question: currentQ.q, answer: currentQ.a });
+        }
+
+        function showAnswer() {
+            if (conn) conn.send({ action: 'SHOW_ANSWER' });
+        }
+
+        function addScore(team) {
+            if (conn) conn.send({ action: 'ADD_SCORE_' + team });
         }
     </script>
 </body>
