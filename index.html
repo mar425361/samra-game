@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لعبة السمرة - شاشة العرض</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <!-- Socket.io Library -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
         body {
@@ -46,7 +45,7 @@
             padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         #qrcode { background: #fff; padding: 10px; border-radius: 12px; margin-bottom: 10px; }
-        .status { font-size: 1rem; color: #10b981; margin-top: 5px; text-align: center; font-weight: bold; }
+        .status { font-size: 1rem; color: #38bdf8; margin-top: 5px; text-align: center; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -68,12 +67,11 @@
 
         <div class="qr-section">
             <div id="qrcode"></div>
-            <div class="status" id="statusText">جاهز ومباشر ⚡</div>
+            <div class="status" id="statusText">جاري الاتصال بالسيرفر... ⏳</div>
         </div>
     </div>
 
     <script>
-        // إعداد الصوت
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -92,38 +90,39 @@
             }
         }
 
-        // إنشاء QR Code للجوال
+        const roomId = "samra_room_1";
         const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
-        const mobileUrl = baseUrl + '/mobile.html';
+        const mobileUrl = baseUrl + '/mobile.html?room=' + roomId;
         new QRCode(document.getElementById("qrcode"), { text: mobileUrl, width: 140, height: 140 });
 
-        // تهيئة Firebase Realtime Database
-        const firebaseConfig = {
-            databaseURL: "https://samra-game-default-rtdb.firebaseio.com/"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database().ref('game_state');
+        // الربط بسيرفر Render الخاص بك
+        const socket = io("https://samra-server.onrender.com");
 
-        // الاستماع لأي تغيير من الجوال فوراً
-        db.on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (!data) return;
+        socket.on('connect', () => {
+            document.getElementById('statusText').innerText = "متصل بالسيرفر جاهز 🟢";
+            document.getElementById('statusText').style.color = "#10b981";
+            socket.emit('join_room', roomId);
+        });
 
-            if (data.cat) document.getElementById('categoryTag').innerText = data.cat;
-            if (data.q) document.getElementById('questionText').innerText = data.q;
-            if (data.a) document.getElementById('answerText').innerText = "💡 الإجابة: " + data.a;
-            
-            if (data.showA) {
+        socket.on('disconnect', () => {
+            document.getElementById('statusText').innerText = "انقطع الاتصال بالسيرفر 🔴";
+            document.getElementById('statusText').style.color = "#ef4444";
+        });
+
+        socket.on('game_update', (data) => {
+            if (data.action === 'SET_Q') {
+                document.getElementById('categoryTag').innerText = data.cat;
+                document.getElementById('questionText').innerText = data.q;
+                document.getElementById('answerText').innerText = "💡 الإجابة: " + data.a;
+                document.getElementById('answerText').style.display = 'none';
+                playSound('new_q');
+            } else if (data.action === 'SHOW_A') {
                 document.getElementById('answerText').style.display = 'block';
                 playSound('correct');
-            } else {
-                document.getElementById('answerText').style.display = 'none';
+            } else if (data.action === 'SCORE') {
+                document.getElementById('score1').innerText = data.s1;
+                document.getElementById('score2').innerText = data.s2;
             }
-
-            if (data.s1 !== undefined) document.getElementById('score1').innerText = data.s1;
-            if (data.s2 !== undefined) document.getElementById('score2').innerText = data.s2;
-            
-            if (data.lastAction === 'new_q') playSound('new_q');
         });
     </script>
 </body>
