@@ -110,14 +110,12 @@
         <div class="card" id="mainCard">
             <div class="category-tag" id="categoryTag">امسح الـ QR للبدء 📱</div>
             
-            <!-- قسم التصادم بين المرشحين -->
             <div class="clash-container" id="clashContainer">
                 <div class="fighter team1" id="displayPlayer1">الفريق الأول</div>
                 <div class="vs-badge" id="vsBadge">VS</div>
                 <div class="fighter team2" id="displayPlayer2">الفريق الثاني</div>
             </div>
 
-            <!-- قسم عرض السؤال والإجابة بشكل مرتب -->
             <div class="content-box" id="questionContentBox">
                 <div class="question-text" id="questionText">نص السؤال يظهر هنا...</div>
                 <div class="answer-text" id="answerText">💡 الإجابة: ...</div>
@@ -168,7 +166,8 @@
             }
         }
 
-        const roomId = "room_" + Math.floor(Math.random() * 100000);
+        // تثبيت روم موحد لضمان ربط الشاشة بالريموت فوراً
+        const roomId = "samra_main_room_2026";
         const baseUrl = "https://mar425361.github.io/samra-game";
         const mobileUrl = baseUrl + '/mobile.html?room=' + roomId;
         
@@ -187,7 +186,6 @@
 
         socket.on('game_update', (data) => {
             if (data.action === 'NOMINATE') {
-                // إظهار واجهة التصادم وإخفاء السؤال
                 document.getElementById('categoryTag').innerText = "🎯 الفئة: " + data.cat;
                 document.getElementById('displayPlayer1').innerText = data.p1;
                 document.getElementById('displayPlayer2').innerText = data.p2;
@@ -195,7 +193,6 @@
                 document.getElementById('clashContainer').style.display = 'flex';
                 document.getElementById('questionContentBox').style.display = 'none';
 
-                // تشغيل تأثير التصادم واهتزاز الشاشة
                 document.getElementById('mainCard').classList.add('clash-active', 'screen-shake');
                 playSound('clash');
 
@@ -204,7 +201,6 @@
                 }, 400);
 
             } else if (data.action === 'SHOW_Q') {
-                // إخفاء التصادم وإظهار السؤال بوضوح
                 document.getElementById('clashContainer').style.display = 'none';
                 document.getElementById('questionContentBox').style.display = 'flex';
                 document.getElementById('questionText').innerText = data.q;
@@ -221,7 +217,6 @@
                 document.getElementById('score2').innerText = data.s2;
 
             } else if (data.action === 'UPDATE_NAMES') {
-                // تحديث اسماء الفرق فوراً على الشاشة الجانبية
                 document.getElementById('displayTeamName1').innerText = data.t1;
                 document.getElementById('displayTeamName2').innerText = data.t2;
             }
