@@ -3,157 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ريموت لعبة السمرة</title>
+    <title>ريموت التحكم - لعبة السمرة</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
-        body { background: #0f172a; color: #fff; min-height: 100vh; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
+        body {
+            background: #0f172a; color: #ffffff; padding: 15px;
+            display: flex; flex-direction: column; gap: 15px; min-height: 100vh;
+        }
+        h2 { text-align: center; color: #f59e0b; font-weight: 900; }
+        .section {
+            background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px; padding: 15px; display: flex; flex-direction: column; gap: 10px;
+        }
+        label { font-size: 0.85rem; color: #94a3b8; font-weight: 700; }
+        input, select {
+            width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2);
+            background: #1e293b; color: #fff; font-size: 1rem; outline: none;
+        }
+        button {
+            width: 100%; padding: 14px; border-radius: 12px; border: none; font-size: 1.1rem;
+            font-weight: 900; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .btn-primary { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; }
+        .btn-warning { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+        .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
+        button:active { transform: scale(0.97); }
         
-        .header { display: flex; justify-content: space-between; align-items: center; background: rgba(30,41,59,0.9); padding: 12px 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); }
-        h2 { color: #f59e0b; font-size: 1.2rem; }
-        .status { font-size: 0.9rem; color: #34d399; font-weight: 700; }
-
-        /* قسم تعديل الأسماء */
-        .names-box { background: rgba(30,41,59,0.6); padding: 12px; border-radius: 14px; border: 1px solid rgba(59,130,246,0.3); display: flex; flex-direction: column; gap: 8px; }
-        .names-row { display: flex; gap: 8px; }
-        input { flex: 1; background: rgba(15,23,42,0.8); border: 1px solid #3b82f6; border-radius: 8px; padding: 8px 12px; color: #fff; font-size: 0.9rem; }
-        .btn-update { background: #3b82f6; color: white; border: none; border-radius: 8px; padding: 0 15px; font-weight: 700; font-size: 0.85rem; cursor: pointer; }
-
-        /* شاشة عرض السؤال الحالي بالريموت */
-        .box { background: rgba(30,41,59,0.8); padding: 15px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); text-align: right; }
-        .ans-box { color: #34d399; font-weight: 700; font-size: 1.1rem; margin-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px; }
-
-        /* الأزرار */
-        .btn { width: 100%; padding: 16px; font-size: 1.1rem; font-weight: 700; border: none; border-radius: 14px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: 0.2s; }
-        .btn:active { transform: scale(0.97); }
-        .btn-next { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
-        .btn-show { background: linear-gradient(135deg, #10b981, #059669); color: white; }
-        
-        .score-section-title { font-size: 1rem; color: #f59e0b; margin-top: 5px; font-weight: 700; text-align: center; }
-        .score-btns { display: flex; gap: 10px; }
-        .btn-score { background: #f59e0b; color: #000; flex: 1; padding: 14px; font-size: 1rem; border-radius: 12px; font-weight: 900; border: none; cursor: pointer; }
-        .btn-score-minus { background: #ef4444; color: #fff; width: 45px; border-radius: 12px; font-weight: 900; border: none; cursor: pointer; font-size: 1.1rem; }
-        
-        .team-control-group { display: flex; gap: 6px; flex: 1; }
+        .scores-row { display: flex; gap: 10px; }
+        .score-card { flex: 1; text-align: center; background: #1e293b; padding: 10px; border-radius: 12px; }
+        .score-num { font-size: 1.5rem; font-weight: 900; color: #38bdf8; }
+        .connection-status { text-align: center; font-size: 0.85rem; color: #34d399; font-weight: 700; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h2>📱 ريموت المقدم</h2>
-        <div class="status" id="connStatus">متصل 🟢</div>
-    </div>
+    <h2>🎮 ريموت إدارة السمرة</h2>
+    <div class="connection-status" id="connStatus">جاري الاتصال بالسيرفر...</div>
 
-    <!-- تعديل أسماء الفرق -->
-    <div class="names-box">
-        <div style="font-size: 0.85rem; color: #94a3b8; font-weight: 700;">تسمية الفرق:</div>
-        <div class="names-row">
-            <input type="text" id="team1Input" value="فريق الصقور" placeholder="اسم الفريق 1">
-            <input type="text" id="team2Input" value="فريق النمور" placeholder="اسم الفريق 2">
-            <button class="btn-update" onclick="updateTeamNames()">حفظ</button>
+    <!-- تعديل اسماء الفرق وتحديثها الفوري -->
+    <div class="section">
+        <label>تعديل أسماء الفرق:</label>
+        <div style="display: flex; gap: 8px;">
+            <input type="text" id="team1NameInput" value="الفريق الأول" placeholder="اسم فريق 1">
+            <input type="text" id="team2NameInput" value="الفريق الثاني" placeholder="اسم فريق 2">
         </div>
+        <button class="btn-primary" onclick="updateTeamNames()" style="padding: 10px; font-size: 0.95rem;">تحديث الأسماء على الشاشة</button>
     </div>
 
-    <div class="box">
-        <div id="mCategory" style="color:#38bdf8; font-weight:700; font-size:0.95rem;">التصنيف</div>
-        <div id="mQuestion" style="font-size: 1.1rem; margin-top: 4px; font-weight: 700;">اضغط "سحب سؤال جديد" للبدء</div>
-        <div id="mAnswer" class="ans-box">💡 الإجابة: -</div>
+    <!-- اختيار الفئة والمرشحين وتطبيق التصادم والسؤال -->
+    <div class="section">
+        <label>اختر فئة التحدي:</label>
+        <select id="categorySelect">
+            <option value="الفن">🎨 الفن والرسم</option>
+            <option value="السيارات">🚗 السيارات والمحركات</option>
+            <option value="التراث">🦅 التراث والأمثال</option>
+            <option value="ألغاز">🧩 ألغاز وذكاء</option>
+            <option value="معلومات عامة">🌍 معلومات عامة</option>
+        </select>
+
+        <label>أسماء المرشحين من كل فريق:</label>
+        <input type="text" id="player1Input" placeholder="ممثل الفريق الأول">
+        <input type="text" id="player2Input" placeholder="ممثل الفريق الثاني">
+
+        <button class="btn-warning" onclick="sendNomination()" style="font-size: 1.15rem; margin-top: 5px;">🔥 1. إطلاق تصادم الخبراء</button>
+        <button class="btn-primary" onclick="showQuestion()" style="margin-top: 5px;">💡 2. إظهار السؤال في الشاشة</button>
+        <button class="btn-success" onclick="showAnswer()" style="margin-top: 5px;">✅ 3. كشف الإجابة الصحيحة</button>
     </div>
 
-    <button class="btn btn-next" onclick="nextQ()">🎲 سحب سؤال جديد</button>
-    <button class="btn btn-show" onclick="showA()">👁️ إظهار الإجابة للشاشة</button>
-
-    <div class="score-section-title">إدارة النقاط</div>
-    
-    <div class="score-btns">
-        <div class="team-control-group">
-            <button class="btn-score-minus" onclick="addScore(1, -10)">-</button>
-            <button class="btn-score" id="btnTeam1Name" onclick="addScore(1, 10)">+10 فريق 1</button>
-        </div>
-        <div class="team-control-group">
-            <button class="btn-score-minus" onclick="addScore(2, -10)">-</button>
-            <button class="btn-score" id="btnTeam2Name" onclick="addScore(2, 10)">+10 فريق 2</button>
+    <!-- التحكم بالنقاط -->
+    <div class="section">
+        <label>لوحة التحكم بالنقاط:</label>
+        <div class="scores-row">
+            <div class="score-card">
+                <div id="lblTeam1" style="font-weight:700; margin-bottom:5px; font-size:0.9rem;">الفريق الأول</div>
+                <div class="score-num" id="mobileScore1">0</div>
+                <div style="display: flex; gap: 5px; margin-top: 8px;">
+                    <button class="btn-success" onclick="modifyScore(1, 10)">+10</button>
+                    <button class="btn-danger" onclick="modifyScore(1, -10)">-10</button>
+                </div>
+            </div>
+            <div class="score-card">
+                <div id="lblTeam2" style="font-weight:700; margin-bottom:5px; font-size:0.9rem;">الفريق الثاني</div>
+                <div class="score-num" id="mobileScore2">0</div>
+                <div style="display: flex; gap: 5px; margin-top: 8px;">
+                    <button class="btn-success" onclick="modifyScore(2, 10)">+10</button>
+                    <button class="btn-danger" onclick="modifyScore(2, -10)">-10</button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        const roomId = urlParams.get('room') || "room_default";
-        
-        let questionsData = {
-            "أمثال شعبية": [
-                { "q": "من طال غيابه...", "a": "ما جاب الغنايم" },
-                { "q": "اطبخ يا طباخ...", "a": "وأنا كلفني الإكل" }
-            ],
-            "ألغاز ذكاء": [
-                { "q": "ما هو الشيء الذي يمشي بلا أرجل ويطير بلا أجنحة؟", "a": "السحاب" },
-                { "q": "حاجة تذوب إذا دخلت الماء فما هي؟", "a": "السكر أو الملح" }
-            ]
-        };
-        let s1 = 0, s2 = 0;
-        let t1Name = "فريق الصقور";
-        let t2Name = "فريق النمور";
-
-        fetch('questions.json')
-            .then(r => r.json())
-            .then(d => { questionsData = d; })
-            .catch(() => {});
+        const roomId = urlParams.get('room');
 
         const socket = io("https://samra-server.onrender.com", { transports: ['websocket', 'polling'] });
 
+        let currentScore1 = 0;
+        let currentScore2 = 0;
+
+        // بنك الأسئلة المرتبط بالفئات المحددة
+        const questionsDB = {
+            "الفن": { q: "من هو الفنان العالمي الذي رسم لوحة الموناليزا؟", a: "ليوناردو دافنشي" },
+            "السيارات": { q: "ما هي الدولة المصنعة لسيارة اللاندكروزر؟", a: "اليابان" },
+            "التراث": { q: "أكمل المثل الشعبي: اللي ما يطول العنب...", a: "عنب عنه حامضٌ يقول" },
+            "ألغاز": { q: "شيء بحجم الطائر، وكل ما أكل كبر وكل ما شرب مات، فما هو؟", a: "النار" },
+            "معلومات عامة": { q: "ما هي عاصمة أستراليا؟ (وليست سيدني)", a: "كانبيرا" }
+        };
+
+        let activeQuestion = { cat: "عام", q: "في انتظار السؤال...", a: "..." };
+
         socket.on('connect', () => {
-            document.getElementById('connStatus').innerText = "متصل بالشاشة 🟢";
+            document.getElementById('connStatus').innerText = "🟢 متصل بالروم بنجاح";
             socket.emit('join_room', roomId);
-            updateTeamNames(); // إرسال الأسماء الافتراضية أول ما يشبك
         });
-
-        socket.on('disconnect', () => {
-            document.getElementById('connStatus').innerText = "انقطع الاتصال 🔴";
-        });
-
-        function sendCmd(action, extraData = {}) {
-            socket.emit('game_action', { roomId: roomId, action: action, ...extraData });
-        }
 
         function updateTeamNames() {
-            t1Name = document.getElementById('team1Input').value || "الفريق 1";
-            t2Name = document.getElementById('team2Input').value || "الفريق 2";
-            
-            document.getElementById('btnTeam1Name').innerText = "+10 " + t1Name;
-            document.getElementById('btnTeam2Name').innerText = "+10 " + t2Name;
-
-            sendCmd('UPDATE_NAMES', { t1: t1Name, t2: t2Name });
+            const t1 = document.getElementById('team1NameInput').value;
+            const t2 = document.getElementById('team2NameInput').value;
+            document.getElementById('lblTeam1').innerText = t1;
+            document.getElementById('lblTeam2').innerText = t2;
+            socket.emit('game_action', { room: roomId, action: 'UPDATE_NAMES', t1: t1, t2: t2 });
         }
 
-        function nextQ() {
-            const cats = Object.keys(questionsData);
-            if (!cats.length) return;
-            const cat = cats[Math.floor(Math.random() * cats.length)];
-            const list = questionsData[cat];
-            const qObj = list[Math.floor(Math.random() * list.length)];
+        function sendNomination() {
+            const cat = document.getElementById('categorySelect').value;
+            const p1 = document.getElementById('player1Input').value || "عضو 1";
+            const p2 = document.getElementById('player2Input').value || "عضو 2";
 
-            document.getElementById('mCategory').innerText = cat;
-            document.getElementById('mQuestion').innerText = qObj.q;
-            document.getElementById('mAnswer').innerText = "💡 الإجابة: " + qObj.a;
-
-            sendCmd('SET_Q', { cat: cat, q: qObj.q, a: qObj.a });
-        }
-
-        function showA() {
-            sendCmd('SHOW_A');
-        }
-
-        function addScore(team, points) {
-            if (team === 1) {
-                s1 += points;
-                if(s1 < 0) s1 = 0;
+            if(questionsDB[cat]) {
+                activeQuestion = questionsDB[cat];
             }
-            if (team === 2) {
-                s2 += points;
-                if(s2 < 0) s2 = 0;
-            }
-            sendCmd('SCORE', { s1: s1, s2: s2 });
+
+            socket.emit('game_action', {
+                room: roomId,
+                action: 'NOMINATE',
+                cat: cat,
+                p1: p1,
+                p2: p2
+            });
+        }
+
+        function showQuestion() {
+            socket.emit('game_action', {
+                room: roomId,
+                action: 'SHOW_Q',
+                q: activeQuestion.q,
+                a: activeQuestion.a
+            });
+        }
+
+        function showAnswer() {
+            socket.emit('game_action', { room: roomId, action: 'SHOW_A' });
+        }
+
+        function modifyScore(team, amount) {
+            if (team === 1) currentScore1 += amount;
+            if (team === 2) currentScore2 += amount;
+
+            document.getElementById('mobileScore1').innerText = currentScore1;
+            document.getElementById('mobileScore2').innerText = currentScore2;
+
+            socket.emit('game_action', {
+                room: roomId,
+                action: 'SCORE',
+                s1: currentScore1,
+                s2: currentScore2
+            });
         }
     </script>
 </body>
