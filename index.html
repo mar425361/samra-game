@@ -4,222 +4,114 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لعبة السمرة - شاشة العرض</title>
-    <!-- مكتبة لتوليد الـ QR Code تلقائياً -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
         body {
             background: linear-gradient(135deg, #0f172a, #1e1b4b);
-            color: #ffffff;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            padding: 20px;
-            overflow: hidden;
+            color: #fff; min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+            padding: 30px; text-align: center; overflow: hidden;
         }
-
-        header {
-            text-align: center;
-            margin-top: 10px;
-        }
-
-        h1 {
-            font-size: 3rem;
-            color: #f59e0b;
-            text-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
-        }
-
-        .main-container {
-            display: flex;
-            width: 90%;
-            max-width: 1200px;
-            gap: 30px;
-            align-items: center;
-            justify-content: center;
-            margin: auto;
-        }
-
-        /* كارت السؤال والاجابة */
+        h1 { font-size: 3.5rem; color: #f59e0b; text-shadow: 0 0 20px rgba(245, 158, 11, 0.4); }
+        .main-container { display: flex; width: 95%; max-width: 1200px; gap: 40px; align-items: center; margin: auto; }
         .card {
-            flex: 2;
-            background: rgba(30, 41, 59, 0.8);
-            border: 2px solid #3b82f6;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            text-align: center;
-            min-height: 350px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            transition: all 0.3s ease;
+            flex: 2; background: rgba(30, 41, 59, 0.9); border: 2px solid #3b82f6;
+            border-radius: 24px; padding: 50px; min-height: 400px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
         }
-
-        .category-tag {
-            font-size: 1.5rem;
-            color: #38bdf8;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-
-        .question-text {
-            font-size: 2.5rem;
-            line-height: 1.4;
-            margin-bottom: 25px;
-            color: #f8fafc;
-        }
-
+        .category-tag { font-size: 2rem; color: #38bdf8; margin-bottom: 20px; font-weight: bold; }
+        .question-text { font-size: 2.8rem; line-height: 1.4; color: #f8fafc; margin-bottom: 30px; }
         .answer-text {
-            font-size: 2rem;
-            color: #10b981;
-            background: rgba(16, 185, 129, 0.1);
-            padding: 15px 30px;
-            border-radius: 12px;
-            border: 1px dashed #10b981;
-            display: none; /* مخفي حتى يتم الضغط على زر الإجابة */
+            font-size: 2.2rem; color: #10b981; background: rgba(16, 185, 129, 0.15);
+            padding: 20px 40px; border-radius: 15px; border: 2px dashed #10b981; display: none;
         }
-
-        /* الـ QR Code جانب الشاشة */
         .qr-section {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            flex: 1; background: rgba(255, 255, 255, 0.05); border-radius: 24px;
+            padding: 25px; display: flex; flex-direction: column; align-items: center;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
-        #qrcode {
-            background: #ffffff;
-            padding: 15px;
-            border-radius: 15px;
-            margin-bottom: 10px;
-        }
-
-        .qr-text {
-            font-size: 1.2rem;
-            color: #cbd5e1;
-            text-align: center;
-        }
-
-        footer {
-            font-size: 1.2rem;
-            color: #94a3b8;
-            margin-bottom: 10px;
-        }
+        #qrcode { background: #fff; padding: 15px; border-radius: 16px; margin-bottom: 15px; }
+        .qr-text { font-size: 1.4rem; color: #cbd5e1; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>🎲 سمرة - شاشة العرض الرئيسية</h1>
-    </header>
+    <h1>🎲 لعبة السمرة</h1>
 
     <div class="main-container">
-        <!-- قسم السؤال والإجابة -->
-        <div class="card" id="displayCard">
+        <div class="card">
             <div class="category-tag" id="categoryTag">امسح الـ QR للبدء!</div>
-            <div class="question-text" id="questionText">انتظار التحكم من الجوال...</div>
+            <div class="question-text" id="questionText">في انتظار سحب سؤال من الجوال...</div>
             <div class="answer-text" id="answerText">الإجابة تظهر هنا</div>
         </div>
 
-        <!-- قسم الـ QR Code -->
         <div class="qr-section">
             <div id="qrcode"></div>
-            <div class="qr-text">امسح الكود بجوالك<br>للسحب والتحكم باللعبة 📱</div>
+            <div class="qr-text">امسح الكود بجوالك<br>للوصول لريموت التحكم 📱</div>
         </div>
     </div>
 
-    <footer>تم الربط التفاعلي جاهز للعب المباشر ✨</footer>
-
     <script>
-        // 1. إنشاء الـ QR Code تلقائياً برابط الصفحة الحالية (الجوال يفتح نفس الرابط)
-        const qrContainer = document.getElementById("qrcode");
-        new QRCode(qrContainer, {
-            text: window.location.href,
-            width: 180,
-            height: 180
+        // رابط الجوال المباشر لصفحة التحكم mobile.html
+        const mobileUrl = window.location.href.replace('index.html', '').replace(/\/$/, '') + '/mobile.html';
+        
+        new QRCode(document.getElementById("qrcode"), {
+            text: mobileUrl,
+            width: 200,
+            height: 200
         });
 
-        // 2. إعداد المؤثرات الصوتية بواسطة Web Audio API (بدون ملفات خارجية)
+        // أصوات تفاعلية
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
         function playSound(type) {
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
+            osc.connect(gain); gain.connect(audioCtx.destination);
 
-            if (type === 'new_question') {
-                // صوت سحب سؤال جديد (نغمة تصاعدية)
+            if (type === 'new_q') {
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.2);
+                osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.25);
                 gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.2);
-            } else if (type === 'show_answer') {
-                // صوت كشف الإجابة (نغمة نجاح)
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+            } else if (type === 'show_ans') {
                 osc.type = 'triangle';
-                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // Do
-                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // Mi
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.12);
                 gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
             }
         }
 
-        // 3. بنك الأسئلة الشامل من questions.json
+        // جلب الأسئلة
         let questionsData = {};
-        fetch('questions.json')
-            .then(res => res.json())
-            .then(data => { questionsData = data; })
-            .catch(() => console.log('جاري تحميل الأسئلة...'));
+        fetch('questions.json').then(r => r.json()).then(d => questionsData = d);
 
-        // 4. قنوات الاتصال والتحكم بين الشاشة والجوال (BroadcastChannel)
+        // استقبال الأوامر من الجوال
         const channel = new BroadcastChannel('samra_game_channel');
-
         channel.onmessage = (event) => {
-            const data = event.data;
-
-            if (data.action === 'NEXT_QUESTION') {
-                // اختيار سؤال عشوائي من ملف questions.json
-                const categories = Object.keys(questionsData);
-                if (categories.length === 0) return;
-
-                const randomCat = categories[Math.floor(Math.random() * categories.length)];
+            if (event.data.action === 'NEXT_QUESTION') {
+                const cats = Object.keys(questionsData);
+                if (!cats.length) return;
+                const randomCat = cats[Math.floor(Math.random() * cats.length)];
                 const qList = questionsData[randomCat];
                 const randomQ = qList[Math.floor(Math.random() * qList.length)];
 
-                // تحديث الشاشة
                 document.getElementById('categoryTag').innerText = randomCat;
                 document.getElementById('questionText').innerText = randomQ.q;
                 document.getElementById('answerText').innerText = "💡 الإجابة: " + randomQ.a;
-                document.getElementById('answerText').style.display = 'none'; // إخفاء الإجابة
-
-                playSound('new_question'); // تشغيل صوت السؤال
-
-            } else if (data.action === 'SHOW_ANSWER') {
-                const answerElem = document.getElementById('answerText');
-                if (answerElem.style.display === 'none' || answerElem.style.display === '') {
-                    answerElem.style.display = 'block';
-                    playSound('show_answer'); // تشغيل صوت الإجابة
+                document.getElementById('answerText').style.display = 'none';
+                playSound('new_q');
+            } else if (event.data.action === 'SHOW_ANSWER') {
+                const ans = document.getElementById('answerText');
+                if (ans.style.display === 'none' || !ans.style.display) {
+                    ans.style.display = 'block';
+                    playSound('show_ans');
                 }
             }
         };
