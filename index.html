@@ -1,33 +1,129 @@
-const express = require('express');
-const http = require('http');
-const { Server } = require('socket.io');
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة السمرة - شاشة العرض</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body {
+            background: linear-gradient(135deg, #0f172a, #1e1b4b);
+            color: #ffffff; min-height: 100vh; display: flex; flex-direction: column;
+            align-items: center; justify-content: space-between; padding: 20px; overflow: hidden;
+        }
+        h1 { font-size: 3rem; color: #f59e0b; text-shadow: 0 0 15px rgba(245, 158, 11, 0.5); }
+        .main-container { display: flex; width: 95%; max-width: 1300px; gap: 20px; align-items: stretch; margin: auto; }
+        
+        .card {
+            flex: 2; background: rgba(30, 41, 59, 0.85); border: 2px solid #3b82f6;
+            border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            min-height: 400px;
+        }
+        .category-tag { font-size: 1.8rem; color: #38bdf8; font-weight: bold; margin-bottom: 15px; }
+        .question-text { font-size: 2.5rem; line-height: 1.4; color: #f8fafc; margin-bottom: 25px; }
+        .answer-text {
+            font-size: 2rem; color: #10b981; background: rgba(16, 185, 129, 0.15);
+            padding: 15px 30px; border-radius: 12px; border: 2px dashed #10b981; display: none;
+        }
 
-const app = express();
-const server = http.createServer(app);
+        .scores-section {
+            flex: 1; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px; padding: 20px; display: flex; flex-direction: column; align-items: center;
+        }
+        .scores-title { font-size: 1.6rem; color: #f59e0b; margin-bottom: 15px; }
+        .score-box {
+            width: 100%; background: rgba(255,255,255,0.05); border-radius: 12px;
+            padding: 15px 20px; margin-bottom: 10px; display: flex; justify-content: space-between; font-size: 1.5rem;
+        }
 
-const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
-  }
-});
+        .qr-section {
+            flex: 0.8; background: rgba(255, 255, 255, 0.05); border-radius: 20px;
+            padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        #qrcode { background: #fff; padding: 10px; border-radius: 12px; margin-bottom: 10px; }
+        .status { font-size: 1rem; color: #10b981; margin-top: 5px; text-align: center; font-weight: bold; }
+    </style>
+</head>
+<body>
 
-app.get('/', (req, res) => {
-  res.send('Samra Game Server is Running! 🟢');
-});
+    <h1>🎲 لعبة السمرة - شاشة العرض</h1>
 
-io.on('connection', (socket) => {
-  socket.on('join_room', (roomId) => {
-    socket.join(roomId);
-  });
+    <div class="main-container">
+        <div class="card">
+            <div class="category-tag" id="categoryTag">امسح الـ QR لبدء اللعبة!</div>
+            <div class="question-text" id="questionText">في انتظار التحكم من الجوال...</div>
+            <div class="answer-text" id="answerText">الإجابة تظهر هنا</div>
+        </div>
 
-  socket.on('game_action', (data) => {
-    // إرسال الأمر لكل المتواجدين في الغرفة (شاشة وجوال)
-    io.to(data.roomId).emit('game_update', data);
-  });
-});
+        <div class="scores-section">
+            <div class="scores-title">🏆 لائحة النقاط</div>
+            <div class="score-box"><span>الفريق 1:</span> <b id="score1" style="color:#f59e0b;">0</b></div>
+            <div class="score-box"><span>الفريق 2:</span> <b id="score2" style="color:#f59e0b;">0</b></div>
+        </div>
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+        <div class="qr-section">
+            <div id="qrcode"></div>
+            <div class="status" id="statusText">جاري الاتصال بالسيرفر...</div>
+        </div>
+    </div>
+
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+
+            if (type === 'new_q') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+            } else if (type === 'correct') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.4, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
+        const roomId = "room_" + Math.floor(Math.random() * 100000);
+        const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+        const mobileUrl = baseUrl + '/mobile.html?room=' + roomId;
+        
+        // توليد QR برقم الغرفة الخاص بك تماماً
+        new QRCode(document.getElementById("qrcode"), { text: mobileUrl, width: 140, height: 140 });
+
+        const socket = io("https://samra-server.onrender.com", {
+            transports: ['websocket', 'polling']
+        });
+
+        socket.on('connect', () => {
+            document.getElementById('statusText').innerText = "متصل بالسيرفر 🟢";
+            socket.emit('join_room', roomId);
+        });
+
+        socket.on('disconnect', () => {
+            document.getElementById('statusText').innerText = "انقطع الاتصال 🔴";
+        });
+
+        socket.on('game_update', (data) => {
+            if (data.action === 'SET_Q') {
+                document.getElementById('categoryTag').innerText = data.cat;
+                document.getElementById('questionText').innerText = data.q;
+                document.getElementById('answerText').innerText = "💡 الإجابة: " + data.a;
+                document.getElementById('answerText').style.display = 'none';
+                playSound('new_q');
+            } else if (data.action === 'SHOW_A') {
+                document.getElementById('answerText').style.display = 'block';
+                playSound('correct');
+            } else if (data.action === 'SCORE') {
+                document.getElementById('score1').innerText = data.s1;
+                document.getElementById('score2').innerText = data.s2;
+            }
+        });
+    </script>
+</body>
+</html>
