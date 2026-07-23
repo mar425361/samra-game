@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لعبة السمرة 🎲</title>
-    <!-- مكتبة توليد الـ QR Code -->
+    <!-- مكتبة الـ QR Code -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         * {
@@ -21,14 +21,10 @@
             align-items: center;
             min-height: 100vh;
         }
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
         .header h1 {
             color: #f43f5e;
             font-size: 2.2rem;
-            margin: 0;
+            margin-bottom: 20px;
         }
         .main-container {
             display: flex;
@@ -62,15 +58,6 @@
             justify-content: center;
             text-align: center;
         }
-        .controls {
-            margin-bottom: 15px;
-        }
-        label {
-            font-weight: bold;
-            display: block;
-            margin-bottom: 8px;
-            color: #cbd5e1;
-        }
         select {
             width: 100%;
             padding: 12px;
@@ -96,6 +83,7 @@
             justify-content: center;
             margin: 15px 0;
             color: #e2e8f0;
+            line-height: 1.6;
         }
         .buttons-group {
             display: flex;
@@ -143,68 +131,62 @@
     </div>
 
     <div class="main-container">
-        <!-- كارت اللعبة والأسئلة -->
         <div class="game-card">
             <div class="controls">
-                <label for="categorySelect">اختر التصنيف:</label>
+                <label style="color:#cbd5e1; font-weight:bold;">اختر التصنيف:</label>
                 <select id="categorySelect" onchange="filterQuestions()">
                     <option value="الكل">جميع التصنيفات 🌟</option>
                 </select>
             </div>
 
-            <div class="question-box" id="questionText">اضغط على زر "سؤال جديد" للبدء! 🚀</div>
+            <div class="question-box" id="questionText">جاري تحميل الأسئلة... ⏳</div>
 
             <div class="buttons-group">
                 <button class="btn btn-primary" onclick="nextQuestion()">سؤال جديد 🔄</button>
-                <button class="btn btn-secondary" onclick="toggleAnswer()">عرض الإجابة 👁️</button>
+                <button class="btn btn-secondary" onclick="toggleAnswer()">إظهار/إخفاء الإجابة 👁️</button>
             </div>
 
             <div class="answer-box" id="answerText"></div>
         </div>
 
-        <!-- كارت الـ QR Code للانضمام من الجوال -->
         <div class="qr-card">
-            <h3 style="margin-top: 0; color: #f43f5e;">امسح بالكميرا للعب 📱</h3>
+            <h3 style="margin-top: 0; color: #f43f5e;">امسح بالكاميرا للعب 📱</h3>
             <div id="qrcode"></div>
-            <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0; margin-top: 15px;">شارك الصفحة مع الموجودين!</p>
+            <p style="font-size: 0.85rem; color: #94a3b8; margin-top: 15px;">شارك اللعبة مع الشباب!</p>
         </div>
     </div>
 
     <script>
-        // قعدة البيانات المنسقة للأسئلة
-        const allData = {
-            "أنمي ون بيس ⚔️": [
-                { "id": "op_1", "q": "من هو سياف طاقم قبعة القش؟", "a": "رورونوا زورو" },
-                { "id": "op_2", "q": "ما اسم السفينة الأولى لطاقم لوفي؟", "a": "جوينج ميري (Going Merry)" },
-                { "id": "op_3", "q": "من هو ملقب بـ 'ملك الوحوش'؟", "a": "كايدو" }
-            ],
-            "أنمي بليتش ⚔️": [
-                { "id": "bleach_1", "q": "ما اسم الزانبكتو الخاص بـ إيتشيغو؟", "a": "زانجيتسو" },
-                { "id": "bleach_2", "q": "من هو قائد الفرقة الأولى في مجتمع الأرواح؟", "a": "ياماموتو" }
-            ],
-            "أسئلة عامة وثقافة 💡": [
-                { "id": "gen_1", "q": "ما هي عاصمة المملكة العربية السعودية؟", "a": "الرياض" },
-                { "id": "gen_2", "q": "ما هو أطول نهر في العالم؟", "a": "نهر النيل" },
-                { "id": "gen_3", "q": "كم عدد كواكب المجموعة الشمسية؟", "a": "8 كواكب" }
-            ]
-        };
-
+        let allData = {};
         let currentQuestions = [];
         let currentQuestion = null;
 
-        // تهيئة قائمة التصنيفات
+        // جلب الأسئلة من ملف questions.json الخارجي
+        async function loadQuestions() {
+            try {
+                const response = await fetch('questions.json');
+                allData = await response.json();
+                
+                initCategories();
+                document.getElementById('questionText').innerText = 'اضغط على "سؤال جديد" للبدء! 🚀';
+            } catch (error) {
+                document.getElementById('questionText').innerText = 'حدث خطأ في تحميل الأسئلة!';
+                console.error(error);
+            }
+        }
+
         function initCategories() {
             const select = document.getElementById('categorySelect');
+            select.innerHTML = '<option value="الكل">جميع التصنيفات 🌟</option>';
             for (let cat in allData) {
                 let opt = document.createElement('option');
                 opt.value = cat;
-                opt.innerText = cat;
+                opt.innerText = cat + ` (${allData[cat].length})`;
                 select.appendChild(opt);
             }
             filterQuestions();
         }
 
-        // تصفية الأسئلة حسب القسم المختاط
         function filterQuestions() {
             const selectedCat = document.getElementById('categorySelect').value;
             currentQuestions = [];
@@ -218,7 +200,6 @@
             }
         }
 
-        // إظهار سؤال عشوائي
         function nextQuestion() {
             if (currentQuestions.length === 0) return;
             const randomIndex = Math.floor(Math.random() * currentQuestions.length);
@@ -229,25 +210,18 @@
             document.getElementById('answerText').style.display = 'none';
         }
 
-        // إظهار أو إخفاء الإجابة
         function toggleAnswer() {
             const ansBox = document.getElementById('answerText');
             if (!currentQuestion) return;
-            
-            if (ansBox.style.display === 'none' || ansBox.style.display === '') {
-                ansBox.style.display = 'block';
-            } else {
-                ansBox.style.display = 'none';
-            }
+            ansBox.style.display = (ansBox.style.display === 'none' || ansBox.style.display === '') ? 'block' : 'none';
         }
 
-        // توليد الـ QR Code تلقائياً بناءً على رابط الصفحة الحالي
         window.onload = function() {
-            initCategories();
+            loadQuestions();
             new QRCode(document.getElementById("qrcode"), {
                 text: window.location.href,
-                width: 150,
-                height: 150
+                width: 140,
+                height: 140
             });
         };
     </script>
