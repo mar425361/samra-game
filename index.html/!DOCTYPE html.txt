@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لعبة سمرة 🎮</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #1e1e2e;
+      color: #cdd6f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .card {
+      background: #313244;
+      padding: 35px;
+      border-radius: 30px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      text-align: center;
+      max-width: 850px;
+      width: 100%;
+      border: 3px solid #89b4fa;
+    }
+    h1 { color: #f5e0dc; font-size: 2.5rem; margin-top: 0; margin-bottom: 20px; }
+    
+    .tv-question-box {
+      background: #181825;
+      padding: 35px 25px;
+      border-radius: 20px;
+      font-size: 2.2rem;
+      min-height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 20px 0;
+      line-height: 1.6;
+      border: 1px solid #45475a;
+      color: #89b4fa;
+    }
+    .tv-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 25px;
+      background: #181825;
+      padding: 20px 30px;
+      border-radius: 20px;
+    }
+    .scoreboard-tv { display: flex; gap: 40px; font-size: 2rem; font-weight: bold; }
+    .team-badge { display: flex; flex-direction: column; align-items: center; }
+    .team-name { font-size: 1.3rem; color: #a6adc8; margin-bottom: 5px; }
+    .team-score { font-size: 2.8rem; }
+
+    /* التحكم بالنوع */
+    .controls { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; }
+    select, input, button { padding: 14px; font-size: 1.1rem; border-radius: 12px; border: none; outline: none; }
+    select, input { background: #45475a; color: #cdd6f4; text-align: center; }
+    .btn-main { background: #89b4fa; color: #11111b; font-weight: bold; cursor: pointer; font-size: 1.2rem; }
+    .admin-box { background: #181825; padding: 15px; border-radius: 12px; font-size: 1.1rem; margin-top: 10px; text-align: right; }
+    .answer-box { color: #a6e3a1; border: 2px dashed #a6e3a1; font-weight: bold; }
+    .score-btn { background: #fab387; border: none; padding: 6px 15px; font-size: 1.2rem; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    .names-inputs { display: flex; gap: 10px; margin-bottom: 15px; }
+    .names-inputs input { flex: 1; }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== 1. شاشة التلفزيون ==================== -->
+  <div class="card" id="tvView">
+    <h1>🔥 لعبة سمرة والتحدي 🔥</h1>
+
+    <div id="tvQuestion" class="tv-question-box">امسح رمز QR بجوالك لبدء اللعبة 🎲</div>
+
+    <div class="tv-footer">
+      <div class="scoreboard-tv">
+        <div class="team-badge">
+          <span class="team-name" id="tvTeam1Name" style="color: #f38ba8;">الفريق الأول</span>
+          <span class="team-score" id="tvScore1" style="color: #f38ba8;">0</span>
+        </div>
+        <div class="team-badge">
+          <span class="team-name" id="tvTeam2Name" style="color: #89b4fa;">الفريق الثاني</span>
+          <span class="team-score" id="tvScore2" style="color: #89b4fa;">0</span>
+        </div>
+      </div>
+
+      <div style="text-align: center;">
+        <div id="qrcode" style="background: #fff; padding: 8px; border-radius: 12px; display: inline-block;"></div>
+        <div style="font-size: 0.8rem; margin-top: 5px; color: #a6e3a1;">📱 امسح للتحكم</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 2. لوحة التحكم (الجوال) ==================== -->
+  <div class="card" id="adminView" style="display: none; padding: 20px;">
+    <span style="background: #f38ba8; color: #11111b; font-weight: bold; padding: 4px 10px; border-radius: 6px; font-size: 0.85rem;">📱 لوحة تحكم المقدم</span>
+    <h2 style="margin: 10px 0 15px 0;">🎮 التحكم باللعبة</h2>
+
+    <div class="names-inputs">
+      <input type="text" id="inputTeam1" placeholder="اسم الفريق الأول" value="الفريق الأول" onkeyup="updateTeamNames()">
+      <input type="text" id="inputTeam2" placeholder="اسم الفريق الثاني" value="الفريق الثاني" onkeyup="updateTeamNames()">
+    </div>
+
+    <div class="controls">
+      <select id="adminGroupSelect" onchange="updateAdminCategories()">
+        <option value="">-- اختر المجموعة --</option>
+      </select>
+      <select id="adminCategorySelect">
+        <option value="">-- اختر التصنيف --</option>
+      </select>
+    </div>
+
+    <button class="btn-main" onclick="getRandomQuestion()">سؤال جديد 🎲</button>
+
+    <div style="text-align: right; margin-top: 15px; font-weight: bold; color: #89b4fa;">السؤال الظاهر للجميع:</div>
+    <div id="adminQuestionBox" class="admin-box">اضغط سؤال جديد</div>
+
+    <div style="text-align: right; margin-top: 10px; font-weight: bold; color: #a6e3a1;">الجواب الصحيح (عندك فقط 🤫):</div>
+    <div id="adminAnswerBox" class="admin-box answer-box">الجواب سيظهر هنا</div>
+
+    <div style="margin-top: 20px; background: #181825; padding: 15px; border-radius: 15px;">
+      <div style="font-weight: bold; margin-bottom: 10px; color: #fab387;">لوحة النقاط:</div>
+      <div style="display: flex; justify-content: space-around; align-items: center;">
+        <div>
+          <div id="labelTeam1" style="color: #f38ba8; font-weight: bold; margin-bottom: 5px;">الفريق الأول</div>
+          <button class="score-btn" onclick="addScore(1, 1)">+1</button>
+          <span id="adminScore1" style="font-size: 1.3rem; margin: 0 8px; font-weight: bold;">0</span>
+          <button class="score-btn" onclick="addScore(1, -1)">-1</button>
+        </div>
+        <div>
+          <div id="labelTeam2" style="color: #89b4fa; font-weight: bold; margin-bottom: 5px;">الفريق الثاني</div>
+          <button class="score-btn" onclick="addScore(2, 1)">+1</button>
+          <span id="adminScore2" style="font-size: 1.3rem; margin: 0 8px; font-weight: bold;">0</span>
+          <button class="score-btn" onclick="addScore(2, -1)">-1</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const allData = {
+      "مجموعة الأنمي والكرتون ⚔️": {
+        "ون بيس": [
+          { "id": "op_10", "q": "ما اسم الأدميرال الذي يمتلك قوة فاكهة الضوء (بيكا بيكا نو مي)؟", "a": "كيزارو (بورسالينو)" },
+          { "id": "op_11", "q": "ما هي المكافأة الأولى التي وُضعت على رأس لوفي بعد هزيمة أرلونغ؟", "a": "30 مليون بيلي" },
+          { "id": "op_12", "q": "من هو الأدميرال الأسطوري في البحرية والذي يُعتبر والد دراغون وجد لوفي؟", "a": "مونكي دي غارب" },
+          { "id": "op_13", "q": "ما اسم السيف الأسطوري ذو اللون الأسود الذي كان يمتلكه ميهوك؟", "a": "يورو (Yoru)" }
+        ],
+        "بليتش": [
+          { "id": "bl_10", "q": "ما اسم البانكاي الخاص بـ كوروساكي إيتشيغو؟", "a": "تنسان زانغيتسو" },
+          { "id": "bl_11", "q": "من هو قائد الفرقة العاشرة وأصغر قائد في تاريخ مجتمع الأرواح؟", "a": "هيتسوغايا التوشيرو" }
+        ]
+      },
+      "مجموعة الجيمنج والألعاب 🎮": {
+        "ألعاب السولز وإيلدن رينغ": [
+          { "id": "sl_10", "q": "ما اسم المدينة الذهبية والعاصمة الرئيسية في لعبة إيلدن رينغ؟", "a": "ليندل (Leyndell)" },
+          { "id": "sl_11", "q": "ما اسم الزعيم العملاق المقعد في إيلدن رينغ الذي يركب حصاناً صغيراً؟", "a": "جنرال رادان (Starscourge Radahn)" }
+        ]
+      }
+    };
+
+    let playedIds = [];
+    let state = {
+      question: "في انتظار بدء اللعبة من جوال المقدم... 🎲",
+      answer: "",
+      score1: 0,
+      score2: 0,
+      team1: "الفريق الأول",
+      team2: "الفريق الثاني"
+    };
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const isAdmin = urlParams.get('mode') === 'admin';
+    
+    // إنشاء معرف غرف فريد تلقائيًا لمنع التضارب
+    let roomId = urlParams.get('room');
+    if (!roomId) {
+      roomId = 'samra_' + Math.random().toString(36).substring(2, 8);
+    }
+
+    const syncUrl = `https://ntfy.sh/${roomId}/json`;
+
+    window.onload = function() {
+      if (isAdmin) {
+        document.getElementById('tvView').style.display = 'none';
+        document.getElementById('adminView').style.display = 'block';
+        loadAdminGroups();
+      } else {
+        generateStaticQR();
+        startTVListener();
+      }
+    };
+
+    function generateStaticQR() {
+      const baseUrl = window.location.href.split('?')[0];
+      const adminUrl = `${baseUrl}?mode=admin&room=${roomId}`;
+      new QRCode(document.getElementById("qrcode"), { text: adminUrl, width: 95, height: 95 });
+    }
+
+    function sendUpdate() {
+      fetch(`https://ntfy.sh/${roomId}`, {
+        method: 'POST',
+        body: JSON.stringify(state)
+      });
+    }
+
+    function startTVListener() {
+      const eventSource = new EventSource(syncUrl);
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          const gameState = JSON.parse(data.message);
+          
+          document.getElementById('tvQuestion').innerText = gameState.question;
+          document.getElementById('tvScore1').innerText = gameState.score1;
+          document.getElementById('tvScore2').innerText = gameState.score2;
+          document.getElementById('tvTeam1Name').innerText = gameState.team1;
+          document.getElementById('tvTeam2Name').innerText = gameState.team2;
+        } catch (e) {}
+      };
+    }
+
+    function loadAdminGroups() {
+      const gSelect = document.getElementById('adminGroupSelect');
+      gSelect.innerHTML = '<option value="">-- اختر المجموعة --</option>';
+      for (let g in allData) { gSelect.innerHTML += `<option value="${g}">${g}</option>`; }
+    }
+
+    function updateAdminCategories() {
+      const g = document.getElementById('adminGroupSelect').value;
+      const cSelect = document.getElementById('adminCategorySelect');
+      cSelect.innerHTML = '<option value="">-- اختر التصنيف --</option>';
+      if (g && allData[g]) { for (let c in allData[g]) { cSelect.innerHTML += `<option value="${c}">${c}</option>`; } }
+    }
+
+    function getRandomQuestion() {
+      const g = document.getElementById('adminGroupSelect').value;
+      const c = document.getElementById('adminCategorySelect').value;
+
+      if (!g || !c) { alert("اختر المجموعة والتصنيف أولاً!"); return; }
+
+      const available = allData[g][c].filter(q => !playedIds.includes(q.id));
+      if (available.length === 0) { alert("انتهت الأسئلة لهذا التصنيف!"); return; }
+
+      const q = available[Math.floor(Math.random() * available.length)];
+      playedIds.push(q.id);
+
+      state.question = q.q;
+      state.answer = q.a;
+
+      document.getElementById('adminQuestionBox').innerText = state.question;
+      document.getElementById('adminAnswerBox').innerText = state.answer;
+
+      sendUpdate();
+    }
+
+    function addScore(team, val) {
+      if (team === 1) state.score1 = Math.max(0, state.score1 + val);
+      else state.score2 = Math.max(0, state.score2 + val);
+
+      document.getElementById('adminScore1').innerText = state.score1;
+      document.getElementById('adminScore2').innerText = state.score2;
+
+      sendUpdate();
+    }
+
+    function updateTeamNames() {
+      state.team1 = document.getElementById('inputTeam1').value || "الفريق الأول";
+      state.team2 = document.getElementById('inputTeam2').value || "الفريق الثاني";
+
+      document.getElementById('labelTeam1').innerText = state.team1;
+      document.getElementById('labelTeam2').innerText = state.team2;
+
+      sendUpdate();
+    }
+  </script>
+</body>
+</html>
