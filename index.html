@@ -121,7 +121,9 @@
         }
 
         const roomId = "room_" + Math.floor(Math.random() * 100000);
-        const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+        
+        // تم تثبيت رابط جيت هب هنا ليعمل الـ QR بامتياز ويمسحه الجوال فوري
+        const baseUrl = "https://mar425361.github.io/samra-game";
         const mobileUrl = baseUrl + '/mobile.html?room=' + roomId;
         
         new QRCode(document.getElementById("qrcode"), { text: mobileUrl, width: 130, height: 130, colorDark: "#0f172a", colorLight: "#ffffff" });
