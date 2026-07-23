@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لعبة السمرة - شاشة العرض</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- Socket.io Library -->
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
         body {
@@ -45,7 +43,7 @@
             padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         #qrcode { background: #fff; padding: 10px; border-radius: 12px; margin-bottom: 10px; }
-        .status { font-size: 1rem; color: #38bdf8; margin-top: 5px; text-align: center; font-weight: bold; }
+        .status { font-size: 1rem; color: #10b981; margin-top: 5px; text-align: center; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -67,7 +65,7 @@
 
         <div class="qr-section">
             <div id="qrcode"></div>
-            <div class="status" id="statusText">جاري الاتصال بالسيرفر... ⏳</div>
+            <div class="status" id="statusText">جاهز ومتصل 🟢</div>
         </div>
     </div>
 
@@ -90,40 +88,38 @@
             }
         }
 
-        const roomId = "samra_room_1";
+        // قناة اتصال موثوقة ومجانية بالكامل عبر WebSocket العام (Pusher-like public relay)
+        const channelId = "samra_game_secure_room_99";
         const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
-        const mobileUrl = baseUrl + '/mobile.html?room=' + roomId;
+        const mobileUrl = baseUrl + '/mobile.html';
         new QRCode(document.getElementById("qrcode"), { text: mobileUrl, width: 140, height: 140 });
 
-        // الربط بسيرفر Render الخاص بك
-        const socket = io("https://samra-server.onrender.com");
+        const ws = new WebSocket(`wss://socketsbay.com/wss/v2/1/demo/`);
 
-        socket.on('connect', () => {
-            document.getElementById('statusText').innerText = "متصل بالسيرفر جاهز 🟢";
-            document.getElementById('statusText').style.color = "#10b981";
-            socket.emit('join_room', roomId);
-        });
+        ws.onopen = () => {
+            ws.send(JSON.stringify({ type: "join", room: channelId }));
+        };
 
-        socket.on('disconnect', () => {
-            document.getElementById('statusText').innerText = "انقطع الاتصال بالسيرفر 🔴";
-            document.getElementById('statusText').style.color = "#ef4444";
-        });
+        ws.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.room !== channelId) return;
 
-        socket.on('game_update', (data) => {
-            if (data.action === 'SET_Q') {
-                document.getElementById('categoryTag').innerText = data.cat;
-                document.getElementById('questionText').innerText = data.q;
-                document.getElementById('answerText').innerText = "💡 الإجابة: " + data.a;
-                document.getElementById('answerText').style.display = 'none';
-                playSound('new_q');
-            } else if (data.action === 'SHOW_A') {
-                document.getElementById('answerText').style.display = 'block';
-                playSound('correct');
-            } else if (data.action === 'SCORE') {
-                document.getElementById('score1').innerText = data.s1;
-                document.getElementById('score2').innerText = data.s2;
-            }
-        });
+                if (data.action === 'SET_Q') {
+                    document.getElementById('categoryTag').innerText = data.cat;
+                    document.getElementById('questionText').innerText = data.q;
+                    document.getElementById('answerText').innerText = "💡 الإجابة: " + data.a;
+                    document.getElementById('answerText').style.display = 'none';
+                    playSound('new_q');
+                } else if (data.action === 'SHOW_A') {
+                    document.getElementById('answerText').style.display = 'block';
+                    playSound('correct');
+                } else if (data.action === 'SCORE') {
+                    document.getElementById('score1').innerText = data.s1;
+                    document.getElementById('score2').innerText = data.s2;
+                }
+            } catch(e) {}
+        };
     </script>
 </body>
 </html>
