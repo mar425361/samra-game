@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ريموت لعبة السمرة</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
         body { background: #0f172a; color: #fff; min-height: 100vh; padding: 20px; display: flex; flex-direction: column; gap: 15px; text-align: center; }
@@ -42,27 +42,28 @@
     </div>
 
     <script>
-        const roomId = new URLSearchParams(window.location.search).get('room');
+        const hostPeerId = new URLSearchParams(window.location.search).get('peer');
         let questionsData = {};
         let s1 = 0, s2 = 0;
+        let conn = null;
 
         fetch('questions.json').then(r => r.json()).then(d => questionsData = d);
 
-        const client = new Paho.MQTT.Client("broker.hivemq.com", 8884, "mobile_" + parseInt(Math.random() * 10000, 10));
+        const peer = new Peer();
 
-        client.connect({
-            onSuccess: function () {
-                document.getElementById('connStatus').innerText = "متصل بالشاشة! 🟢";
-                document.getElementById('connStatus').style.color = "#10b981";
-            },
-            useSSL: true
+        peer.on('open', () => {
+            if (hostPeerId) {
+                conn = peer.connect(hostPeerId);
+                conn.on('open', () => {
+                    document.getElementById('connStatus').innerText = "متصل بالشاشة! 🟢";
+                    document.getElementById('connStatus').style.color = "#10b981";
+                });
+            }
         });
 
         function sendCmd(data) {
-            if (roomId && client.isConnected()) {
-                const message = new Paho.MQTT.Message(JSON.stringify(data));
-                message.destinationName = roomId;
-                client.send(message);
+            if (conn && conn.open) {
+                conn.send(data);
             }
         }
 
