@@ -4,14 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ريموت لعبة السمرة</title>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <!-- Socket.io Library -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
         body { background: #0f172a; color: #fff; min-height: 100vh; padding: 20px; display: flex; flex-direction: column; gap: 15px; text-align: center; }
         h2 { color: #f59e0b; }
-        .status { font-size: 1rem; color: #10b981; font-weight: bold; }
+        .status { font-size: 1rem; color: #38bdf8; font-weight: bold; }
         .box { background: rgba(255,255,255,0.08); padding: 15px; border-radius: 12px; text-align: right; border: 1px solid #3b82f6; }
         .ans-box { color: #10b981; font-weight: bold; font-size: 1.2rem; margin-top: 10px; }
         .btn { width: 100%; padding: 18px; font-size: 1.2rem; font-weight: bold; border: none; border-radius: 12px; cursor: pointer; margin-top: 5px; }
@@ -24,7 +23,7 @@
 <body>
 
     <h2>📱 ريموت المقدم</h2>
-    <div class="status">متصل بالسيرفر جاهز 🟢</div>
+    <div class="status" id="connStatus">جاري الاتصال... ⏳</div>
 
     <div class="box">
         <div id="mCategory" style="color:#38bdf8; font-weight:bold;">التصنيف</div>
@@ -44,16 +43,32 @@
     </div>
 
     <script>
-        const firebaseConfig = {
-            databaseURL: "https://samra-game-default-rtdb.firebaseio.com/"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database().ref('game_state');
-
+        const roomId = new URLSearchParams(window.location.search).get('room') || "samra_room_1";
         let questionsData = {};
         let s1 = 0, s2 = 0;
 
         fetch('questions.json').then(r => r.json()).then(d => questionsData = d);
+
+        const socket = io("https://samra-server.onrender.com");
+
+        socket.on('connect', () => {
+            document.getElementById('connStatus').innerText = "متصل بالشاشة 🟢";
+            document.getElementById('connStatus').style.color = "#10b981";
+            socket.emit('join_room', roomId);
+        });
+
+        socket.on('disconnect', () => {
+            document.getElementById('connStatus').innerText = "انقطع الاتصال 🔴";
+            document.getElementById('connStatus').style.color = "#ef4444";
+        });
+
+        function sendCmd(action, extraData = {}) {
+            socket.emit('game_action', {
+                roomId: roomId,
+                action: action,
+                ...extraData
+            });
+        }
 
         function nextQ() {
             const cats = Object.keys(questionsData);
@@ -66,32 +81,17 @@
             document.getElementById('mQuestion').innerText = qObj.q;
             document.getElementById('mAnswer').innerText = "💡 الإجابة المخفية: " + qObj.a;
 
-            db.update({
-                cat: cat,
-                q: qObj.q,
-                a: qObj.a,
-                showA: false,
-                lastAction: 'new_q',
-                timestamp: Date.now()
-            });
+            sendCmd('SET_Q', { cat: cat, q: qObj.q, a: qObj.a });
         }
 
         function showA() {
-            db.update({
-                showA: true,
-                lastAction: 'show_a',
-                timestamp: Date.now()
-            });
+            sendCmd('SHOW_A');
         }
 
         function addScore(team) {
             if (team === 1) s1 += 10;
             if (team === 2) s2 += 10;
-            db.update({
-                s1: s1,
-                s2: s2,
-                timestamp: Date.now()
-            });
+            sendCmd('SCORE', { s1: s1, s2: s2 });
         }
     </script>
 </body>
