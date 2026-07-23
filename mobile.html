@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ريموت المقدم - لعبة السمرة</title>
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <title>ريموت لعبة السمرة</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
         body { background: #0f172a; color: #fff; min-height: 100vh; padding: 20px; display: flex; flex-direction: column; gap: 15px; text-align: center; }
         h2 { color: #f59e0b; }
-        .box { background: rgba(255,255,255,0.08); padding: 15px; border-radius: 12px; text-align: right; }
+        .status { font-size: 1rem; color: #38bdf8; }
+        .box { background: rgba(255,255,255,0.08); padding: 15px; border-radius: 12px; text-align: right; border: 1px solid #3b82f6; }
         .ans-box { color: #10b981; font-weight: bold; font-size: 1.2rem; margin-top: 10px; }
         .btn { width: 100%; padding: 18px; font-size: 1.2rem; font-weight: bold; border: none; border-radius: 12px; cursor: pointer; margin-top: 5px; }
         .btn-next { background: #3b82f6; color: white; }
@@ -20,66 +21,73 @@
 </head>
 <body>
 
-    <h2>📱 لوحة تحكم المُقدّم</h2>
-    <div id="connStatus" style="color:#38bdf8;">جاري الاتصال بالشاشة... ⏳</div>
+    <h2>📱 ريموت المقدم</h2>
+    <div class="status" id="connStatus">جاري الاتصال بالشاشة... ⏳</div>
 
-    <!-- كارت يظهر فيه السؤال والإجابة للمقدم فقط -->
     <div class="box">
         <div id="mCategory" style="color:#38bdf8; font-weight:bold;">التصنيف</div>
-        <div id="mQuestion" style="font-size:1.1rem; margin-top:5px;">اضغط سحب سؤال للبدء</div>
+        <div id="mQuestion" style="font-size:1.1rem; margin-top:5px;">اضغط "سحب سؤال" للبدء</div>
         <div id="mAnswer" class="ans-box">💡 الإجابة المخفية: -</div>
     </div>
 
-    <button class="btn btn-next" onclick="nextQuestion()">🎲 سحب سؤال جديد</button>
-    <button class="btn btn-show" onclick="showAnswer()">👁️ إظهار الإجابة على الشاشة</button>
+    <button class="btn btn-next" onclick="nextQ()">🎲 سحب سؤال جديد</button>
+    <button class="btn btn-show" onclick="showA()">👁️ إظهار الإجابة للشاشة</button>
 
     <hr style="opacity: 0.2; margin: 10px 0;">
 
-    <h3>إضافة نقاط للمتسابقين:</h3>
+    <h3>النقاط:</h3>
     <div class="score-btns">
-        <button class="btn btn-score" onclick="addScore(1)">+10 للفريق 1</button>
-        <button class="btn btn-score" onclick="addScore(2)">+10 للفريق 2</button>
+        <button class="btn btn-score" onclick="addScore(1)">+10 فريق 1</button>
+        <button class="btn btn-score" onclick="addScore(2)">+10 فريق 2</button>
     </div>
 
     <script>
         const roomId = new URLSearchParams(window.location.search).get('room');
-        const peer = new Peer();
-        let conn = null, questionsData = {}, currentQ = null;
+        let questionsData = {};
+        let s1 = 0, s2 = 0;
 
         fetch('questions.json').then(r => r.json()).then(d => questionsData = d);
 
-        peer.on('open', () => {
-            if (roomId) {
-                conn = peer.connect(roomId);
-                conn.on('open', () => {
-                    document.getElementById('connStatus').innerText = "متصل بالشاشة الآن! 🟢";
-                    document.getElementById('connStatus').style.color = "#10b981";
-                });
-            }
+        const client = new Paho.MQTT.Client("broker.hivemq.com", 8000, "mobile_" + parseInt(Math.random() * 100, 10));
+
+        client.connect({
+            onSuccess: function () {
+                document.getElementById('connStatus').innerText = "متصل بالشاشة وجاهز! 🟢";
+                document.getElementById('connStatus').style.color = "#10b981";
+            },
+            useSSL: false
         });
 
-        function nextQuestion() {
+        function sendCmd(data) {
+            if (roomId && client.isConnected()) {
+                const message = new Paho.MQTT.Message(JSON.stringify(data));
+                message.destinationName = roomId;
+                client.send(message);
+            }
+        }
+
+        function nextQ() {
             const cats = Object.keys(questionsData);
             if (!cats.length) return;
             const cat = cats[Math.floor(Math.random() * cats.length)];
             const list = questionsData[cat];
-            currentQ = list[Math.floor(Math.random() * list.length)];
+            const qObj = list[Math.floor(Math.random() * list.length)];
 
-            // عرض الإجابة في الجوال فقط
             document.getElementById('mCategory').innerText = cat;
-            document.getElementById('mQuestion').innerText = currentQ.q;
-            document.getElementById('mAnswer').innerText = "💡 الإجابة المخفية: " + currentQ.a;
+            document.getElementById('mQuestion').innerText = qObj.q;
+            document.getElementById('mAnswer').innerText = "💡 الإجابة المخفية: " + qObj.a;
 
-            // إرسال السؤال للشاشة بدون إجابة
-            if (conn) conn.send({ action: 'SET_QUESTION', category: cat, question: currentQ.q, answer: currentQ.a });
+            sendCmd({ action: 'SET_Q', cat: cat, q: qObj.q, a: qObj.a });
         }
 
-        function showAnswer() {
-            if (conn) conn.send({ action: 'SHOW_ANSWER' });
+        function showA() {
+            sendCmd({ action: 'SHOW_A' });
         }
 
         function addScore(team) {
-            if (conn) conn.send({ action: 'ADD_SCORE_' + team });
+            if (team === 1) s1 += 10;
+            if (team === 2) s2 += 10;
+            sendCmd({ action: 'SCORE', s1: s1, s2: s2 });
         }
     </script>
 </body>
