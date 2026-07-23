@@ -3,70 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة السمرة - شاشة العرض</title>
+    <title>لعبة السمرة - الشاشة الرئيسية</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
         body {
-            background: linear-gradient(135deg, #0f172a, #1e1b4b);
+            background: radial-gradient(circle at center, #1e1b4b 0%, #0f172a 100%);
             color: #ffffff; min-height: 100vh; display: flex; flex-direction: column;
-            align-items: center; justify-content: space-between; padding: 20px; overflow: hidden;
+            align-items: center; justify-content: space-between; padding: 25px; overflow: hidden;
         }
-        h1 { font-size: 3rem; color: #f59e0b; text-shadow: 0 0 15px rgba(245, 158, 11, 0.5); }
-        .main-container { display: flex; width: 95%; max-width: 1300px; gap: 20px; align-items: stretch; margin: auto; }
+        h1 { font-size: 2.5rem; color: #f59e0b; text-shadow: 0 0 20px rgba(245, 158, 11, 0.4); font-weight: 900; letter-spacing: 1px; }
         
+        .main-container { display: flex; width: 98%; max-width: 1400px; gap: 20px; align-items: stretch; margin: auto; }
+        
+        /* بطاقة السؤال */
         .card {
-            flex: 2; background: rgba(30, 41, 59, 0.85); border: 2px solid #3b82f6;
-            border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
-            min-height: 400px;
+            flex: 2.5; background: rgba(30, 41, 59, 0.75); backdrop-filter: blur(12px);
+            border: 2px solid rgba(59, 130, 246, 0.4); border-radius: 24px; padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center; min-height: 420px;
+            position: relative; overflow: hidden;
         }
-        .category-tag { font-size: 1.8rem; color: #38bdf8; font-weight: bold; margin-bottom: 15px; }
-        .question-text { font-size: 2.5rem; line-height: 1.4; color: #f8fafc; margin-bottom: 25px; }
+        .card::before {
+            content: ''; position: absolute; top: 0; right: 0; width: 100%; height: 6px;
+            background: linear-gradient(90deg, #3b82f6, #f59e0b, #10b981);
+        }
+        .category-tag { font-size: 1.6rem; color: #38bdf8; font-weight: 700; margin-bottom: 20px; background: rgba(56, 189, 248, 0.1); padding: 8px 25px; border-radius: 50px; border: 1px solid rgba(56,189,248,0.3); }
+        .question-text { font-size: 2.4rem; line-height: 1.5; color: #f8fafc; font-weight: 700; margin-bottom: 30px; }
         .answer-text {
-            font-size: 2rem; color: #10b981; background: rgba(16, 185, 129, 0.15);
-            padding: 15px 30px; border-radius: 12px; border: 2px dashed #10b981; display: none;
+            font-size: 2rem; color: #34d399; background: rgba(16, 185, 129, 0.15);
+            padding: 15px 35px; border-radius: 16px; border: 2px dashed #10b981; display: none;
+            animation: popUp 0.4s ease-in-out; box-shadow: 0 0 20px rgba(16,185,129,0.2);
         }
 
+        @keyframes popUp {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* لوحة النقاط الفخمة */
         .scores-section {
-            flex: 1; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px; padding: 20px; display: flex; flex-direction: column; align-items: center;
+            flex: 1; display: flex; flex-direction: column; gap: 15px; justify-content: center;
         }
-        .scores-title { font-size: 1.6rem; color: #f59e0b; margin-bottom: 15px; }
         .score-box {
-            width: 100%; background: rgba(255,255,255,0.05); border-radius: 12px;
-            padding: 15px 20px; margin-bottom: 10px; display: flex; justify-content: space-between; font-size: 1.5rem;
+            background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px; padding: 25px; display: flex; flex-direction: column;
+            align-items: center; gap: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            position: relative; overflow: hidden;
         }
+        .score-box::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 4px;
+        }
+        .team1-box::after { background: #3b82f6; }
+        .team2-box::after { background: #f59e0b; }
+        
+        .team-name { font-size: 1.4rem; color: #94a3b8; font-weight: 700; }
+        .team-score { font-size: 3rem; font-weight: 900; color: #fff; text-shadow: 0 0 15px rgba(255,255,255,0.3); }
 
+        /* قسم الـ QR */
         .qr-section {
-            flex: 0.8; background: rgba(255, 255, 255, 0.05); border-radius: 20px;
+            flex: 0.9; background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px;
             padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        #qrcode { background: #fff; padding: 10px; border-radius: 12px; margin-bottom: 10px; }
-        .status { font-size: 1rem; color: #10b981; margin-top: 5px; text-align: center; font-weight: bold; }
+        #qrcode { background: #fff; padding: 12px; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+        .status { font-size: 1rem; color: #34d399; font-weight: 700; display: flex; align-items: center; gap: 6px; }
     </style>
 </head>
 <body>
 
-    <h1>🎲 لعبة السمرة - شاشة العرض</h1>
+    <h1>🌙 سهرة العائلة والاصدقاء - لعبة السمرة</h1>
 
     <div class="main-container">
         <div class="card">
-            <div class="category-tag" id="categoryTag">امسح الـ QR لبدء اللعبة!</div>
-            <div class="question-text" id="questionText">في انتظار التحكم من الجوال...</div>
+            <div class="category-tag" id="categoryTag">امسح الـ QR للبدء 📱</div>
+            <div class="question-text" id="questionText">في انتظار تحكم المقدم من الجوال...</div>
             <div class="answer-text" id="answerText">الإجابة تظهر هنا</div>
         </div>
 
         <div class="scores-section">
-            <div class="scores-title">🏆 لائحة النقاط</div>
-            <div class="score-box"><span>الفريق 1:</span> <b id="score1" style="color:#f59e0b;">0</b></div>
-            <div class="score-box"><span>الفريق 2:</span> <b id="score2" style="color:#f59e0b;">0</b></div>
+            <div class="score-box team1-box">
+                <span class="team-name" id="displayTeam1">الفريق الأول</span>
+                <span class="team-score" id="score1">0</span>
+            </div>
+            <div class="score-box team2-box">
+                <span class="team-name" id="displayTeam2">الفريق الثاني</span>
+                <span class="team-score" id="score2">0</span>
+            </div>
         </div>
 
         <div class="qr-section">
             <div id="qrcode"></div>
-            <div class="status" id="statusText">جاري الاتصال بالسيرفر...</div>
+            <div class="status" id="statusText"><span>🟢</span> جاري الاتصال بالسيرفر...</div>
         </div>
     </div>
 
@@ -79,13 +109,14 @@
             osc.connect(gain); gain.connect(audioCtx.destination);
 
             if (type === 'new_q') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.2);
-                gain.gain.setValueAtTime(0.3, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.15);
             } else if (type === 'correct') {
                 osc.type = 'triangle'; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
                 osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.4, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+                osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.35);
             }
         }
 
@@ -93,20 +124,17 @@
         const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
         const mobileUrl = baseUrl + '/mobile.html?room=' + roomId;
         
-        // توليد QR برقم الغرفة الخاص بك تماماً
-        new QRCode(document.getElementById("qrcode"), { text: mobileUrl, width: 140, height: 140 });
+        new QRCode(document.getElementById("qrcode"), { text: mobileUrl, width: 130, height: 130, colorDark: "#0f172a", colorLight: "#ffffff" });
 
-        const socket = io("https://samra-server.onrender.com", {
-            transports: ['websocket', 'polling']
-        });
+        const socket = io("https://samra-server.onrender.com", { transports: ['websocket', 'polling'] });
 
         socket.on('connect', () => {
-            document.getElementById('statusText').innerText = "متصل بالسيرفر 🟢";
+            document.getElementById('statusText').innerHTML = "<span>🟢</span> الشاشة متصلة وجاهزة";
             socket.emit('join_room', roomId);
         });
 
         socket.on('disconnect', () => {
-            document.getElementById('statusText').innerText = "انقطع الاتصال 🔴";
+            document.getElementById('statusText').innerHTML = "<span>🔴</span> انقطع الاتصال بالسيرفر";
         });
 
         socket.on('game_update', (data) => {
@@ -122,6 +150,9 @@
             } else if (data.action === 'SCORE') {
                 document.getElementById('score1').innerText = data.s1;
                 document.getElementById('score2').innerText = data.s2;
+            } else if (data.action === 'UPDATE_NAMES') {
+                document.getElementById('displayTeam1').innerText = data.t1;
+                document.getElementById('displayTeam2').innerText = data.t2;
             }
         });
     </script>
