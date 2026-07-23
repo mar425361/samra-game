@@ -43,7 +43,6 @@
     <h2>🎮 ريموت إدارة السمرة</h2>
     <div class="connection-status" id="connStatus">جاري الاتصال بالسيرفر...</div>
 
-    <!-- تعديل اسماء الفرق وتحديثها الفوري -->
     <div class="section">
         <label>تعديل أسماء الفرق:</label>
         <div style="display: flex; gap: 8px;">
@@ -53,7 +52,6 @@
         <button class="btn-primary" onclick="updateTeamNames()" style="padding: 10px; font-size: 0.95rem;">تحديث الأسماء على الشاشة</button>
     </div>
 
-    <!-- اختيار الفئة والمرشحين وتطبيق التصادم والسؤال -->
     <div class="section">
         <label>اختر فئة التحدي:</label>
         <select id="categorySelect">
@@ -73,7 +71,6 @@
         <button class="btn-success" onclick="showAnswer()" style="margin-top: 5px;">✅ 3. كشف الإجابة الصحيحة</button>
     </div>
 
-    <!-- التحكم بالنقاط -->
     <div class="section">
         <label>لوحة التحكم بالنقاط:</label>
         <div class="scores-row">
@@ -98,14 +95,14 @@
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        const roomId = urlParams.get('room');
+        // اعتماد الروم الثابت الموحد لضمان عدم ضياع الاتصال
+        const roomId = urlParams.get('room') || "samra_main_room_2026";
 
         const socket = io("https://samra-server.onrender.com", { transports: ['websocket', 'polling'] });
 
         let currentScore1 = 0;
         let currentScore2 = 0;
 
-        // بنك الأسئلة المرتبط بالفئات المحددة
         const questionsDB = {
             "الفن": { q: "من هو الفنان العالمي الذي رسم لوحة الموناليزا؟", a: "ليوناردو دافنشي" },
             "السيارات": { q: "ما هي الدولة المصنعة لسيارة اللاندكروزر؟", a: "اليابان" },
