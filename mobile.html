@@ -48,14 +48,14 @@
 
         fetch('questions.json').then(r => r.json()).then(d => questionsData = d);
 
-        const client = new Paho.MQTT.Client("broker.hivemq.com", 8000, "mobile_" + parseInt(Math.random() * 100, 10));
+        const client = new Paho.MQTT.Client("broker.hivemq.com", 8884, "mobile_" + parseInt(Math.random() * 10000, 10));
 
         client.connect({
             onSuccess: function () {
-                document.getElementById('connStatus').innerText = "متصل بالشاشة وجاهز! 🟢";
+                document.getElementById('connStatus').innerText = "متصل بالشاشة! 🟢";
                 document.getElementById('connStatus').style.color = "#10b981";
             },
-            useSSL: false
+            useSSL: true
         });
 
         function sendCmd(data) {
