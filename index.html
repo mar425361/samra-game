@@ -2,243 +2,155 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>تحدي السمرة الكبرى - شاشة العرض</title>
-    <!-- مكتبة الباركود الرسمية والمضمونة -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة السمرة - الشاشة الرئيسية</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
-        
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
         body {
-            /* خلفية متحركة فخمة ومتناسقة */
-            background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #1a0b2e);
+            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #311042, #0f172a);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
-            
-            color: #fff;
-            font-family: 'Tajawal', sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 15px;
-            overflow: hidden;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            box-sizing: border-box;
+            color: #ffffff; height: 100vh; display: flex; flex-direction: column;
+            align-items: center; justify-content: space-between; padding: 15px; overflow: hidden;
         }
-
         @keyframes gradientBG {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-
-        h1 {
-            font-size: 2.2rem;
-            margin: 0;
-            color: #ffd700;
-            text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        h1 { font-size: 1.8rem; color: #f59e0b; text-shadow: 0 0 20px rgba(245, 158, 11, 0.4); font-weight: 900; margin-bottom: 5px; }
+        
+        .main-container { display: flex; flex-direction: row-reverse; width: 100%; max-width: 1400px; height: 85vh; gap: 20px; align-items: stretch; }
+        
+        .card {
+            flex: 3; background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(12px);
+            border: 2px solid rgba(59, 130, 246, 0.4); border-radius: 20px; padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center; position: relative; overflow: hidden;
         }
-
-        /* لوحة النتائج العلوية */
-        .scoreboard {
-            display: flex;
-            justify-content: space-around;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 10px;
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            max-width: 600px;
-            margin: 0 auto;
-            width: 100%;
+        .card::before {
+            content: ''; position: absolute; top: 0; right: 0; width: 100%; height: 6px;
+            background: linear-gradient(90deg, #3b82f6, #f59e0b, #10b981);
         }
-
-        .team {
-            font-size: 1.4rem;
-            font-weight: 700;
+        
+        .category-tag { font-size: 1.4rem; color: #38bdf8; font-weight: 700; margin-bottom: 25px; background: rgba(56, 189, 248, 0.1); padding: 6px 25px; border-radius: 50px; border: 1px solid rgba(56,189,248,0.3); }
+        
+        .clash-container { display: flex; align-items: center; justify-content: center; gap: 20px; width: 100%; margin: 15px 0; position: relative; }
+        .fighter {
+            font-size: 1.8rem; font-weight: 900; padding: 25px 35px; border-radius: 16px; background: rgba(15, 23, 42, 0.95);
+            border: 3px solid #3b82f6; box-shadow: 0 0 25px rgba(59,130,246,0.5); width: 42%; word-break: break-word; position: relative; z-index: 10;
         }
+        .fighter.team2 { border-color: #f59e0b; box-shadow: 0 0 25px rgba(245,158,11,0.5); }
+        .vs-badge { font-size: 2.5rem; font-weight: 900; color: #ef4444; text-shadow: 0 0 30px rgba(239,68,68,0.8); z-index: 10; }
 
-        .score {
-            font-size: 2rem;
-            color: #00ffcc;
-            text-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
-        }
-
-        /* تخطيط الشاشة الرئيسي (السؤال على اليسار والباركود على اليمين بانسجام) */
-        .main-layout {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            max-width: 1000px;
-            margin: 0 auto;
-            width: 100%;
-            gap: 20px;
-        }
-
-        .game-box {
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 20px;
-            padding: 25px;
-            border: 2px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
-            backdrop-filter: blur(5px);
-            flex: 1;
-        }
-
-        /* صندوق الباركود الجانبي المرتب */
-        .qr-card {
-            background: rgba(255, 255, 255, 0.08);
-            padding: 10px;
-            border-radius: 15px;
-            border: 2px solid rgba(255, 215, 0, 0.3);
-            backdrop-filter: blur(10px);
-            width: 130px;
-            text-align: center;
-            flex-shrink: 0;
-        }
-
-        .qr-card p {
-            margin: 0 0 5px 0;
-            font-size: 0.8rem;
-            color: #ffd700;
-            font-weight: bold;
-        }
-
-        #qrcode {
-            display: flex;
-            justify-content: center;
-            background: white;
-            padding: 6px;
-            border-radius: 8px;
-        }
-
-        .category-tag {
-            background: #ff4757;
-            padding: 6px 18px;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            display: inline-block;
-            margin-bottom: 15px;
-            font-weight: bold;
-            box-shadow: 0 0 15px rgba(255, 71, 87, 0.4);
-        }
-
-        .question-text {
-            font-size: 1.8rem;
-            margin-bottom: 15px;
-            line-height: 1.4;
-        }
-
+        .content-box { display: none; width: 100%; flex-direction: column; gap: 15px; align-items: center; }
+        .question-text { font-size: 2rem; line-height: 1.4; color: #f8fafc; font-weight: 700; }
         .answer-text {
-            font-size: 1.5rem;
-            color: #2ed573;
-            margin-top: 10px;
-            display: none;
-            font-weight: bold;
-            text-shadow: 0 0 10px rgba(46, 213, 115, 0.4);
+            font-size: 1.6rem; color: #34d399; background: rgba(16, 185, 129, 0.15);
+            padding: 10px 25px; border-radius: 14px; border: 2px dashed #10b981; display: none;
+            box-shadow: 0 0 20px rgba(16,185,129,0.2);
         }
 
-        #alert-box {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            background: rgba(15, 12, 41, 0.95);
-            border: 3px solid #ffd700;
-            padding: 30px;
-            border-radius: 25px;
-            font-size: 2.5rem;
-            color: #ffd700;
-            z-index: 1000;
-            box-shadow: 0 0 50px rgba(255, 215, 0, 0.8);
-            transition: transform 0.3s ease;
+        .sidebar { flex: 1; display: flex; flex-direction: column; gap: 15px; max-width: 320px; overflow-y: auto; }
+        .score-box {
+            background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 18px; padding: 15px; display: flex; flex-direction: column; gap: 8px; position: relative; overflow: hidden;
         }
+        .team1-box { border-right: 4px solid #3b82f6; }
+        .team2-box { border-right: 4px solid #f59e0b; }
+        .team-header { display: flex; justify-content: space-between; align-items: center; }
+        .team-name { font-size: 1.1rem; color: #94a3b8; font-weight: 700; }
+        .team-score { font-size: 1.8rem; font-weight: 900; color: #fff; }
+        .members-list { font-size: 0.85rem; color: #cbd5e1; background: rgba(15,23,42,0.5); padding: 8px; border-radius: 8px; min-height: 35px; }
 
-        #alert-box.show {
-            transform: translate(-50%, -50%) scale(1);
-        }
+        .qr-section { background: rgba(30, 41, 59, 0.7); border-radius: 18px; padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #qrcode { background: #fff; padding: 8px; border-radius: 12px; margin-bottom: 8px; }
+        .status { font-size: 0.85rem; color: #34d399; font-weight: 700; }
     </style>
 </head>
 <body>
 
-    <h1>🔥 تحدي السمرة الكبرى 🔥</h1>
+    <h1>🌙 سهرة العائلة والاصدقاء - تحدي الخبراء</h1>
 
-    <div class="scoreboard">
-        <div class="team">فريق 1<br><span id="score1" class="score">0</span></div>
-        <div class="team">فريق 2<br><span id="score2" class="score">0</span></div>
-    </div>
+    <div class="main-container">
+        <div class="card" id="mainCard">
+            <div class="category-tag" id="categoryTag">امسح الـ QR للبدء 📱</div>
+            
+            <div class="clash-container" id="clashContainer">
+                <div class="fighter team1" id="displayPlayer1">الفريق الأول</div>
+                <div class="vs-badge">VS</div>
+                <div class="fighter team2" id="displayPlayer2">الفريق الثاني</div>
+            </div>
 
-    <div class="main-layout">
-        <div class="game-box">
-            <div id="category" class="category-tag">اختر فئة من الريموت</div>
-            <div id="question" class="question-text">صور الكود بالاميرا وابدأ التحكم!</div>
-            <div id="answer" class="answer-text"></div>
+            <div class="content-box" id="questionContentBox">
+                <div class="question-text" id="questionText">السؤال يظهر هنا...</div>
+                <div class="answer-text" id="answerText">💡 الإجابة: ...</div>
+            </div>
         </div>
 
-        <!-- باركود الريموت الجانبي -->
-        <div class="qr-card">
-            <p>📱 ريموت الجوال</p>
-            <div id="qrcode"></div>
+        <div class="sidebar">
+            <div class="score-box team1-box">
+                <div class="team-header">
+                    <span class="team-name" id="displayTeamName1">الفريق الأول</span>
+                    <span class="team-score" id="score1">0</span>
+                </div>
+                <div class="members-list" id="displayMembers1">الأعضاء: لم يتم الإضافة</div>
+            </div>
+
+            <div class="score-box team2-box">
+                <div class="team-header">
+                    <span class="team-name" id="displayTeamName2">الفريق الثاني</span>
+                    <span class="team-score" id="score2">0</span>
+                </div>
+                <div class="members-list" id="displayMembers2">الأعضاء: لم يتم الإضافة</div>
+            </div>
+
+            <div class="qr-section">
+                <div id="qrcode"></div>
+                <div class="status" id="statusText"><span>🟢</span> جاري الاتصال...</div>
+            </div>
         </div>
     </div>
-
-    <div id="alert-box">أبشر بي!</div>
 
     <script>
-        // توليد رابط ملف mobile.html تلقائياً في الباركود
-        let targetUrl = window.location.href;
-        if (targetUrl.includes("index.html")) {
-            targetUrl = targetUrl.replace("index.html", "mobile.html");
-        } else {
-            targetUrl = targetUrl.endsWith("/") ? targetUrl + "mobile.html" : targetUrl + "/mobile.html";
-        }
+        const roomId = "samra_main_room_2026";
+        new QRCode(document.getElementById("qrcode"), { text: "https://mar425361.github.io/samra-game/mobile.html?room=" + roomId, width: 90, height: 90, colorDark: "#0f172a", colorLight: "#ffffff" });
 
-        try {
-            new QRCode(document.getElementById("qrcode"), {
-                text: targetUrl,
-                width: 110,
-                height: 110,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
-            });
-        } catch (e) {
-            console.log("QR Code generation error");
-        }
+        const socket = io("https://samra-server.onrender.com", { transports: ['websocket', 'polling'] });
 
-        // التحديث الفوري للنتائج والأسئلة عبر الـ LocalStorage
-        setInterval(() => {
-            document.getElementById('score1').innerText = localStorage.getItem('score1') || 0;
-            document.getElementById('score2').innerText = localStorage.getItem('score2') || 0;
-            
-            let q = localStorage.getItem('current_question');
-            let a = localStorage.getItem('current_answer');
-            let c = localStorage.getItem('current_category');
-            let showA = localStorage.getItem('show_answer');
-            let alertMsg = localStorage.getItem('alert_msg');
+        socket.on('connect', () => {
+            document.getElementById('statusText').innerHTML = "<span>🟢</span> متصل بالسيرفر";
+            socket.emit('join_room', roomId);
+        });
 
-            if(q) document.getElementById('question').innerText = q;
-            if(c) document.getElementById('category').innerText = c;
-            
-            let ansDiv = document.getElementById('answer');
-            if(showA === 'true') {
-                ansDiv.innerText = "الإجابة: " + (a || "");
-                ansDiv.style.display = "block";
-            } else {
-                ansDiv.style.display = "none";
+        socket.on('game_action', (data) => {
+            if (data.action === 'NOMINATE') {
+                document.getElementById('categoryTag').innerText = "🎯 الفئة: " + data.cat;
+                document.getElementById('displayPlayer1').innerText = data.p1;
+                document.getElementById('displayPlayer2').innerText = data.p2;
+                document.getElementById('clashContainer').style.display = 'flex';
+                document.getElementById('questionContentBox').style.display = 'none';
+            } else if (data.action === 'SHOW_Q') {
+                document.getElementById('clashContainer').style.display = 'none';
+                document.getElementById('questionContentBox').style.display = 'flex';
+                document.getElementById('questionText').innerText = data.q;
+                document.getElementById('answerText').innerText = "💡 الإجابة: " + data.a;
+                document.getElementById('answerText').style.display = 'none';
+            } else if (data.action === 'SHOW_A') {
+                document.getElementById('answerText').style.display = 'block';
+            } else if (data.action === 'SCORE') {
+                document.getElementById('score1').innerText = data.s1;
+                document.getElementById('score2').innerText = data.s2;
+            } else if (data.action === 'UPDATE_TEAM_DATA') {
+                document.getElementById('displayTeamName1').innerText = data.t1;
+                document.getElementById('displayTeamName2').innerText = data.t2;
+                document.getElementById('displayMembers1').innerText = "الأعضاء: " + (data.m1 || "لا يوجد");
+                document.getElementById('displayMembers2').innerText = "الأعضاء: " + (data.m2 || "لا يوجد");
             }
-
-            let alertBox = document.getElementById('alert-box');
-            if(alertMsg) {
-                alertBox.innerText = alertMsg;
-                alertBox.classList.add('show');
-                setTimeout(() => {
-                    alertBox.classList.remove('show');
-                    localStorage.removeItem('alert_msg');
-                }, 3000);
-            }
-        }, 500);
+        });
     </script>
 </body>
 </html>
