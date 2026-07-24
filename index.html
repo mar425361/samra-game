@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لعبة السمرة - الشاشة الرئيسية</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- استدعاء فايربيس -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
@@ -76,7 +79,7 @@
 
     <div class="main-container">
         <div class="card" id="mainCard">
-            <div class="category-tag" id="categoryTag">اضبط التحكم وابدأ التحدي 📱</div>
+            <div class="category-tag" id="categoryTag">امسح الـ QR للبدء 📱</div>
             
             <div class="clash-container" id="clashContainer">
                 <div class="fighter team1" id="displayPlayer1">الفريق الأول</div>
@@ -109,7 +112,7 @@
 
             <div class="qr-section">
                 <div id="qrcode"></div>
-                <div class="status" id="statusText"><span>🟢</span> جاهز ومتصل محلياً</div>
+                <div class="status" id="statusText"><span>🟢</span> متصل بالسحابة</div>
             </div>
         </div>
     </div>
@@ -118,11 +121,18 @@
         const currentUrl = window.location.href.replace("index.html", "mobile.html");
         new QRCode(document.getElementById("qrcode"), { text: currentUrl, width: 90, height: 90, colorDark: "#0f172a", colorLight: "#ffffff" });
 
-        // استخدام القناة المحلية الفورية بدون أخطاء سيرفر
-        const channel = new BroadcastChannel('samra_game_channel');
+        // إعدادات اتصال Firebase المجاني المباشر
+        const firebaseConfig = {
+            databaseURL: "https://samra-game-default-rtdb.firebaseio.com/"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-        channel.onmessage = (event) => {
-            const data = event.data;
+        // الاستماع الفوري لأي تغيير يرسله الجوال
+        db.ref('game_state').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (!data) return;
+
             if (data.action === 'NOMINATE') {
                 document.getElementById('categoryTag').innerText = "🎯 الفئة: " + data.cat;
                 document.getElementById('displayPlayer1').innerText = data.p1;
@@ -143,10 +153,10 @@
             } else if (data.action === 'UPDATE_TEAM_DATA') {
                 document.getElementById('displayTeamName1').innerText = data.t1;
                 document.getElementById('displayTeamName2').innerText = data.t2;
-                document.getElementById('displayMembers1').innerHTML = "الأعضاء: " + (data.m1.join('، ') || "لا يوجد");
-                document.getElementById('displayMembers2').innerHTML = "الأعضاء: " + (data.m2.join('، ') || "لا يوجد");
+                document.getElementById('displayMembers1').innerHTML = "الأعضاء: " + (data.m1 ? data.m1.join('، ') : "لا يوجد");
+                document.getElementById('displayMembers2').innerHTML = "الأعضاء: " + (data.m2 ? data.m2.join('، ') : "لا يوجد");
             }
-        };
+        });
     </script>
 </body>
 </html>
