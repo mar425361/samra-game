@@ -6,55 +6,52 @@
     <title>شاشة العرض - سهرة العائلة</title>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <style>
-        body { font-family: Tahoma, sans-serif; background: #0b0b0b; color: #fff; margin: 0; padding: 20px; direction: rtl; text-align: center; overflow-x: hidden; }
-        h1 { color: #f39c12; margin-bottom: 20px; font-size: 36px; text-shadow: 0 0 10px rgba(243,156,18,0.5); }
-        .score-board { display: flex; justify-content: space-around; background: #1a1a1a; padding: 15px; border-radius: 12px; border: 2px solid #333; margin-bottom: 20px; font-size: 24px; }
-        .team-box { width: 45%; }
-        .team-score { color: #2ecc71; font-weight: bold; font-size: 32px; }
+        body { font-family: Tahoma, sans-serif; background: #0b0b0b; color: #fff; margin: 0; padding: 20px; direction: rtl; text-align: center; }
+        h1 { color: #f39c12; margin-bottom: 20px; }
+        .score-board { display: flex; justify-content: space-around; background: #1a1a1a; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-size: 22px; }
+        .team-score { color: #2ecc71; font-weight: bold; }
         
         .stage { background: #151515; border: 2px dashed #444; border-radius: 15px; padding: 30px; min-height: 350px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
         
-        /* تصميم عجلة الحظ البصرية */
-        .wheel-container { position: relative; width: 250px; height: 250px; margin: 20px auto; display: none; }
-        .wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #f39c12; background: conic-gradient(#e74c3c 0deg 90deg, #3498db 90deg 180deg, #2ecc71 180deg 270deg, #9b59b6 270deg 360deg); box-shadow: 0 0 20px rgba(243,156,18,0.8); }
-        .wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-bottom: 25px solid #f1c40f; z-index: 10; }
-        
-        .category-display { font-size: 28px; color: #f1c40f; font-weight: bold; margin-bottom: 15px; background: rgba(0,0,0,0.6); padding: 10px 25px; border-radius: 8px; border: 1px solid #f39c12; display: inline-block; }
-        .nomination-display { font-size: 26px; color: #3498db; margin-bottom: 15px; font-weight: bold; }
-        .question-box { font-size: 32px; margin-bottom: 20px; line-height: 1.5; color: #fff; }
-        .answer-box { font-size: 30px; color: #2ecc71; font-weight: bold; background: #1e1e1e; padding: 15px; border-radius: 10px; display: none; border: 1px solid #27ae60; width: 80%; }
-        .members-list { font-size: 14px; color: #aaa; margin-top: 5px; }
+        /* تصميم عجلة الحظ الكلاسيكية */
+        .wheel-container { position: relative; width: 220px; height: 220px; margin: 15px auto; display: none; }
+        .wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #f39c12; background: conic-gradient(#e74c3c 0deg 90deg, #3498db 90deg 180deg, #2ecc71 180deg 270deg, #9b59b6 270deg 360deg); box-shadow: 0 0 15px rgba(243,156,18,0.6); }
+        .wheel-pointer { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 20px solid #f1c40f; z-index: 10; }
+
+        .category-display { font-size: 26px; color: #f1c40f; font-weight: bold; margin-bottom: 10px; }
+        .nomination-display { font-size: 24px; color: #3498db; margin-bottom: 10px; font-weight: bold; }
+        .question-box { font-size: 28px; margin-bottom: 20px; line-height: 1.4; }
+        .answer-box { font-size: 26px; color: #2ecc71; font-weight: bold; background: #1e1e1e; padding: 10px; border-radius: 8px; display: none; }
+        .members-list { font-size: 13px; color: #aaa; margin-top: 5px; }
     </style>
 </head>
 <body>
 
     <h1>سهرة العائلة - التحدي الكبير</h1>
 
-    <!-- لوحة النتائج العلوي -->
     <div class="score-board">
-        <div class="team-box">
-            <div id="t1Display">فريق الصقور</div>
+        <div>
+            <div id="t1Display">فريق 1</div>
             <div class="team-score" id="s1Display">0</div>
             <div class="members-list" id="t1MembersList">الأعضاء: -</div>
         </div>
-        <div style="font-size: 40px; color: #555;">VS</div>
-        <div class="team-box">
-            <div id="t2Display">فريق النمور</div>
+        <div>VS</div>
+        <div>
+            <div id="t2Display">فريق 2</div>
             <div class="team-score" id="s2Display">0</div>
             <div class="members-list" id="t2MembersList">الأعضاء: -</div>
         </div>
     </div>
 
-    <!-- منطقة العرض الرئيسية -->
     <div class="stage" id="mainStage">
-        <!-- عجلة الحظ -->
+        <!-- عجلة الحظ المضافة -->
         <div class="wheel-container" id="wheelContainer">
             <div class="wheel-pointer"></div>
             <div class="wheel" id="spinningWheel"></div>
         </div>
-        
+
         <div id="dynamicContent">
-            <h2 style="color: #777;">في انتظار المايسترو لتدوير عجلة الحظ وبدء الجولة...</h2>
+            <h2>في انتظار بدء الجولة...</h2>
         </div>
     </div>
 
@@ -66,18 +63,15 @@
             socket.emit('join_room', roomName);
         });
 
-        // استقبال الأوامر من الجوال وتحديث الشاشة فوراً
         socket.on('game_action_receiver', (data) => {
             const wheelContainer = document.getElementById('wheelContainer');
             const content = document.getElementById('dynamicContent');
 
             if (data.action === 'SPIN_WHEEL') {
-                // إظهار عجلة الحظ وتدويرها بصرياً
                 wheelContainer.style.display = 'block';
-                content.innerHTML = `<div class="category-display" style="margin-top: 15px;">🎡 عجلة الحظ تدور لاختيار الفئة...</div>`;
+                content.innerHTML = `<div class="category-display">🎡 عجلة الحظ تدور لاختيار الفئة...</div>`;
                 
                 const wheel = document.getElementById('spinningWheel');
-                // إعادة تصفير الدوران لضمان سلاسة الحركة مع كل ضغطة
                 wheel.style.transition = 'none';
                 wheel.style.transform = 'rotate(0deg)';
                 
@@ -88,19 +82,14 @@
                 }, 50);
             } 
             else if (data.action === 'SHOW_CATEGORY') {
-                // إخفاء العجلة وإظهار الفئة المستقرة
                 wheelContainer.style.display = 'none';
-                content.innerHTML = `
-                    <div class="category-display">🎯 الفئة المختارة: ${data.cat}</div>
-                    <div style="font-size: 20px; color: #aaa; margin-top: 10px;">رشحوا أبطالكم لهذه الفئة!</div>
-                `;
-            }
+                content.innerHTML = `<div class="category-display">🎯 الفئة المختارة: ${data.cat}</div>`;
+            } 
             else if (data.action === 'NOMINATE') {
                 wheelContainer.style.display = 'none';
                 content.innerHTML = `
                     <div class="category-display">🎯 الفئة: ${data.cat}</div>
-                    <div class="nomination-display">⚔️ المواجهة بين: <span style="color:#e74c3c">${data.p1}</span> ضد <span style="color:#e74c3c">${data.p2}</span></div>
-                    <div style="font-size: 22px; color: #f39c12;">استعدوا للسؤال...</div>
+                    <div class="nomination-display">⚔️ المواجهة بين: ${data.p1} ضد ${data.p2}</div>
                 `;
             } 
             else if (data.action === 'SHOW_Q') {
@@ -114,11 +103,9 @@
                 const ans = document.getElementById('ansBox');
                 if (ans) ans.style.display = 'block';
             } 
-            else if (data.action::undefined || data.action === 'SCORE') {
-                if(data.s1 !== undefined && data.s2 !== undefined) {
-                    document.getElementById('s1Display').innerText = data.s1;
-                    document.getElementById('s2Display').innerText = data.s2;
-                }
+            else if (data.action === 'SCORE') {
+                document.getElementById('s1Display').innerText = data.s1;
+                document.getElementById('s2Display').innerText = data.s2;
             } 
             else if (data.action === 'UPDATE_TEAMS') {
                 document.getElementById('t1Display').innerText = data.t1;
