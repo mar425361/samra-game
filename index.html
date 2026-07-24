@@ -119,8 +119,16 @@
             socket.emit('join_room', roomName);
         });
 
-        // توليد رابط الجوال الصحيح (يفتح صفحة mobile.html وليس الرئيسية)
-        const mobileUrl = window.location.origin + "/mobile.html";
+        // توليد رابط الجوال الصحيح بناءً على مسار الملف الحالي في غيت هب
+        let currentUrl = window.location.href.split('?')[0].split('#')[0];
+        if (currentUrl.endsWith('index.html')) {
+            currentUrl = currentUrl.replace('index.html', '');
+        }
+        if (!currentUrl.endsWith('/')) {
+            currentUrl += '/';
+        }
+        const mobileUrl = currentUrl + "mobile.html";
+
         new QRCode(document.getElementById("qrcode"), { 
             text: mobileUrl, 
             width: 90, 
