@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>تحدي السمرة الكبرى - شاشة العرض</title>
+    <!-- مكتبة الكيو آر كود -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
         
@@ -13,7 +15,7 @@
             text-align: center;
             margin: 0;
             padding: 20px;
-            overflow-x: hidden;
+            overflow: hidden;
             height: 100vh;
             display: flex;
             flex-direction: column;
@@ -21,63 +23,106 @@
         }
 
         h1 {
-            font-size: 2.5rem;
-            margin: 10px 0;
+            font-size: 2.3rem;
+            margin: 5px 0;
             color: #ffd700;
             text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+
+        .main-layout {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1100px;
+            margin: 0 auto;
+            width: 100%;
+            gap: 20px;
+        }
+
+        .game-area {
+            flex: 1;
+        }
+
+        /* صندوق الكيو آر كود الجانبي */
+        .qr-card {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 12px;
+            border-radius: 15px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            backdrop-filter: blur(10px);
+            width: 160px;
+            text-align: center;
+        }
+
+        .qr-card p {
+            margin: 0 0 8px 0;
+            font-size: 0.85rem;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            background: white;
+            padding: 8px;
+            border-radius: 8px;
         }
 
         .scoreboard {
             display: flex;
             justify-content: space-around;
             background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
+            padding: 12px;
             border-radius: 15px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 700px;
+            margin: 0 auto;
+            width: 100%;
         }
 
         .team {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: 700;
         }
 
         .score {
-            font-size: 2.5rem;
+            font-size: 2.2rem;
             color: #00ffcc;
         }
 
         .game-box {
             background: rgba(0, 0, 0, 0.4);
             border-radius: 20px;
-            padding: 30px;
+            padding: 25px;
             border: 2px solid rgba(255, 255, 255, 0.15);
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            max-width: 900px;
+            max-width: 850px;
             margin: 0 auto;
-            width: 80%;
+            width: 100%;
         }
 
         .category-tag {
             background: #ff4757;
-            padding: 8px 20px;
+            padding: 6px 18px;
             border-radius: 50px;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             display: inline-block;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             font-weight: bold;
         }
 
         .question-text {
-            font-size: 2.2rem;
-            margin-bottom: 20px;
+            font-size: 2rem;
+            margin-bottom: 15px;
             line-height: 1.4;
         }
 
         .answer-text {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             color: #2ed573;
-            margin-top: 15px;
+            margin-top: 12px;
             display: none;
             font-weight: bold;
         }
@@ -112,15 +157,40 @@
         <div class="team">فريق 2<br><span id="score2" class="score">0</span></div>
     </div>
 
-    <div class="game-box">
-        <div id="category" class="category-tag">اختر فئة من الريموت</div>
-        <div id="question" class="question-text">في انتظار السؤال...</div>
-        <div id="answer" class="answer-text"></div>
+    <div class="main-layout">
+        <div class="game-area">
+            <div class="game-box">
+                <div id="category" class="category-tag">اختر فئة من الريموت</div>
+                <div id="question" class="question-text">صور الكود بالكميرا وابدأ التحكم!</div>
+                <div id="answer" class="answer-text"></div>
+            </div>
+        </div>
+
+        <!-- باركود الريموت -->
+        <div class="qr-card">
+            <p>📱 ريموت الجوال</p>
+            <div id="qrcode"></div>
+        </div>
     </div>
 
     <div id="alert-box">أبشر بي!</div>
 
     <script>
+        // توليد رابط الريموت تلقائياً في الباركود
+        let controllerUrl = window.location.href.replace('index.html', 'controller.html');
+        if(!window.location.href.includes('.html')) {
+            controllerUrl = window.location.href + (window.location.href.endsWith('/') ? '' : '/') + 'controller.html';
+        }
+        
+        new QRCode(document.getElementById("qrcode"), {
+            text: controllerUrl,
+            width: 130,
+            height: 130,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+
         setInterval(() => {
             document.getElementById('score1').innerText = localStorage.getItem('score1') || 0;
             document.getElementById('score2').innerText = localStorage.getItem('score2') || 0;
