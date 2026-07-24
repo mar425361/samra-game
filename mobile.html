@@ -4,43 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة تحكم السمرة</title>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <!-- مكتبة السوكت آي أو المتصلة بسيرفر Render -->
+    <script src="https://samra-server.onrender.com/socket.io/socket.io.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
         body { background: #0f172a; color: #fff; padding: 15px; display: flex; flex-direction: column; gap: 15px; align-items: center; min-height: 100vh; }
-        h2 { color: #f59e0b; font-size: 1.3rem; text-align: center; }
-        
-        .tabs { display: flex; width: 100%; max-width: 400px; gap: 5px; background: #1e293b; padding: 5px; border-radius: 12px; }
-        .tab-btn { flex: 1; padding: 10px 5px; border: none; background: transparent; color: #94a3b8; font-weight: 700; font-size: 0.85rem; border-radius: 8px; cursor: pointer; text-align: center; }
+        h2 { color: #f59e0b; font-size: 1.4rem; text-align: center; font-weight: 900; }
+        .tabs { display: flex; width: 100%; max-width: 420px; gap: 5px; background: #1e293b; padding: 5px; border-radius: 12px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; color: #94a3b8; font-weight: 700; font-size: 0.9rem; border-radius: 8px; cursor: pointer; text-align: center; }
         .tab-btn.active { background: #3b82f6; color: #fff; }
-
-        .panel { display: none; background: rgba(30, 41, 59, 0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 15px; width: 100%; max-width: 400px; flex-direction: column; gap: 12px; }
+        .panel { display: none; background: rgba(30, 41, 59, 0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; width: 100%; max-width: 420px; flex-direction: column; gap: 15px; }
         .panel.active { display: flex; }
-
-        label { font-size: 0.85rem; color: #94a3b8; font-weight: 700; }
-        input, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: #1e293b; color: #fff; font-size: 0.95rem; }
-        
+        label { font-size: 0.9rem; color: #94a3b8; font-weight: 700; }
+        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: #1e293b; color: #fff; font-size: 1rem; }
         .member-row { display: flex; gap: 8px; margin-bottom: 5px; }
-        .btn-small { width: 45px; padding: 8px; font-weight: 900; border-radius: 8px; border: none; cursor: pointer; }
+        .btn-small { width: 45px; padding: 10px; font-weight: 900; border-radius: 8px; border: none; cursor: pointer; }
         .btn-add { background: #10b981; color: #fff; }
         .btn-remove { background: #ef4444; color: #fff; }
-
-        button { width: 100%; padding: 12px; border-radius: 10px; border: none; font-size: 1rem; font-weight: 900; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        button { width: 100%; padding: 14px; border-radius: 10px; border: none; font-size: 1.05rem; font-weight: 900; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .btn-primary { background: #3b82f6; color: #fff; }
         .btn-success { background: #10b981; color: #fff; }
         .btn-warning { background: #f59e0b; color: #0f172a; }
-        .status { font-size: 0.75rem; text-align: center; padding: 6px; border-radius: 6px; background: rgba(15,23,42,0.6); color: #34d399; font-weight: 700; width: 100%; max-width: 400px; }
+        .status { font-size: 0.8rem; text-align: center; padding: 8px; border-radius: 6px; background: rgba(15,23,42,0.6); color: #34d399; font-weight: 700; width: 100%; max-width: 420px; }
     </style>
 </head>
 <body>
 
-    <h2>🎮 تحكم السمرة</h2>
-    <div class="status" id="mobileStatus">🟢 متصل باللعبة سحابياً</div>
+    <h2>🎮 لوحة تحكم السمرة</h2>
+    <div class="status" id="mobileStatus">🟢 متصل بالسيرفر</div>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab(0)">الفرق والأعضاء</button>
+        <button class="tab-btn active" onclick="switchTab(0)">الفرق</button>
         <button class="tab-btn" onclick="switchTab(1)">الأسئلة</button>
         <button class="tab-btn" onclick="switchTab(2)">النقاط</button>
     </div>
@@ -51,11 +46,11 @@
         <label>أعضاء الفريق الأول:</label>
         <div id="team1MembersContainer">
             <div class="member-row">
-                <input type="text" class="t1-member" value="خالد">
+                <input type="text" class="t1-member" value="عضو 1">
                 <button class="btn-small btn-remove" onclick="removeRow(this)">-</button>
             </div>
         </div>
-        <button class="btn-small btn-add" style="width:100%; margin-top:5px;" onclick="addMemberField('team1MembersContainer', 't1-member')">+ إضافة عضو للفريق 1</button>
+        <button class="btn-small btn-add" style="width:100%; margin-top:5px;" onclick="addMemberField('team1MembersContainer', 't1-member')">+ إضافة عضو</button>
 
         <hr style="border-color: rgba(255,255,255,0.1); margin: 10px 0;">
 
@@ -64,51 +59,52 @@
         <label>أعضاء الفريق الثاني:</label>
         <div id="team2MembersContainer">
             <div class="member-row">
-                <input type="text" class="t2-member" value="صقر">
+                <input type="text" class="t2-member" value="عضو 2">
                 <button class="btn-small btn-remove" onclick="removeRow(this)">-</button>
             </div>
         </div>
-        <button class="btn-small btn-add" style="width:100%; margin-top:5px;" onclick="addMemberField('team2MembersContainer', 't2-member')">+ إضافة عضو للفريق 2</button>
+        <button class="btn-small btn-add" style="width:100%; margin-top:5px;" onclick="addMemberField('team2MembersContainer', 't2-member')">+ إضافة عضو</button>
 
-        <button class="btn-primary" style="margin-top: 10px;" onclick="updateTeamData()">حفظ وتحديث الفرق على الشاشة</button>
+        <button class="btn-primary" style="margin-top: 10px;" onclick="updateTeamData()">حفظ وتحديث الفرق</button>
     </div>
 
     <div class="panel" id="tab1">
-        <label>اختر الفئة وسؤال عشوائي:</label>
+        <label>اختر الفئة:</label>
         <select id="categorySelect" onchange="loadRandomQuestion()">
             <option value="تاريخ وأمجاد">تاريخ وأمجاد</option>
             <option value="أمثال شعبية">أمثال شعبية</option>
             <option value="تحدي الذكاء">تحدي الذكاء</option>
         </select>
 
-        <button class="btn-warning" onclick="loadRandomQuestion()">🎲 اسحب سؤال جديد تلقائياً</button>
+        <button class="btn-warning" onclick="loadRandomQuestion()">🎲 اسحب سؤال جديد</button>
 
-        <label>متنافس من الفريق الأول:</label>
-        <input type="text" id="player1Input" value="خالد">
+        <label>متنافس الفريق الأول:</label>
+        <input type="text" id="player1Input" value="اللاعب 1">
 
-        <label>متنافس من الفريق الثاني:</label>
-        <input type="text" id="player2Input" value="صقر">
+        <label>متنافس الفريق الثاني:</label>
+        <input type="text" id="player2Input" value="اللاعب 2">
 
-        <button class="btn-warning" onclick="sendNomination()">⚔️ بدء التحدي والتصادم</button>
+        <button class="btn-warning" onclick="sendNomination()">⚔️ بدء التحدي</button>
         <button class="btn-primary" onclick="showQuestion()">📢 عرض السؤال</button>
         <button class="btn-success" onclick="showAnswer()">💡 إظهار الإجابة</button>
     </div>
 
     <div class="panel" id="tab2">
-        <label>نقاط الفريقين:</label>
+        <label>تعديل نقاط الفريقين:</label>
         <div style="display: flex; gap: 10px;">
             <input type="number" id="score1Input" value="0">
             <input type="number" id="score2Input" value="0">
         </div>
-        <button class="btn-primary" onclick="updateScores()">تحديث النقاط</button>
+        <button class="btn-primary" onclick="updateScores()">تحديث النقاط فوراً</button>
     </div>
 
     <script>
-        const firebaseConfig = {
-            databaseURL: "https://samra-game-default-rtdb.firebaseio.com/"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        const socket = io("https://samra-server.onrender.com");
+        const roomName = "samra_room_1";
+
+        socket.on('connect', () => {
+            socket.emit('join_room', roomName);
+        });
 
         const questionBank = {
             "تاريخ وأمجاد": [
@@ -155,21 +151,23 @@
         loadRandomQuestion();
 
         function updateTeamData() {
-            const t1Members = Array.from(document.querySelectorAll('.t1-member')).map(input => input.value).filter(val => val.trim() !== "");
-            const t2Members = Array.from(document.querySelectorAll('.t2-member')).map(input => input.value).filter(val => val.trim() !== "");
+            const t1Members = Array.from(document.querySelectorAll('.t1-member')).map(i => i.value).filter(v => v.trim() !== "");
+            const t2Members = Array.from(document.querySelectorAll('.t2-member')).map(i => i.value).filter(v => v.trim() !== "");
 
-            db.ref('game_state').set({
-                action: 'UPDATE_TEAM_DATA',
+            socket.emit('game_action', {
+                room: roomName,
+                action: 'UPDATE_TEAMS',
                 t1: document.getElementById('team1Name').value,
                 t2: document.getElementById('team2Name').value,
                 m1: t1Members,
                 m2: t2Members
             });
-            alert("تم تحديث الفرق والأعضاء بنجاح!");
+            alert("تم تحديث الفرق بنجاح!");
         }
 
         function sendNomination() {
-            db.ref('game_state').set({
+            socket.emit('game_action', {
+                room: roomName,
                 action: 'NOMINATE',
                 cat: document.getElementById('categorySelect').value,
                 p1: document.getElementById('player1Input').value,
@@ -178,15 +176,24 @@
         }
 
         function showQuestion() {
-            db.ref('game_state').set({ action: 'SHOW_Q', q: currentQ, a: currentA });
+            socket.emit('game_action', { 
+                room: roomName, 
+                action: 'SHOW_Q', 
+                q: currentQ, 
+                a: currentA 
+            });
         }
 
         function showAnswer() {
-            db.ref('game_state').set({ action: 'SHOW_A' });
+            socket.emit('game_action', { 
+                room: roomName, 
+                action: 'SHOW_A' 
+            });
         }
 
         function updateScores() {
-            db.ref('game_state').set({
+            socket.emit('game_action', {
+                room: roomName,
                 action: 'SCORE',
                 s1: document.getElementById('score1Input').value,
                 s2: document.getElementById('score2Input').value
