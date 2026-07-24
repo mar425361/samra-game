@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>تحدي السمرة الكبرى - شاشة العرض</title>
-    <!-- مكتبة الكيو آر كود -->
+    <!-- مكتبة الجوجل لإنشاء الباركود المضمون -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
@@ -43,7 +43,6 @@
             flex: 1;
         }
 
-        /* صندوق الكيو آر كود الجانبي */
         .qr-card {
             background: rgba(255, 255, 255, 0.08);
             padding: 12px;
@@ -67,6 +66,8 @@
             background: white;
             padding: 8px;
             border-radius: 8px;
+            min-height: 130px;
+            min-width: 130px;
         }
 
         .scoreboard {
@@ -161,7 +162,7 @@
         <div class="game-area">
             <div class="game-box">
                 <div id="category" class="category-tag">اختر فئة من الريموت</div>
-                <div id="question" class="question-text">صور الكود بالكميرا وابدأ التحكم!</div>
+                <div id="question" class="question-text">صور الكود بالكاميرا وابدأ التحكم!</div>
                 <div id="answer" class="answer-text"></div>
             </div>
         </div>
@@ -176,20 +177,29 @@
     <div id="alert-box">أبشر بي!</div>
 
     <script>
-        // توليد رابط الريموت تلقائياً في الباركود
-        let controllerUrl = window.location.href.replace('index.html', 'controller.html');
-        if(!window.location.href.includes('.html')) {
-            controllerUrl = window.location.href + (window.location.href.endsWith('/') ? '' : '/') + 'controller.html';
+        // توليد الرابط بشكل آمن ومتوافق مع جميع المتصفحات
+        let targetUrl = window.location.href;
+        if (targetUrl.includes("index.html")) {
+            targetUrl = targetUrl.replace("index.html", "controller.html");
+        } else {
+            targetUrl = targetUrl.endsWith("/") ? targetUrl + "controller.html" : targetUrl + "/controller.html";
         }
-        
-        new QRCode(document.getElementById("qrcode"), {
-            text: controllerUrl,
-            width: 130,
-            height: 130,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
-        });
+
+        // إنشاء الباركود فور تحميل الصفحة
+        window.onload = function() {
+            try {
+                new QRCode(document.getElementById("qrcode"), {
+                    text: targetUrl,
+                    width: 130,
+                    height: 130,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            } catch (e) {
+                document.getElementById("qrcode").innerHTML = "<small style='color:black; font-size:10px;'>افتح الملف عبر سيرفر محلي</small>";
+            }
+        };
 
         setInterval(() => {
             document.getElementById('score1').innerText = localStorage.getItem('score1') || 0;
