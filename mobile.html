@@ -2,255 +2,102 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ريموت سين جيم</title>
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ريموت تحدي السمرة</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
         body {
-            background: #07090e; color: #ffffff; padding: 10px; max-width: 480px; margin: 0 auto;
-            display: flex; flex-direction: column; gap: 10px; min-height: 100vh;
+            background: #1a1a1a;
+            color: #fff;
+            font-family: 'Tajawal', sans-serif;
+            padding: 15px;
+            text-align: center;
         }
-        h2 { text-align: center; color: #fbbf24; font-weight: 900; font-size: 1.2rem; margin-top: 5px; }
+        h2 { color: #ffd700; }
         .section {
-            background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(251, 191, 36, 0.25);
-            border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-        label { font-size: 0.8rem; color: #fbbf24; font-weight: 700; }
-        input, select {
-            width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2);
-            background: #1e293b; color: #fff; font-size: 0.95rem; outline: none;
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
         button {
-            width: 100%; padding: 11px; border-radius: 10px; border: none; font-size: 1rem;
-            font-weight: 900; cursor: pointer; transition: 0.15s; box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            margin: 5px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
         }
-        .btn-primary { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; }
-        .btn-warning { background: linear-gradient(135deg, #fbbf24, #d97706); color: #090d16; }
-        .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
-        .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
-        button:active { transform: scale(0.96); }
-        
-        .scores-row { display: flex; gap: 8px; }
-        .score-card { flex: 1; text-align: center; background: #1e293b; padding: 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); }
-        .score-num { font-size: 1.4rem; font-weight: 900; color: #38bdf8; margin-top: 2px; }
-        .connection-status { text-align: center; font-size: 0.8rem; color: #34d399; font-weight: 700; }
-        .current-q-preview { background: rgba(15, 23, 42, 0.9); padding: 8px; border-radius: 8px; font-size: 0.85rem; color: #38bdf8; border: 1px dashed rgba(56,189,248,0.4); line-height: 1.3; }
-        .row-inputs { display: flex; gap: 6px; }
+        button.blue { background: #2ed573; }
+        button.yellow { background: #ffa502; color: #000; }
+        button.purple { background: #9b59b6; }
+        .score-btns { display: flex; justify-content: space-between; }
+        .score-btns button { width: 48%; }
     </style>
 </head>
 <body>
 
-    <h2>🎙️ ريموت سين جيم</h2>
-    <div class="connection-status" id="connStatus">جاري الاتصال...</div>
+    <h2>🎮 ريموت تحكم السمرة</h2>
 
+    <!-- تحكم النقاط -->
     <div class="section">
-        <label>أسماء الفرق:</label>
-        <div class="row-inputs">
-            <input type="text" id="team1NameInput" value="الفريق الأول" placeholder="فريق 1">
-            <input type="text" id="team2NameInput" value="الفريق الثاني" placeholder="فريق 2">
+        <h3>النقاط</h3>
+        <div class="score-btns">
+            <button class="blue" onclick="modifyScore(1, 1)">فريق 1 (+)</button>
+            <button class="blue" onclick="modifyScore(2, 1)">فريق 2 (+)</button>
         </div>
-        <button class="btn-primary" onclick="updateTeamNames()" style="padding: 8px; font-size: 0.85rem;">تحديث الأسماء بالشاشة</button>
+        <div class="score-btns">
+            <button onclick="modifyScore(1, -1)">فريق 1 (-)</button>
+            <button onclick="modifyScore(2, -1)">فريق 2 (-)</button>
+        </div>
     </div>
 
+    <!-- التحكم بالأزرار النارية -->
     <div class="section">
-        <label>الفئة والمنافسة:</label>
-        <select id="categorySelect">
-            <option value="تاريخ">📜 تاريخ</option>
-            <option value="جغرافيا">🌍 جغرافيا</option>
-            <option value="علوم وتكنولوجيا">🔬 علوم وتكنولوجيا</option>
-            <option value="رياضة">⚽ رياضة</option>
-            <option value="أدب وشعر">📖 أدب وشعر</option>
-            <option value="أمثال وشعبية">🦅 أمثال وشعبية</option>
-            <option value="معلومات عامة">💡 معلومات عامة</option>
-            <option value="من القائل؟">🗣️ من القائل؟</option>
-            <option value="ألغاز وفوازير">🧩 ألغاز وفوازير</option>
-            <option value="سينما وفن">🎬 سينما وفن</option>
-            <option value="دين وتاريخ إسلامي">🕌 دين وتاريخ إسلامي</option>
-            <option value="أنساب وقبائل">🐎 أنساب وقبائل</option>
-            <option value="لغة عربية ونحو">✍️ لغة عربية ونحو</option>
-            <option value="أكلات تراثية">🍲 أكلات تراثية</option>
-            <option value="أمثال بدوية">🏕️ أمثال بدوية</option>
-            <option value="سيارات ومحركات">🚗 سيارات ومحركات</option>
-        </select>
+        <h3>الأزرار النارية الخارقة</h3>
+        <button class="purple" onclick="triggerAlert('سرقوها عينك عينك! 🔄')">🔄 زر السرقة</button>
+        <button class="yellow" onclick="triggerAlert('🎡 عجلة الحظ: دبل النقاط!')">🎡 عجلة الحظ</button>
+        <button class="purple" onclick="triggerAlert('🤝 واااسطة من الحكم!')">🤝 زر الواسطة</button>
+        <button class="yellow" onclick="triggerAlert('⏱️ عداد ال10 ثواني اشتغل!')">⏱️ العداد السريع</button>
+        <button class="purple" onclick="triggerAlert('🔥 وضع الدبل مفعل!')">🔥 دبل النقاط</button>
+    </div>
 
-        <div class="row-inputs">
-            <input type="text" id="player1Input" placeholder="ممثل فريق 1">
-            <input type="text" id="player2Input" placeholder="ممثل فريق 2">
-        </div>
-
-        <button class="btn-warning" onclick="sendNomination()">🔥 إطلاق المواجهة</button>
+    <!-- إدارة الأسئلة -->
+    <div class="section">
+        <h3>أمثلة سريعة للأسئلة</h3>
+        <button onclick="setQuestion('دراما كويتية', 'وش اسم الشخصية الشهيرة التي لعبها عبدالحسين عبدالرضا في درب الزلق؟', 'حسين بن عاقول')">سؤال: مسلسلات كويتية</button>
+        <button onclick="setQuestion('ون بيس (قسم مجانين الأنمي)', 'وش الاسم الحقيقي لساو لو عم روبين، وما رتبته السابقة؟', 'دير كلوفر / نائب الأدميرال جاغوار دي ساو')">🏴‍☠️ سؤال ون بيس الصعب</button>
+        <button onclick="setQuestion('سيارات التسعينات', 'وش اللقب المشهور لسيارة كابريس التسعينات بالخليج؟', 'الصابونة')">سؤال: سيارات</button>
         
-        <div class="current-q-preview" id="qPreview">السؤال: (اختر فئة واضغط إطلاق)</div>
-
-        <div class="row-inputs">
-            <button class="btn-primary" onclick="showQuestion()" style="font-size: 0.9rem; padding: 10px;">💡 إظهار السؤال</button>
-            <button class="btn-success" onclick="showAnswer()" style="font-size: 0.9rem; padding: 10px;">✅ كشف الإجابة</button>
-        </div>
-    </div>
-
-    <div class="section">
-        <label>لوحة النقاط:</label>
-        <div class="scores-row">
-            <div class="score-card">
-                <div id="lblTeam1" style="font-weight:700; font-size:0.8rem; color:#93c5fd;">فريق 1</div>
-                <div class="score-num" id="mobileScore1">0</div>
-                <div style="display: flex; gap: 4px; margin-top: 6px;">
-                    <button class="btn-success" onclick="modifyScore(1, 10)" style="padding: 6px; font-size: 0.85rem;">+10</button>
-                    <button class="btn-danger" onclick="modifyScore(1, -10)" style="padding: 6px; font-size: 0.85rem;">-10</button>
-                </div>
-            </div>
-            <div class="score-card">
-                <div id="lblTeam2" style="font-weight:700; font-size:0.8rem; color:#fde047;">فريق 2</div>
-                <div class="score-num" id="mobileScore2">0</div>
-                <div style="display: flex; gap: 4px; margin-top: 6px;">
-                    <button class="btn-success" onclick="modifyScore(2, 10)" style="padding: 6px; font-size: 0.85rem;">+10</button>
-                    <button class="btn-danger" onclick="modifyScore(2, -10)" style="padding: 6px; font-size: 0.85rem;">-10</button>
-                </div>
-            </div>
-        </div>
+        <button class="blue" onclick="showAnswer()">إظهار / إخفاء الإجابة</button>
     </div>
 
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const roomId = urlParams.get('room') || "samra_main_room_2026";
-        const socket = io("https://samra-server.onrender.com", { transports: ['websocket', 'polling'] });
-
-        let currentScore1 = 0;
-        let currentScore2 = 0;
-
-        const questionsDB = {
-            "تاريخ": [
-                { q: "في أي عام تم توحيد المملكة العربية السعودية؟", a: "عام 1351 هـ (1932 م)" },
-                { q: "من هو مؤسس الدولة السعودية الأولى؟", a: "الإمام محمد بن سعود" },
-                { q: "في أي معركة استشهد الصحابي حمزة بن عبد المطلب؟", a: "معركة أحد" }
-            ],
-            "جغرافيا": [
-                { q: "ما هي عاصمة أستراليا؟", a: "كانبيرا" },
-                { q: "ما هو أطول نهر في العالم؟", a: "نهر النيل" },
-                { q: "ما هي أصغر دولة في العالم؟", a: "دولة الفاتيكان" }
-            ],
-            "علوم وتكنولوجيا": [
-                { q: "ما هو الغاز الأكثر وجوداً في الغلاف الجوي؟", a: "غاز النيتروجين" },
-                { q: "من هو مكتشف قانون الجاذبية الأرضية؟", a: "سير إسحاق نيوتن" }
-            ],
-            "رياضة": [
-                { q: "كم عدد لاعبي فريق كرة القدم الأساسي في الملعب؟", a: "11 لاعباً" },
-                { q: "من هو اللاعب الحاصل على أكبر عدد من الكرات الذهبية؟", a: "ليونيل ميسي" }
-            ],
-            "أدب وشعر": [
-                { q: "من هو صاحب المعلقة التي تبدأ بـ (قفا نبكِ من ذكرى حبيب ومنزلِ)؟", a: "امرؤ القيس" },
-                { q: "من هو الشاعر الملقب بأمير الشعراء؟", a: "أحمد شوقي" }
-            ],
-            "أمثال وشعبية": [
-                { q: "أكمل المثل: (اللي ما يطول العنب...)", a: "عنه حامضٌ يقول" },
-                { q: "أكمل المثل: (من طول الغيبات...)", a: "جيب الغنايم" }
-            ],
-            "معلومات عامة": [
-                { q: "كم عدد ألوان قوس قزح الرئيسية؟", a: "7 ألوان" },
-                { q: "ما هي عاصمة دولة اليابان؟", a: "طوكيو" }
-            ],
-            "من القائل؟": [
-                { q: "من القائل: (اطلبوا العلم من المهد إلى اللحد)؟", a: "مقولة شهيرة وليست حديثاً نبوياً مباشراً" },
-                { q: "من القائل: (بلادي وإن جارت عليّ عزيزة...)؟", a: "الشاعر خليل مطران" }
-            ],
-            "ألغاز وفوازير": [
-                { q: "شيء بحجم الطائر، وكل ما أكل كبر وكل ما شرب مات، فما هو؟", a: "النار" },
-                { q: "له عين واحدة لكنه لا يرى، فما هو؟", a: "الإبرة" }
-            ],
-            "سينما وفن": [
-                { q: "في أي عام عرض المسلسل الكرتوني (توم وجيري) لأول مرة؟", a: "عام 1940" }
-            ],
-            "دين وتاريخ إسلامي": [
-                { q: "من هو الصحابي الملقب بـ (أسد الله الغالب)؟", a: "علي بن أبي طالب رضي الله عنه" },
-                { q: "ما هي السورة التي تسمى (قلب القرآن)؟", a: "سورة يس" }
-            ],
-            "أنساب وقبائل": [
-                { q: "إلى من يرجع نسب قبيلة قريش الشهيرة؟", a: "إلى النضر بن كنانة من ذرية إسماعيل عليه السلام" },
-                { q: "ما هو الجد الأكبر لقبيلة عنزة التاريخية؟", a: "عنزة بن اسد بن ربيعة" }
-            ],
-            "لغة عربية ونحو": [
-                { q: "ما هو إعراب الفعل المضارع إذا لم يسبقه ناصب أو جازم؟", a: "مرفوع وعلامة رفعه الضمة الظاهرة" }
-            ],
-            "أكلات تراثية": [
-                { q: "ما هي الأكلة الشعبية المصنوعة من البر والمرق وتشتهر بالشتاء؟", a: "المرقوق / المطازيز" },
-                { q: "مم تتكون أكلة الحنيني الشهيرة في نجد؟", a: "تمر، بر مفروم، وسمن أو زبدة" }
-            ],
-            "أمثال بدوية": [
-                { q: "أكمل المثل البدوي: (الجار للجار...)", a: "ولو جار" }
-            ],
-            "سيارات ومحركات": [
-                { q: "ما هي الدولة المصنعة الأساسية لسيارة لاندكروزر؟", a: "اليابان (تويوتا)" },
-                { q: "ما هو المسمى الخليجي الشهير لسيارة نيسان باترول؟", a: "بطل الدروب" }
-            ]
-        };
-
-        let activeQuestion = { q: "اختر فئة وابدأ التحدي", a: "..." };
-
-        socket.on('connect', () => {
-            document.getElementById('connStatus').innerText = "🟢 المتصل جاهز";
-            socket.emit('join_room', roomId);
-        });
-
-        function updateTeamNames() {
-            const t1 = document.getElementById('team1NameInput').value;
-            const t2 = document.getElementById('team2NameInput').value;
-            document.getElementById('lblTeam1').innerText = t1;
-            document.getElementById('lblTeam2').innerText = t2;
-            socket.emit('game_action', { room: roomId, action: 'UPDATE_NAMES', t1: t1, t2: t2 });
+        function modifyScore(team, val) {
+            let key = 'score' + team;
+            let current = parseInt(localStorage.getItem(key) || 0);
+            localStorage.setItem(key, Math.max(0, current + val));
         }
 
-        function sendNomination() {
-            const cat = document.getElementById('categorySelect').value;
-            const p1 = document.getElementById('player1Input').value || "عضو 1";
-            const p2 = document.getElementById('player2Input').value || "عضو 2";
-
-            if(questionsDB[cat] && questionsDB[cat].length > 0) {
-                const randomIndex = Math.floor(Math.random() * questionsDB[cat].length);
-                activeQuestion = questionsDB[cat][randomIndex];
-            } else {
-                activeQuestion = { q: "سؤال سريع لفئة " + cat, a: "الإجابة النموذجية" };
-            }
-
-            document.getElementById('qPreview').innerText = `السؤال: ${activeQuestion.q} | (الإجابة: ${activeQuestion.a})`;
-
-            socket.emit('game_action', {
-                room: roomId,
-                action: 'NOMINATE',
-                cat: cat,
-                p1: p1,
-                p2: p2
-            });
-        }
-
-        function showQuestion() {
-            socket.emit('game_action', {
-                room: roomId,
-                action: 'SHOW_Q',
-                q: activeQuestion.q,
-                a: activeQuestion.a
-            });
+        function setQuestion(cat, q, a) {
+            localStorage.setItem('current_category', cat);
+            localStorage.setItem('current_question', q);
+            localStorage.setItem('current_answer', a);
+            localStorage.setItem('show_answer', 'false');
         }
 
         function showAnswer() {
-            socket.emit('game_action', { room: roomId, action: 'SHOW_A' });
+            let current = localStorage.getItem('show_answer');
+            localStorage.setItem('show_answer', current === 'true' ? 'false' : 'true');
         }
 
-        function modifyScore(team, amount) {
-            if (team === 1) currentScore1 += amount;
-            if (team === 2) currentScore2 += amount;
-
-            document.getElementById('mobileScore1').innerText = currentScore1;
-            document.getElementById('mobileScore2').innerText = currentScore2;
-
-            socket.emit('game_action', {
-                room: roomId,
-                action: 'SCORE',
-                s1: currentScore1,
-                s2: currentScore2
-            });
+        function triggerAlert(msg) {
+            localStorage.setItem('alert_msg', msg);
         }
     </script>
 </body>
