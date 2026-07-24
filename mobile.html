@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة تحكم السمرة</title>
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
@@ -36,7 +35,7 @@
 <body>
 
     <h2>🎮 تحكم السمرة</h2>
-    <div class="status" id="mobileStatus">🟢 متصل بالسيرفر</div>
+    <div class="status" id="mobileStatus">🟢 متصل باللعبة فورياً</div>
 
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab(0)">الفرق والأعضاء</button>
@@ -106,8 +105,7 @@
     </div>
 
     <script>
-        const roomId = "samra_main_room_2026";
-        const socket = io("https://samra-server.onrender.com", { transports: ['websocket', 'polling'] });
+        const channel = new BroadcastChannel('samra_game_channel');
 
         const questionBank = {
             "تاريخ وأمجاد": [
@@ -153,17 +151,12 @@
         }
         loadRandomQuestion();
 
-        socket.on('connect', () => { 
-            document.getElementById('mobileStatus').innerHTML = "🟢 متصل بالسيرفر";
-            socket.emit('join_room', roomId); 
-        });
-
         function updateTeamData() {
             const t1Members = Array.from(document.querySelectorAll('.t1-member')).map(input => input.value).filter(val => val.trim() !== "");
             const t2Members = Array.from(document.querySelectorAll('.t2-member')).map(input => input.value).filter(val => val.trim() !== "");
 
-            socket.emit('game_action', {
-                room: roomId, action: 'UPDATE_TEAM_DATA',
+            channel.postMessage({
+                action: 'UPDATE_TEAM_DATA',
                 t1: document.getElementById('team1Name').value,
                 t2: document.getElementById('team2Name').value,
                 m1: t1Members,
@@ -173,25 +166,25 @@
         }
 
         function sendNomination() {
-            socket.emit('game_action', {
-                room: roomId, action: 'NOMINATE',
+            channel.postMessage({
+                action: 'NOMINATE',
                 cat: document.getElementById('categorySelect').value,
-                p1: document.getElementById('player1Input').value,
-                p2: document.getElementById('player2Input').value
+                p1: document.getElementById('player1Name') ? document.getElementById('player1Name').value : document.getElementById('player1Input').value,
+                p2: document.getElementById('player2Name') ? document.getElementById('player2Name').value : document.getElementById('player2Input').value
             });
         }
 
         function showQuestion() {
-            socket.emit('game_action', { room: roomId, action: 'SHOW_Q', q: currentQ, a: currentA });
+            channel.postMessage({ action: 'SHOW_Q', q: currentQ, a: currentA });
         }
 
         function showAnswer() {
-            socket.emit('game_action', { room: roomId, action: 'SHOW_A' });
+            channel.postMessage({ action: 'SHOW_A' });
         }
 
         function updateScores() {
-            socket.emit('game_action', {
-                room: roomId, action: 'SCORE',
+            channel.postMessage({
+                action: 'SCORE',
                 s1: document.getElementById('score1Input').value,
                 s2: document.getElementById('score2Input').value
             });
