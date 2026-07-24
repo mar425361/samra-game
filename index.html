@@ -2,127 +2,151 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>تحدي السمرة الكبرى - شاشة العرض</title>
+    <title>تحدي السمرة الكبرى - شاشة العرض الاستوديو</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
         
         body {
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            background: radial-gradient(circle at center, #1b1b3a 0%, #0f0c29 100%);
             color: #fff;
             font-family: 'Tajawal', sans-serif;
             text-align: center;
             margin: 0;
             padding: 20px;
-            overflow-x: hidden;
+            overflow: hidden;
             height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
         }
 
-        h1 {
-            font-size: 2.5rem;
-            margin: 10px 0;
+        header h1 {
+            font-size: 2.8rem;
+            margin: 5px 0;
             color: #ffd700;
-            text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+            letter-spacing: 1px;
         }
 
         .scoreboard {
             display: flex;
             justify-content: space-around;
             background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        .team {
-            font-size: 1.8rem;
+        .team-box {
+            font-size: 1.6rem;
             font-weight: 700;
         }
 
         .score {
-            font-size: 2.5rem;
+            font-size: 3rem;
             color: #00ffcc;
+            display: block;
+            text-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
         }
 
         .game-box {
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 20px;
-            padding: 30px;
-            border: 2px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            max-width: 900px;
+            background: rgba(15, 12, 41, 0.75);
+            border-radius: 25px;
+            padding: 40px;
+            border: 3px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.7);
+            max-width: 1000px;
             margin: 0 auto;
-            width: 80%;
+            width: 85%;
+            position: relative;
         }
 
         .category-tag {
-            background: #ff4757;
-            padding: 8px 20px;
+            background: linear-gradient(135deg, #ff4757, #ff6b81);
+            padding: 10px 30px;
             border-radius: 50px;
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             display: inline-block;
-            margin-bottom: 20px;
-            font-weight: bold;
+            margin-bottom: 25px;
+            font-weight: 900;
+            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
         }
 
         .question-text {
-            font-size: 2.2rem;
-            margin-bottom: 20px;
-            line-height: 1.4;
+            font-size: 2.5rem;
+            margin-bottom: 25px;
+            line-height: 1.5;
+            font-weight: 700;
         }
 
         .answer-text {
-            font-size: 1.8rem;
+            font-size: 2rem;
             color: #2ed573;
-            margin-top: 15px;
+            margin-top: 20px;
             display: none;
             font-weight: bold;
+            background: rgba(46, 213, 115, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px dashed #2ed573;
         }
 
-        /* نافذة التنبيهات وعجلة الحظ */
+        /* نافذة التنبيهات والأزرار النارية */
         #alert-box {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) scale(0);
             background: rgba(15, 12, 41, 0.95);
-            border: 3px solid #ffd700;
-            padding: 40px;
-            border-radius: 25px;
-            font-size: 3rem;
+            border: 4px solid #ffd700;
+            padding: 50px 70px;
+            border-radius: 30px;
+            font-size: 3.5rem;
             color: #ffd700;
             z-index: 1000;
-            box-shadow: 0 0 50px rgba(255, 215, 0, 0.8);
-            transition: transform 0.3s ease;
+            box-shadow: 0 0 70px rgba(255, 215, 0, 0.9);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center;
         }
 
         #alert-box.show {
             transform: translate(-50%, -50%) scale(1);
         }
+
+        footer {
+            font-size: 1rem;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
 
-    <h1>🔥 تحدي السمرة الكبرى 🔥</h1>
+    <header>
+        <h1>🔥 تحدي السمرة الكبرى 🔥</h1>
+    </header>
 
     <div class="scoreboard">
-        <div class="team">فريق 1<br><span id="score1" class="score">0</span></div>
-        <div class="team">فريق 2<br><span id="score2" class="score">0</span></div>
+        <div class="team-box">فريق 1<span id="score1" class="score">0</span></div>
+        <div class="team-box">فريق 2<span id="score2" class="score">0</span></div>
     </div>
 
     <div class="game-box">
-        <div id="category" class="category-tag">اختر فئة من الريموت</div>
-        <div id="question" class="question-text">في انتظار السؤال...</div>
+        <div id="category" class="category-tag">اختر فئة من الريموت لتبدأ الجلسة</div>
+        <div id="question" class="question-text">أهلاً بالشباب، جاهزين للحماس؟</div>
         <div id="answer" class="answer-text"></div>
     </div>
 
     <div id="alert-box">أبشر بي!</div>
 
+    <footer>نظام مسابقات السمرة التفاعلي - النسخة الكاملة</footer>
+
     <script>
-        // نظام محاكاة البيانات المحلي للتزامن مع الريموت
         setInterval(() => {
             document.getElementById('score1').innerText = localStorage.getItem('score1') || 0;
             document.getElementById('score2').innerText = localStorage.getItem('score2') || 0;
@@ -138,7 +162,7 @@
             
             let ansDiv = document.getElementById('answer');
             if(showA === 'true') {
-                ansDiv.innerText = "الإجابة: " + (a || "");
+                ansDiv.innerText = "الإجابة الصحيحة: " + (a || "");
                 ansDiv.style.display = "block";
             } else {
                 ansDiv.style.display = "none";
@@ -151,9 +175,9 @@
                 setTimeout(() => {
                     alertBox.classList.remove('show');
                     localStorage.removeItem('alert_msg');
-                }, 3000);
+                }, 3500);
             }
-        }, 500);
+        }, 400);
     </script>
 </body>
 </html>
