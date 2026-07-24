@@ -3,154 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة السمرة - لوحة التحكم (الجوال)</title>
+    <title>لوحة تحكم السمرة</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
-        body {
-            background: #0f172a;
-            color: #ffffff;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            align-items: center;
-            min-height: 100vh;
-        }
-        h2 { color: #f59e0b; text-align: center; font-size: 1.5rem; margin-bottom: 5px; }
-        .panel {
-            background: rgba(30, 41, 59, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 20px;
-            width: 100%;
-            max-width: 400px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-        }
-        label { font-size: 0.95rem; color: #94a3b8; font-weight: 700; }
-        input, select {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.2);
-            background: #1e293b;
-            color: #fff;
-            font-size: 1rem;
-        }
-        button {
-            width: 100%;
-            padding: 14px;
-            border-radius: 12px;
-            border: none;
-            font-size: 1.1rem;
-            font-weight: 900;
-            cursor: pointer;
-            transition: 0.2s;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
+        body { background: #0f172a; color: #fff; padding: 15px; display: flex; flex-direction: column; gap: 15px; align-items: center; min-height: 100vh; }
+        h2 { color: #f59e0b; font-size: 1.3rem; text-align: center; }
+        
+        .tabs { display: flex; width: 100%; max-width: 400px; gap: 5px; background: #1e293b; padding: 5px; border-radius: 12px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; color: #94a3b8; font-weight: 700; border-radius: 8px; cursor: pointer; }
+        .tab-btn.active { background: #3b82f6; color: #fff; }
+
+        .panel { display: none; background: rgba(30, 41, 59, 0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 15px; width: 100%; max-width: 400px; flex-direction: column; gap: 12px; }
+        .panel.active { display: flex; }
+
+        label { font-size: 0.85rem; color: #94a3b8; font-weight: 700; }
+        input, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: #1e293b; color: #fff; font-size: 0.95rem; }
+        button { width: 100%; padding: 12px; border-radius: 10px; border: none; font-size: 1rem; font-weight: 900; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .btn-primary { background: #3b82f6; color: #fff; }
-        .btn-primary:active { background: #2563eb; transform: scale(0.98); }
         .btn-success { background: #10b981; color: #fff; }
         .btn-warning { background: #f59e0b; color: #0f172a; }
-        .status-bar {
-            font-size: 0.85rem;
-            text-align: center;
-            padding: 8px;
-            border-radius: 8px;
-            background: rgba(15, 23, 42, 0.6);
-            color: #34d399;
-            font-weight: 700;
-        }
+        .status { font-size: 0.75rem; text-align: center; padding: 6px; border-radius: 6px; background: rgba(15,23,42,0.6); color: #34d399; font-weight: 700; width: 100%; max-width: 400px; }
     </style>
 </head>
 <body>
 
-    <h2>🎮 لوحة تحكم السمرة</h2>
-    <div class="status-bar" id="mobileStatus">🟢 جاري الاتصال بالغرفة...</div>
+    <h2>🎮 تحكم السمرة</h2>
+    <div class="status" id="mobileStatus">🟢 متصل بالسيرفر</div>
 
-    <!-- لوحة إدخال الأسماء وتعديلها -->
-    <div class="panel">
-        <label>أسماء الفرق:</label>
-        <input type="text" id="team1NameInput" value="الفريق الأول">
-        <input type="text" id="team2NameInput" value="الفريق الثاني">
-        <button class="btn-primary" onclick="updateNames()">حفظ وتحديث الأسماء</button>
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab(0)">الفرق والأعضاء</button>
+        <button class="tab-btn" onclick="switchTab(1)">الأسئلة والبنك</button>
+        <button class="tab-btn" onclick="switchTab(2)">النقاط</button>
     </div>
 
-    <!-- لوحة التحكم بسحب الأسئلة والتصادم -->
-    <div class="panel">
-        <label>اختر الفئة:</label>
-        <select id="categorySelect">
+    <!-- تبويب 1: الفرق والأعضاء -->
+    <div class="panel active" id="tab0">
+        <label>اسم الفريق الأول وأعضاؤه (افصل بينهم بفاصلة):</label>
+        <input type="text" id="team1Name" value="الفريق الأول">
+        <input type="text" id="members1" placeholder="مثال: خالد، حاتم، فيصل">
+
+        <label>اسم الفريق الثاني وأعضاؤه:</label>
+        <input type="text" id="team2Name" value="الفريق الثاني">
+        <input type="text" id="members2" placeholder="مثال: صقر، عمار، سلطان">
+
+        <button class="btn-primary" onclick="updateTeamData()">حفظ وتحديث الفرق</button>
+    </div>
+
+    <!-- تبويب 2: بنك الأسئلة والتحدي -->
+    <div class="panel" id="tab1">
+        <label>اختر الفئة وسحب سؤال جاهز:</label>
+        <select id="categorySelect" onchange="loadRandomQuestion()">
             <option value="تاريخ وأمجاد">تاريخ وأمجاد</option>
             <option value="أمثال شعبية">أمثال شعبية</option>
             <option value="تحدي الذكاء">تحدي الذكاء</option>
-            <option value="منوعات ساخرة">منوعات ساخرة</option>
         </select>
 
-        <label>متنافس رقم 1:</label>
-        <input type="text" id="player1Input" value="صقر">
+        <button class="btn-warning" onclick="loadRandomQuestion()">🎲 اسحب سؤال جديد تلقائياً</button>
 
-        <label>متنافس رقم 2:</label>
-        <input type="text" id="player2Input" value="فيصل">
+        <label>متنافس من الفريق الأول:</label>
+        <input type="text" id="player1Input" value="خالد">
 
-        <button class="btn-warning" onclick="sendNomination()">⚔️ بدء التحدي والتصادم</button>
-    </div>
+        <label>متنافس من الفريق الثاني:</label>
+        <input type="text" id="player2Input" value="صقر">
 
-    <!-- لوحة السؤال والإجابة والتحكم بالنقاط -->
-    <div class="panel">
-        <label>نص السؤال:</label>
-        <input type="text" id="questionInput" placeholder="اكتب السؤال هنا...">
-
-        <label>الإجابة الصحيحة:</label>
-        <input type="text" id="answerInput" placeholder="اكتب الإجابة هنا...">
-
-        <button class="btn-primary" onclick="showQuestion()">📢 إظهار السؤال للشاشة</button>
+        <button class="btn-warning" onclick="sendNomination()">⚔️ بدء التحدي على الشاشة</button>
+        <button class="btn-primary" onclick="showQuestion()">📢 عرض السؤال</button>
         <button class="btn-success" onclick="showAnswer()">💡 إظهار الإجابة</button>
     </div>
 
-    <!-- لوحة النقاط -->
-    <div class="panel">
-        <label>تعديل النقاط:</label>
+    <!-- تبويب 3: النقاط -->
+    <div class="panel" id="tab2">
+        <label>نقاط الفرق:</label>
         <div style="display: flex; gap: 10px;">
             <input type="number" id="score1Input" value="0">
             <input type="number" id="score2Input" value="0">
         </div>
-        <button class="btn-primary" onclick="updateScores()">تحديث النقاط على الشاشة</button>
+        <button class="btn-primary" onclick="updateScores()">تحديث النقاط</button>
     </div>
 
     <script>
         const roomId = "samra_main_room_2026";
         const socket = io("https://samra-server.onrender.com", { transports: ['websocket', 'polling'] });
 
-        socket.on('connect', () => {
-            document.getElementById('mobileStatus').innerHTML = "🟢 الجوال متصل بالسيرفر";
-            socket.emit('join_room', roomId);
-        });
+        // بنك الأسئلة الجاهزة (يتم سحبها عشوائياً)
+        const questionBank = {
+            "تاريخ وأمجاد": [
+                {q: "في أي عام تأسست المملكة العربية السعودية الأولى؟", a: "عام 1139 هـ (1727 م)"},
+                {q: "ما هي عاصمة الدولة السعودية الثانية؟", a: "الرياض"}
+            ],
+            "أمثال شعبية": [
+                {q: "كمل المثل: اللي ما يعرف الصقر...", a: "يشويه"},
+                {q: "كمل المثل: من طقطق لـ...", a: "سلام عليكم"}
+            ],
+            "تحدي الذكاء": [
+                {q: "ما هو الشيء الذي كلما أخذت منه كبر؟", a: "الحفرة"},
+                {q: "شيء بحجم الكف ولكن يملأ الغرفة، فما هو؟", a: "المصباح / الشمعة"}
+            ]
+        };
 
-        socket.on('disconnect', () => {
-            document.getElementById('mobileStatus').innerHTML = "🔴 انقطع اتصال الجوال";
-        });
+        function switchTab(index) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab' + index).classList.add('active');
+            document.querySelectorAll('.tab-btn')[index].classList.add('active');
+        }
 
-        function updateNames() {
-            const t1 = document.getElementById('team1NameInput').value;
-            const t2 = document.getElementById('team2NameInput').value;
-            socket.emit('game_action', { room: roomId, action: 'UPDATE_NAMES', t1: t1, t2: t2 });
+        let currentQ = "", currentA = "";
+        function loadRandomQuestion() {
+            const cat = document.getElementById('categorySelect').value;
+            const list = questionBank[cat];
+            const rand = list[Math.floor(Math.random() * list.length)];
+            currentQ = rand.q;
+            currentA = rand.a;
+            // نضعها تلقائياً بالخلفية لسهولة العرض
+        }
+        loadRandomQuestion(); // تشغيل اولي
+
+        socket.on('connect', () => { socket.emit('join_room', roomId); });
+
+        function updateTeamData() {
+            socket.emit('game_action', {
+                room: roomId, action: 'UPDATE_TEAM_DATA',
+                t1: document.getElementById('team1Name').value,
+                t2: document.getElementById('team2Name').value,
+                m1: document.getElementById('members1').value,
+                m2: document.getElementById('members2').value
+            });
         }
 
         function sendNomination() {
-            const cat = document.getElementById('categorySelect').value;
-            const p1 = document.getElementById('player1Input').value;
-            const p2 = document.getElementById('player2Input').value;
-            socket.emit('game_action', { room: roomId, action: 'NOMINATE', cat: cat, p1: p1, p2: p2 });
+            socket.emit('game_action', {
+                room: roomId, action: 'NOMINATE',
+                cat: document.getElementById('categorySelect').value,
+                p1: document.getElementById('player1Input').value,
+                p2: document.getElementById('player2Input').value
+            });
         }
 
         function showQuestion() {
-            const q = document.getElementById('questionInput').value;
-            const a = document.getElementById('answerInput').value;
-            socket.emit('game_action', { room: roomId, action: 'SHOW_Q', q: q, a: a });
+            socket.emit('game_action', { room: roomId, action: 'SHOW_Q', q: currentQ, a: currentA });
         }
 
         function showAnswer() {
@@ -158,9 +151,11 @@
         }
 
         function updateScores() {
-            const s1 = document.getElementById('score1Input').value;
-            const s2 = document.getElementById('score2Input').value;
-            socket.emit('game_action', { room: roomId, action: 'SCORE', s1: s1, s2: s2 });
+            socket.emit('game_action', {
+                room: roomId, action: 'SCORE',
+                s1: document.getElementById('score1Input').value,
+                s2: document.getElementById('score2Input').value
+            });
         }
     </script>
 </body>
