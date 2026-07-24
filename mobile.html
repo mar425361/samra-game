@@ -79,18 +79,18 @@
     <!-- التاب الثاني: المواجهة والأسئلة -->
     <div class="panel">
         <div class="form-group">
-            <label>الفئة الحالية (تم اختيارها عشوائياً):</label>
+            <label>الفئة الحالية:</label>
             <select id="categorySelect"></select>
         </div>
 
-        <!-- زر سحب فئة وسؤال عشوائي بالكامل -->
-        <div class="next-q-box" id="previewBox">جاري التحميل...</div>
-        <button class="btn-main" style="background: #16a085; margin-top: 0;" onclick="loadRandomCategoryAndQuestion()">🎲 سحب فئة وسؤال عشوائي جديد</button>
+        <!-- زر عجلة الحظ -->
+        <div class="next-q-box" id="previewBox">اضغط على عجلة الحظ للبدء!</div>
+        <button class="btn-main" style="background: #e74c3c; margin-top: 0; font-size: 18px;" onclick="spinTheWheel()">🎡 تدوير عجلة الحظ لاختيار الفئة</button>
 
         <hr style="border-color: #333; margin: 15px 0;">
 
         <!-- اختيار اللاعبين بالضغط -->
-        <label>اختر المتباريين بناءً على الفئة الظاهرة بالشاشة:</label>
+        <label>اختر المتباريين بناءً على الفئة:</label>
         <div class="players-picker-container">
             <div class="picker-box">
                 <h4 id="t1LabelDisplay">الفريق الأول</h4>
@@ -159,7 +159,6 @@
             .then(data => {
                 questionBank = data;
                 populateCategories();
-                loadRandomCategoryAndQuestion();
             })
             .catch(error => console.error('خطأ في تحميل الأسئلة:', error));
 
@@ -244,29 +243,34 @@
             }
         }
 
-        // دالة تختار فئة عشوائية ومن ثم تسحب منها سؤال عشوائي وتعلنه للشاشة
-        function loadRandomCategoryAndQuestion() {
+        // دالة تدوير عجلة الحظ
+        function spinTheWheel() {
             const categories = Object.keys(questionBank);
             if(categories.length === 0) return;
-            
-            // اختيار فئة عشوائية من الـ 20 فئة
-            const randomCat = categories[Math.floor(Math.random() * categories.length)];
-            document.getElementById('categorySelect').value = randomCat;
-            currentCat = randomCat;
 
-            // سحب سؤال عشوائي من هذي الفئة
-            const list = questionBank[randomCat];
-            const rand = list[Math.floor(Math.random() * list.length)];
-            currentQ = rand.q;
-            currentA = rand.a;
-            
-            document.getElementById('previewBox').innerHTML = `<b>الفئة المختارة عشوائياً:</b> <span style="color:#fff">${currentCat}</span><br><b>السؤال:</b> ${currentQ}<br><span style="color:#2ecc71"><b>الجواب:</b> ${currentA}</span>`;
+            // 1. أمر الشاشة الكبيرة ببدء الدوران
+            socket.emit('game_action', { room: roomName, action: 'SPIN_WHEEL' });
+            document.getElementById('previewBox').innerHTML = "🎡 عجلة الحظ تدور الآن على الشاشة...";
 
-            // إرسال الفئة فوراً للشاشة الكبيرة عشان الفرق يعرفونها ويرشحون لاعبينهم
-            socket.emit('game_action', {
-                room: roomName, action: 'SHOW_CATEGORY',
-                cat: currentCat
-            });
+            // 2. بعد 3 ثواني تستقر العجلة ونختار الفئة والسؤال عشوائياً
+            setTimeout(() => {
+                const randomCat = categories[Math.floor(Math.random() * categories.length)];
+                document.getElementById('categorySelect').value = randomCat;
+                currentCat = randomCat;
+
+                const list = questionBank[randomCat];
+                const rand = list[Math.floor(Math.random() * list.length)];
+                currentQ = rand.q;
+                currentA = rand.a;
+
+                document.getElementById('previewBox').innerHTML = `<b>الفئة المستقرة:</b> <span style="color:#f1c40f">${currentCat}</span><br><b>السؤال:</b> ${currentQ}<br><span style="color:#2ecc71"><b>الجواب:</b> ${currentA}</span>`;
+
+                // إرسال الفئة المستقرة للشاشة الكبيرة
+                socket.emit('game_action', {
+                    room: roomName, action: 'SHOW_CATEGORY',
+                    cat: currentCat
+                });
+            }, 3000);
         }
 
         function changeScore(inputId, amount) {
