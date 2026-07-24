@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة تحكم السمرة</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
@@ -35,7 +37,7 @@
 <body>
 
     <h2>🎮 تحكم السمرة</h2>
-    <div class="status" id="mobileStatus">🟢 متصل باللعبة فورياً</div>
+    <div class="status" id="mobileStatus">🟢 متصل باللعبة سحابياً</div>
 
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab(0)">الفرق والأعضاء</button>
@@ -43,7 +45,6 @@
         <button class="tab-btn" onclick="switchTab(2)">النقاط</button>
     </div>
 
-    <!-- تبويب 1: الفرق والأعضاء مع خيار الزيادة والنقصان -->
     <div class="panel active" id="tab0">
         <label>اسم الفريق الأول:</label>
         <input type="text" id="team1Name" value="الفريق الأول">
@@ -72,7 +73,6 @@
         <button class="btn-primary" style="margin-top: 10px;" onclick="updateTeamData()">حفظ وتحديث الفرق على الشاشة</button>
     </div>
 
-    <!-- تبويب 2: بنك الأسئلة والتحدي -->
     <div class="panel" id="tab1">
         <label>اختر الفئة وسؤال عشوائي:</label>
         <select id="categorySelect" onchange="loadRandomQuestion()">
@@ -94,7 +94,6 @@
         <button class="btn-success" onclick="showAnswer()">💡 إظهار الإجابة</button>
     </div>
 
-    <!-- تبويب 3: النقاط -->
     <div class="panel" id="tab2">
         <label>نقاط الفريقين:</label>
         <div style="display: flex; gap: 10px;">
@@ -105,7 +104,11 @@
     </div>
 
     <script>
-        const channel = new BroadcastChannel('samra_game_channel');
+        const firebaseConfig = {
+            databaseURL: "https://samra-game-default-rtdb.firebaseio.com/"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
         const questionBank = {
             "تاريخ وأمجاد": [
@@ -125,7 +128,7 @@
         function switchTab(index) {
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('tab' + index).classList.add('active');
+            document.querySelectorAll('.panel')[index].classList.add('active');
             document.querySelectorAll('.tab-btn')[index].classList.add('active');
         }
 
@@ -155,7 +158,7 @@
             const t1Members = Array.from(document.querySelectorAll('.t1-member')).map(input => input.value).filter(val => val.trim() !== "");
             const t2Members = Array.from(document.querySelectorAll('.t2-member')).map(input => input.value).filter(val => val.trim() !== "");
 
-            channel.postMessage({
+            db.ref('game_state').set({
                 action: 'UPDATE_TEAM_DATA',
                 t1: document.getElementById('team1Name').value,
                 t2: document.getElementById('team2Name').value,
@@ -166,24 +169,24 @@
         }
 
         function sendNomination() {
-            channel.postMessage({
+            db.ref('game_state').set({
                 action: 'NOMINATE',
                 cat: document.getElementById('categorySelect').value,
-                p1: document.getElementById('player1Name') ? document.getElementById('player1Name').value : document.getElementById('player1Input').value,
-                p2: document.getElementById('player2Name') ? document.getElementById('player2Name').value : document.getElementById('player2Input').value
+                p1: document.getElementById('player1Input').value,
+                p2: document.getElementById('player2Input').value
             });
         }
 
         function showQuestion() {
-            channel.postMessage({ action: 'SHOW_Q', q: currentQ, a: currentA });
+            db.ref('game_state').set({ action: 'SHOW_Q', q: currentQ, a: currentA });
         }
 
         function showAnswer() {
-            channel.postMessage({ action: 'SHOW_A' });
+            db.ref('game_state').set({ action: 'SHOW_A' });
         }
 
         function updateScores() {
-            channel.postMessage({
+            db.ref('game_state').set({
                 action: 'SCORE',
                 s1: document.getElementById('score1Input').value,
                 s2: document.getElementById('score2Input').value
