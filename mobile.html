@@ -77,7 +77,7 @@
         </div>
 
         <!-- معاينة سريعة للسؤال التالي -->
-        <div class="next-q-box" id="previewBox">السؤال جاهز للسحب</div>
+        <div class="next-q-box" id="previewBox">جاري تحميل الأسئلة من الملف...</div>
         <button class="btn-main" style="background: #16a085; margin-top: 0;" onclick="loadRandomQuestion()">🔄 سحب سؤال عشوائي جديد</button>
 
         <hr style="border-color: #333; margin: 15px 0;">
@@ -131,7 +131,7 @@
         let questionBank = {};
         let currentQ = "", currentA = "";
 
-        // جلب الأسئلة من ملف questions.json تلقائياً
+        // جلب الأسئلة من ملف questions.json الخارجي تلقائياً
         fetch('questions.json')
             .then(response => response.json())
             .then(data => {
@@ -139,7 +139,10 @@
                 populateCategories();
                 loadRandomQuestion();
             })
-            .catch(error => console.error('خطأ في تحميل الأسئلة:', error));
+            .catch(error => {
+                console.error('خطأ في تحميل الأسئلة:', error);
+                document.getElementById('previewBox').innerHTML = '<span style="color:red">خطأ: تعذر تحميل ملف questions.json تأكد من وجوده!</span>';
+            });
 
         function populateCategories() {
             const select = document.getElementById('categorySelect');
@@ -169,25 +172,32 @@
 
         function removeRow(btn) { btn.parentElement.remove(); }
 
-        // دالة سحب السؤال وتحديث المعاينة
+        // سحب سؤال عشوائي من الفئة المحددة حالياً
         function loadRandomQuestion() {
             const cat = document.getElementById('categorySelect').value;
-            if(!cat || !questionBank[cat]) return;
+            if(!cat || !questionBank[cat]) {
+                document.getElementById('previewBox').innerHTML = "الرجاء اختيار فئة صحيحة";
+                return;
+            }
             const list = questionBank[cat];
+            if(!list || list.length === 0) {
+                document.getElementById('previewBox').innerHTML = "هذه الفئة فارغة!";
+                return;
+            }
             const rand = list[Math.floor(Math.random() * list.length)];
             currentQ = rand.q;
             currentA = rand.a;
             
-            // تحديث مربع المعاينة بالجوال عشان تشوف السؤال قبل تعرضه
+            // تحديث معاينة السؤال في الجوال
             document.getElementById('previewBox').innerHTML = `<b>السؤال الحالي:</b> ${currentQ}<br><span style="color:#2ecc71"><b>الجواب:</b> ${currentA}</span>`;
         }
 
-        // دالة زيادة ونقصان النقاط للأزرار
+        // دالة زيادة ونقصان النقاط
         function changeScore(inputId, amount) {
             const input = document.getElementById(inputId);
             let val = parseInt(input.value) || 0;
             val += amount;
-            if(val < 0) val = 0; // عشان ما تصير بالسالب إلا إذا تبي
+            if(val < 0) val = 0;
             input.value = val;
         }
 
