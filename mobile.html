@@ -21,7 +21,6 @@
         .member-row { display: flex; gap: 5px; margin-bottom: 8px; }
         .btn-small { padding: 5px 10px; background: #e74c3c; border: none; color: white; border-radius: 5px; cursor: pointer; }
         
-        /* تنسيق أزرار اختيار اللاعبين السريعة */
         .players-picker-container { display: flex; gap: 10px; margin-bottom: 15px; }
         .picker-box { flex: 1; background: #1a1a1a; padding: 10px; border-radius: 8px; border: 1px solid #333; }
         .picker-box h4 { margin: 0 0 8px 0; font-size: 14px; color: #f39c12; text-align: center; }
@@ -30,7 +29,6 @@
         .chip:hover { background: #f39c12; color: #000; }
         .chip.selected { background: #27ae60; border-color: #2ecc71; font-weight: bold; }
 
-        /* تنسيق أزرار النقاط والسؤال التالي */
         .score-control { display: flex; align-items: center; gap: 8px; }
         .score-control input { text-align: center; font-size: 18px; font-weight: bold; }
         .btn-score { padding: 10px 15px; background: #333; border: 1px solid #555; color: #fff; font-size: 18px; font-weight: bold; border-radius: 5px; cursor: pointer; }
@@ -81,18 +79,18 @@
     <!-- التاب الثاني: المواجهة والأسئلة -->
     <div class="panel">
         <div class="form-group">
-            <label>اختر القسم (الفئة):</label>
-            <select id="categorySelect" onchange="loadRandomQuestion()"></select>
+            <label>الفئة الحالية (تم اختيارها عشوائياً):</label>
+            <select id="categorySelect"></select>
         </div>
 
-        <!-- معاينة سريعة للسؤال التالي -->
-        <div class="next-q-box" id="previewBox">جاري تحميل الأسئلة من الملف...</div>
-        <button class="btn-main" style="background: #16a085; margin-top: 0;" onclick="loadRandomQuestion()">🔄 سحب سؤال عشوائي جديد</button>
+        <!-- زر سحب فئة وسؤال عشوائي بالكامل -->
+        <div class="next-q-box" id="previewBox">جاري التحميل...</div>
+        <button class="btn-main" style="background: #16a085; margin-top: 0;" onclick="loadRandomCategoryAndQuestion()">🎲 سحب فئة وسؤال عشوائي جديد</button>
 
         <hr style="border-color: #333; margin: 15px 0;">
 
-        <!-- اختيار اللاعبين بالضغط (أزرار جاهزة بدلاً من الكتابة) -->
-        <label>اختر المتباريين (اضغط على اسم اللاعب من كل فريق):</label>
+        <!-- اختيار اللاعبين بالضغط -->
+        <label>اختر المتباريين بناءً على الفئة الظاهرة بالشاشة:</label>
         <div class="players-picker-container">
             <div class="picker-box">
                 <h4 id="t1LabelDisplay">الفريق الأول</h4>
@@ -108,13 +106,12 @@
             </div>
         </div>
 
-        <!-- حقول مخفية أو تعرض المختار حالياً للتأكيد -->
         <div class="form-group" style="display:none;">
             <input type="text" id="player1Input">
             <input type="text" id="player2Input">
         </div>
 
-        <button class="btn-main" style="background:#3498db;" onclick="sendNomination()">بدء المواجهة (عرض اللاعبين بالشاشة)</button>
+        <button class="btn-main" style="background:#3498db;" onclick="sendNomination()">بدء المواجهة (عرض اللاعبين)</button>
         
         <hr style="border-color: #333; margin: 20px 0;">
 
@@ -123,7 +120,7 @@
 
         <hr style="border-color: #333; margin: 20px 0;">
 
-        <!-- تحكم النقاط مع أزرار الزيادة والنقصان -->
+        <!-- تحكم النقاط -->
         <div class="form-group">
             <label>نقاط الفريق الأول:</label>
             <div class="score-control">
@@ -153,22 +150,18 @@
         });
 
         let questionBank = {};
-        let currentQ = "", currentA = "";
+        let currentCat = "", currentQ = "", currentA = "";
         let selectedPlayer1 = "";
         let selectedPlayer2 = "";
 
-        // جلب الأسئلة من ملف questions.json الخارجي تلقائياً
         fetch('questions.json?v=' + new Date().getTime())
             .then(response => response.json())
             .then(data => {
                 questionBank = data;
                 populateCategories();
-                loadRandomQuestion();
+                loadRandomCategoryAndQuestion();
             })
-            .catch(error => {
-                console.error('خطأ في تحميل الأسئلة:', error);
-                document.getElementById('previewBox').innerHTML = '<span style="color:red">خطأ: تعذر تحميل ملف questions.json تأكد من وجوده!</span>';
-            });
+            .catch(error => console.error('خطأ في تحميل الأسئلة:', error));
 
         function populateCategories() {
             const select = document.getElementById('categorySelect');
@@ -187,7 +180,6 @@
             document.querySelectorAll('.panel')[index].classList.add('active');
             document.querySelectorAll('.tab-btn')[index].classList.add('active');
             
-            // لو انتقل لتاب المواجهة، نحدث أزرار أسماء اللاعبين تلقائياً بناءً على ما كتبه في التاب الأول
             if(index === 1) {
                 updatePlayerChips();
             }
@@ -203,7 +195,6 @@
 
         function removeRow(btn) { btn.parentElement.remove(); }
 
-        // بناء أزرار أسماء اللاعبين تلقائياً من المدخلات
         function updatePlayerChips() {
             const t1Name = document.getElementById('team1Name').value || "الفريق الأول";
             const t2Name = document.getElementById('team2Name').value || "الفريق الثاني";
@@ -221,7 +212,7 @@
             t2Container.innerHTML = "";
 
             if(t1Members.length === 0) {
-                t1Container.innerHTML = '<span style="color:#777; font-size:12px;">لم تهئ أعضاء</span>';
+                t1Container.innerHTML = '<span style="color:#777; font-size:12px;">لم تدخل أعضاء</span>';
             } else {
                 t1Members.forEach(name => {
                     const chip = document.createElement('div');
@@ -230,14 +221,14 @@
                     chip.onclick = () => {
                         selectedPlayer1 = name;
                         document.getElementById('player1Input').value = name;
-                        updatePlayerChips(); // تحديث الأشكال والتحديد
+                        updatePlayerChips();
                     };
                     t1Container.appendChild(chip);
                 });
             }
 
             if(t2Members.length === 0) {
-                t2Container.innerHTML = '<span style="color:#777; font-size:12px;">لم تهئ أعضاء</span>';
+                t2Container.innerHTML = '<span style="color:#777; font-size:12px;">لم تدخل أعضاء</span>';
             } else {
                 t2Members.forEach(name => {
                     const chip = document.createElement('div');
@@ -253,17 +244,29 @@
             }
         }
 
-        // سحب سؤال عشوائي من الفئة المحددة
-        function loadRandomQuestion() {
-            const cat = document.getElementById('categorySelect').value;
-            if(!cat || !questionBank[cat]) return;
-            const list = questionBank[cat];
-            if(!list || list.length === 0) return;
+        // دالة تختار فئة عشوائية ومن ثم تسحب منها سؤال عشوائي وتعلنه للشاشة
+        function loadRandomCategoryAndQuestion() {
+            const categories = Object.keys(questionBank);
+            if(categories.length === 0) return;
+            
+            // اختيار فئة عشوائية من الـ 20 فئة
+            const randomCat = categories[Math.floor(Math.random() * categories.length)];
+            document.getElementById('categorySelect').value = randomCat;
+            currentCat = randomCat;
+
+            // سحب سؤال عشوائي من هذي الفئة
+            const list = questionBank[randomCat];
             const rand = list[Math.floor(Math.random() * list.length)];
             currentQ = rand.q;
             currentA = rand.a;
             
-            document.getElementById('previewBox').innerHTML = `<b>السؤال الحالي:</b> ${currentQ}<br><span style="color:#2ecc71"><b>الجواب:</b> ${currentA}</span>`;
+            document.getElementById('previewBox').innerHTML = `<b>الفئة المختارة عشوائياً:</b> <span style="color:#fff">${currentCat}</span><br><b>السؤال:</b> ${currentQ}<br><span style="color:#2ecc71"><b>الجواب:</b> ${currentA}</span>`;
+
+            // إرسال الفئة فوراً للشاشة الكبيرة عشان الفرق يعرفونها ويرشحون لاعبينهم
+            socket.emit('game_action', {
+                room: roomName, action: 'SHOW_CATEGORY',
+                cat: currentCat
+            });
         }
 
         function changeScore(inputId, amount) {
@@ -276,7 +279,7 @@
 
         function saveTeamsAndSync() {
             updateTeamData();
-            switchTab(1); // ينقله تلقائياً لتاب المواجهة وتتحدث الأزرار فوراً
+            switchTab(1);
         }
 
         function updateTeamData() {
@@ -303,7 +306,7 @@
 
             socket.emit('game_action', {
                 room: roomName, action: 'NOMINATE',
-                cat: document.getElementById('categorySelect').value,
+                cat: currentCat,
                 p1: p1,
                 p2: p2
             });
