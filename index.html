@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>تحدي السمرة الكبرى - شاشة العرض</title>
+    <!-- مكتبة الباركود الرسمية والمضمونة -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
         
         body {
-            /* خلفية متحركة فخمة بتدرجات ألوان عميقة تتنقل بسلاسة */
+            /* خلفية متحركة فخمة ومتناسقة */
             background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #1a0b2e);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
@@ -16,102 +18,122 @@
             font-family: 'Tajawal', sans-serif;
             text-align: center;
             margin: 0;
-            padding: 20px;
-            overflow-x: hidden;
+            padding: 15px;
+            overflow: hidden;
             height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            position: relative;
+            box-sizing: border-box;
         }
 
-        /* أنيميشن حركة الخلفية */
         @keyframes gradientBG {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
 
-        /* تأثير إضاءة خفيفة متحركة بالخلفية لزيادة الجمال */
-        body::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,215,0,0.05) 0%, transparent 60%);
-            animation: rotateGlow 20s linear infinite;
-            z-index: -1;
-        }
-
-        @keyframes rotateGlow {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
         h1 {
-            font-size: 2.5rem;
-            margin: 10px 0;
+            font-size: 2.2rem;
+            margin: 0;
             color: #ffd700;
             text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
         }
 
+        /* لوحة النتائج العلوية */
         .scoreboard {
             display: flex;
             justify-content: space-around;
             background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            border-radius: 15px;
+            padding: 10px;
+            border-radius: 12px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
         }
 
         .team {
-            font-size: 1.8rem;
+            font-size: 1.4rem;
             font-weight: 700;
         }
 
         .score {
-            font-size: 2.5rem;
+            font-size: 2rem;
             color: #00ffcc;
             text-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
+        }
+
+        /* تخطيط الشاشة الرئيسي (السؤال على اليسار والباركود على اليمين بانسجام) */
+        .main-layout {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+            gap: 20px;
         }
 
         .game-box {
             background: rgba(0, 0, 0, 0.5);
             border-radius: 20px;
-            padding: 30px;
+            padding: 25px;
             border: 2px solid rgba(255, 255, 255, 0.15);
             box-shadow: 0 15px 35px rgba(0,0,0,0.6);
             backdrop-filter: blur(5px);
-            max-width: 900px;
-            margin: 0 auto;
-            width: 80%;
+            flex: 1;
+        }
+
+        /* صندوق الباركود الجانبي المرتب */
+        .qr-card {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 10px;
+            border-radius: 15px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            backdrop-filter: blur(10px);
+            width: 130px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .qr-card p {
+            margin: 0 0 5px 0;
+            font-size: 0.8rem;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            background: white;
+            padding: 6px;
+            border-radius: 8px;
         }
 
         .category-tag {
             background: #ff4757;
-            padding: 8px 20px;
+            padding: 6px 18px;
             border-radius: 50px;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             display: inline-block;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             font-weight: bold;
             box-shadow: 0 0 15px rgba(255, 71, 87, 0.4);
         }
 
         .question-text {
-            font-size: 2.2rem;
-            margin-bottom: 20px;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
             line-height: 1.4;
         }
 
         .answer-text {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             color: #2ed573;
-            margin-top: 15px;
+            margin-top: 10px;
             display: none;
             font-weight: bold;
             text-shadow: 0 0 10px rgba(46, 213, 115, 0.4);
@@ -124,9 +146,9 @@
             transform: translate(-50%, -50%) scale(0);
             background: rgba(15, 12, 41, 0.95);
             border: 3px solid #ffd700;
-            padding: 40px;
+            padding: 30px;
             border-radius: 25px;
-            font-size: 3rem;
+            font-size: 2.5rem;
             color: #ffd700;
             z-index: 1000;
             box-shadow: 0 0 50px rgba(255, 215, 0, 0.8);
@@ -147,15 +169,45 @@
         <div class="team">فريق 2<br><span id="score2" class="score">0</span></div>
     </div>
 
-    <div class="game-box">
-        <div id="category" class="category-tag">اختر فئة من الريموت</div>
-        <div id="question" class="question-text">في انتظار السؤال...</div>
-        <div id="answer" class="answer-text"></div>
+    <div class="main-layout">
+        <div class="game-box">
+            <div id="category" class="category-tag">اختر فئة من الريموت</div>
+            <div id="question" class="question-text">صور الكود بالاميرا وابدأ التحكم!</div>
+            <div id="answer" class="answer-text"></div>
+        </div>
+
+        <!-- باركود الريموت الجانبي -->
+        <div class="qr-card">
+            <p>📱 ريموت الجوال</p>
+            <div id="qrcode"></div>
+        </div>
     </div>
 
     <div id="alert-box">أبشر بي!</div>
 
     <script>
+        // توليد رابط ملف mobile.html تلقائياً في الباركود
+        let targetUrl = window.location.href;
+        if (targetUrl.includes("index.html")) {
+            targetUrl = targetUrl.replace("index.html", "mobile.html");
+        } else {
+            targetUrl = targetUrl.endsWith("/") ? targetUrl + "mobile.html" : targetUrl + "/mobile.html";
+        }
+
+        try {
+            new QRCode(document.getElementById("qrcode"), {
+                text: targetUrl,
+                width: 110,
+                height: 110,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        } catch (e) {
+            console.log("QR Code generation error");
+        }
+
+        // التحديث الفوري للنتائج والأسئلة عبر الـ LocalStorage
         setInterval(() => {
             document.getElementById('score1').innerText = localStorage.getItem('score1') || 0;
             document.getElementById('score2').innerText = localStorage.getItem('score2') || 0;
