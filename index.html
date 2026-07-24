@@ -7,7 +7,11 @@
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
         
         body {
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            /* خلفية متحركة فخمة بتدرجات ألوان عميقة تتنقل بسلاسة */
+            background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #1a0b2e);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            
             color: #fff;
             font-family: 'Tajawal', sans-serif;
             text-align: center;
@@ -18,13 +22,39 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            position: relative;
+        }
+
+        /* أنيميشن حركة الخلفية */
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* تأثير إضاءة خفيفة متحركة بالخلفية لزيادة الجمال */
+        body::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,215,0,0.05) 0%, transparent 60%);
+            animation: rotateGlow 20s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes rotateGlow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         h1 {
             font-size: 2.5rem;
             margin: 10px 0;
             color: #ffd700;
-            text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
         }
 
         .scoreboard {
@@ -35,6 +65,7 @@
             border-radius: 15px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
 
         .team {
@@ -45,14 +76,16 @@
         .score {
             font-size: 2.5rem;
             color: #00ffcc;
+            text-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
         }
 
         .game-box {
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.5);
             border-radius: 20px;
             padding: 30px;
             border: 2px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
             max-width: 900px;
             margin: 0 auto;
             width: 80%;
@@ -66,6 +99,7 @@
             display: inline-block;
             margin-bottom: 20px;
             font-weight: bold;
+            box-shadow: 0 0 15px rgba(255, 71, 87, 0.4);
         }
 
         .question-text {
@@ -80,6 +114,7 @@
             margin-top: 15px;
             display: none;
             font-weight: bold;
+            text-shadow: 0 0 10px rgba(46, 213, 115, 0.4);
         }
 
         #alert-box {
