@@ -3,8 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>تحدي السمرة الكبرى - شاشة العرض</title>
-    <!-- مكتبة الجوجل لإنشاء الباركود المضمون -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
         
@@ -15,7 +13,7 @@
             text-align: center;
             margin: 0;
             padding: 20px;
-            overflow: hidden;
+            overflow-x: hidden;
             height: 100vh;
             display: flex;
             flex-direction: column;
@@ -23,107 +21,63 @@
         }
 
         h1 {
-            font-size: 2.3rem;
-            margin: 5px 0;
+            font-size: 2.5rem;
+            margin: 10px 0;
             color: #ffd700;
             text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
-        }
-
-        .main-layout {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1100px;
-            margin: 0 auto;
-            width: 100%;
-            gap: 20px;
-        }
-
-        .game-area {
-            flex: 1;
-        }
-
-        .qr-card {
-            background: rgba(255, 255, 255, 0.08);
-            padding: 12px;
-            border-radius: 15px;
-            border: 2px solid rgba(255, 215, 0, 0.3);
-            backdrop-filter: blur(10px);
-            width: 160px;
-            text-align: center;
-        }
-
-        .qr-card p {
-            margin: 0 0 8px 0;
-            font-size: 0.85rem;
-            color: #ffd700;
-            font-weight: bold;
-        }
-
-        #qrcode {
-            display: flex;
-            justify-content: center;
-            background: white;
-            padding: 8px;
-            border-radius: 8px;
-            min-height: 130px;
-            min-width: 130px;
         }
 
         .scoreboard {
             display: flex;
             justify-content: space-around;
             background: rgba(255, 255, 255, 0.05);
-            padding: 12px;
+            padding: 15px;
             border-radius: 15px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            max-width: 700px;
-            margin: 0 auto;
-            width: 100%;
         }
 
         .team {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: 700;
         }
 
         .score {
-            font-size: 2.2rem;
+            font-size: 2.5rem;
             color: #00ffcc;
         }
 
         .game-box {
             background: rgba(0, 0, 0, 0.4);
             border-radius: 20px;
-            padding: 25px;
+            padding: 30px;
             border: 2px solid rgba(255, 255, 255, 0.15);
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            max-width: 850px;
+            max-width: 900px;
             margin: 0 auto;
-            width: 100%;
+            width: 80%;
         }
 
         .category-tag {
             background: #ff4757;
-            padding: 6px 18px;
+            padding: 8px 20px;
             border-radius: 50px;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             display: inline-block;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             font-weight: bold;
         }
 
         .question-text {
-            font-size: 2rem;
-            margin-bottom: 15px;
+            font-size: 2.2rem;
+            margin-bottom: 20px;
             line-height: 1.4;
         }
 
         .answer-text {
-            font-size: 1.6rem;
+            font-size: 1.8rem;
             color: #2ed573;
-            margin-top: 12px;
+            margin-top: 15px;
             display: none;
             font-weight: bold;
         }
@@ -158,49 +112,15 @@
         <div class="team">فريق 2<br><span id="score2" class="score">0</span></div>
     </div>
 
-    <div class="main-layout">
-        <div class="game-area">
-            <div class="game-box">
-                <div id="category" class="category-tag">اختر فئة من الريموت</div>
-                <div id="question" class="question-text">صور الكود بالكاميرا وابدأ التحكم!</div>
-                <div id="answer" class="answer-text"></div>
-            </div>
-        </div>
-
-        <!-- باركود الريموت -->
-        <div class="qr-card">
-            <p>📱 ريموت الجوال</p>
-            <div id="qrcode"></div>
-        </div>
+    <div class="game-box">
+        <div id="category" class="category-tag">اختر فئة من الريموت</div>
+        <div id="question" class="question-text">في انتظار السؤال...</div>
+        <div id="answer" class="answer-text"></div>
     </div>
 
     <div id="alert-box">أبشر بي!</div>
 
     <script>
-        // توليد الرابط بشكل آمن ومتوافق مع جميع المتصفحات
-        let targetUrl = window.location.href;
-        if (targetUrl.includes("index.html")) {
-            targetUrl = targetUrl.replace("index.html", "controller.html");
-        } else {
-            targetUrl = targetUrl.endsWith("/") ? targetUrl + "controller.html" : targetUrl + "/controller.html";
-        }
-
-        // إنشاء الباركود فور تحميل الصفحة
-        window.onload = function() {
-            try {
-                new QRCode(document.getElementById("qrcode"), {
-                    text: targetUrl,
-                    width: 130,
-                    height: 130,
-                    colorDark: "#000000",
-                    colorLight: "#ffffff",
-                    correctLevel: QRCode.CorrectLevel.H
-                });
-            } catch (e) {
-                document.getElementById("qrcode").innerHTML = "<small style='color:black; font-size:10px;'>افتح الملف عبر سيرفر محلي</small>";
-            }
-        };
-
         setInterval(() => {
             document.getElementById('score1').innerText = localStorage.getItem('score1') || 0;
             document.getElementById('score2').innerText = localStorage.getItem('score2') || 0;
