@@ -3,99 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم السمرة</title>
-    <!-- مكتبة السوكت آي أو المتصلة بسيرفر Render -->
-    <script src="https://samra-server.onrender.com/socket.io/socket.io.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>لوحة التحكم - سهرة العائلة</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
-        body { background: #0f172a; color: #fff; padding: 15px; display: flex; flex-direction: column; gap: 15px; align-items: center; min-height: 100vh; }
-        h2 { color: #f59e0b; font-size: 1.4rem; text-align: center; font-weight: 900; }
-        .tabs { display: flex; width: 100%; max-width: 420px; gap: 5px; background: #1e293b; padding: 5px; border-radius: 12px; }
-        .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; color: #94a3b8; font-weight: 700; font-size: 0.9rem; border-radius: 8px; cursor: pointer; text-align: center; }
-        .tab-btn.active { background: #3b82f6; color: #fff; }
-        .panel { display: none; background: rgba(30, 41, 59, 0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; width: 100%; max-width: 420px; flex-direction: column; gap: 15px; }
-        .panel.active { display: flex; }
-        label { font-size: 0.9rem; color: #94a3b8; font-weight: 700; }
-        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: #1e293b; color: #fff; font-size: 1rem; }
-        .member-row { display: flex; gap: 8px; margin-bottom: 5px; }
-        .btn-small { width: 45px; padding: 10px; font-weight: 900; border-radius: 8px; border: none; cursor: pointer; }
-        .btn-add { background: #10b981; color: #fff; }
-        .btn-remove { background: #ef4444; color: #fff; }
-        button { width: 100%; padding: 14px; border-radius: 10px; border: none; font-size: 1.05rem; font-weight: 900; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .btn-primary { background: #3b82f6; color: #fff; }
-        .btn-success { background: #10b981; color: #fff; }
-        .btn-warning { background: #f59e0b; color: #0f172a; }
-        .status { font-size: 0.8rem; text-align: center; padding: 8px; border-radius: 6px; background: rgba(15,23,42,0.6); color: #34d399; font-weight: 700; width: 100%; max-width: 420px; }
+        body { font-family: Tahoma, sans-serif; background: #121212; color: #fff; margin: 0; padding: 15px; direction: rtl; }
+        h2 { text-align: center; color: #f39c12; }
+        .tabs { display: flex; justify-content: space-around; margin-bottom: 20px; background: #1e1e1e; padding: 10px; border-radius: 10px; }
+        .tab-btn { background: none; border: none; color: #aaa; font-size: 16px; cursor: pointer; padding: 10px; font-weight: bold; }
+        .tab-btn.active { color: #f39c12; border-bottom: 2px solid #f39c12; }
+        .panel { display: none; }
+        .panel.active { display: block; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #ddd; }
+        input, select { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #222; color: #fff; box-sizing: border-box; }
+        button.btn-main { width: 100%; padding: 12px; background: #f39c12; border: none; color: #000; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        button.btn-main:active { background: #d35400; }
+        .member-row { display: flex; gap: 5px; margin-bottom: 8px; }
+        .btn-small { padding: 5px 10px; background: #e74c3c; border: none; color: white; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <h2>🎮 لوحة تحكم السمرة</h2>
-    <div class="status" id="mobileStatus">🟢 متصل بالسيرفر</div>
+    <h2>لوحة تحكم المايسترو</h2>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab(0)">الفرق</button>
-        <button class="tab-btn" onclick="switchTab(1)">الأسئلة</button>
-        <button class="tab-btn" onclick="switchTab(2)">النقاط</button>
+        <button class="tab-btn active" onclick="switchTab(0)">الفرق والأعضاء</button>
+        <button class="tab-btn tab-btn-main" onclick="switchTab(1)">إدارة المواجهة</button>
     </div>
 
-    <div class="panel active" id="tab0">
-        <label>اسم الفريق الأول:</label>
-        <input type="text" id="team1Name" value="الفريق الأول">
-        <label>أعضاء الفريق الأول:</label>
-        <div id="team1MembersContainer">
-            <div class="member-row">
-                <input type="text" class="t1-member" value="عضو 1">
-                <button class="btn-small btn-remove" onclick="removeRow(this)">-</button>
-            </div>
+    <!-- التاب الأول: الفرق والأعضاء -->
+    <div class="panel active">
+        <div class="form-group">
+            <label>اسم الفريق الأول:</label>
+            <input type="text" id="team1Name" value="فريق الصقور">
         </div>
-        <button class="btn-small btn-add" style="width:100%; margin-top:5px;" onclick="addMemberField('team1MembersContainer', 't1-member')">+ إضافة عضو</button>
-
-        <hr style="border-color: rgba(255,255,255,0.1); margin: 10px 0;">
-
-        <label>اسم الفريق الثاني:</label>
-        <input type="text" id="team2Name" value="الفريق الثاني">
-        <label>أعضاء الفريق الثاني:</label>
-        <div id="team2MembersContainer">
-            <div class="member-row">
-                <input type="text" class="t2-member" value="عضو 2">
-                <button class="btn-small btn-remove" onclick="removeRow(this)">-</button>
+        <div class="form-group">
+            <label>أعضاء الفريق الأول:</label>
+            <div id="t1MembersContainer">
+                <div class="member-row"><input type="text" class="t1-member" placeholder="اسم العضو"></div>
             </div>
+            <button class="btn-small" style="background:#27ae60;" onclick="addMemberField('t1MembersContainer', 't1-member')">+ إضافة عضو</button>
         </div>
-        <button class="btn-small btn-add" style="width:100%; margin-top:5px;" onclick="addMemberField('team2MembersContainer', 't2-member')">+ إضافة عضو</button>
 
-        <button class="btn-primary" style="margin-top: 10px;" onclick="updateTeamData()">حفظ وتحديث الفرق</button>
+        <hr style="border-color: #333; margin: 20px 0;">
+
+        <div class="form-group">
+            <label>اسم الفريق الثاني:</label>
+            <input type="text" id="team2Name" value="فريق النمور">
+        </div>
+        <div class="form-group">
+            <label>أعضاء الفريق الثاني:</label>
+            <div id="t2MembersContainer">
+                <div class="member-row"><input type="text" class="t2-member" placeholder="اسم العضو"></div>
+            </div>
+            <button class="btn-small" style="background:#27ae60;" onclick="addMemberField('t2MembersContainer', 't2-member')">+ إضافة عضو</button>
+        </div>
+
+        <button class="btn-main" onclick="updateTeamData()">حفظ وإرسال أسماء الفرق</button>
     </div>
 
-    <div class="panel" id="tab1">
-        <label>اختر الفئة:</label>
-        <select id="categorySelect" onchange="loadRandomQuestion()">
-            <option value="تاريخ وأمجاد">تاريخ وأمجاد</option>
-            <option value="أمثال شعبية">أمثال شعبية</option>
-            <option value="تحدي الذكاء">تحدي الذكاء</option>
-        </select>
+    <!-- التاب الثاني: المواجهة والأسئلة -->
+    <div class="panel">
+        <div class="form-group">
+            <label>اختر القسم (الفئة):</label>
+            <select id="categorySelect" onchange="loadRandomQuestion()"></select>
+        </div>
+        <div class="form-group">
+            <label>لاعب الفريق الأول:</label>
+            <input type="text" id="player1Input" placeholder="اسم اللاعب الأول">
+        </div>
+        <div class="form-group">
+            <label>لاعب الفريق الثاني:</label>
+            <input type="text" id="player2Input" placeholder="اسم اللاعب الثاني">
+        </div>
+        <button class="btn-main" style="background:#3498db;" onclick="sendNomination()">بدء المواجهة (عرض اللاعبين)</button>
+        
+        <hr style="border-color: #333; margin: 20px 0;">
 
-        <button class="btn-warning" onclick="loadRandomQuestion()">🎲 اسحب سؤال جديد</button>
+        <button class="btn-main" style="background:#9b59b6;" onclick="showQuestion()">إظهار السؤال على الشاشة</button>
+        <button class="btn-main" style="background:#e67e22;" onclick="showAnswer()">إظهار الإجابة الصحيحة</button>
 
-        <label>متنافس الفريق الأول:</label>
-        <input type="text" id="player1Input" value="اللاعب 1">
+        <hr style="border-color: #333; margin: 20px 0;">
 
-        <label>متنافس الفريق الثاني:</label>
-        <input type="text" id="player2Input" value="اللاعب 2">
-
-        <button class="btn-warning" onclick="sendNomination()">⚔️ بدء التحدي</button>
-        <button class="btn-primary" onclick="showQuestion()">📢 عرض السؤال</button>
-        <button class="btn-success" onclick="showAnswer()">💡 إظهار الإجابة</button>
-    </div>
-
-    <div class="panel" id="tab2">
-        <label>تعديل نقاط الفريقين:</label>
-        <div style="display: flex; gap: 10px;">
+        <div class="form-group">
+            <label>نقاط الفريق الأول:</label>
             <input type="number" id="score1Input" value="0">
+        </div>
+        <div class="form-group">
+            <label>نقاط الفريق الثاني:</label>
             <input type="number" id="score2Input" value="0">
         </div>
-        <button class="btn-primary" onclick="updateScores()">تحديث النقاط فوراً</button>
+        <button class="btn-main" style="background:#27ae60;" onclick="updateScores()">تحديث النقاط</button>
     </div>
 
     <script>
@@ -106,20 +104,29 @@
             socket.emit('join_room', roomName);
         });
 
-        const questionBank = {
-            "تاريخ وأمجاد": [
-                {q: "في أي عام تأسست المملكة العربية السعودية الأولى؟", a: "عام 1139 هـ (1727 م)"},
-                {q: "ما هي عاصمة الدولة السعودية الثانية؟", a: "الرياض"}
-            ],
-            "أمثال شعبية": [
-                {q: "كمل المثل: اللي ما يعرف الصقر...", a: "يشويه"},
-                {q: "كمل المثل: من طقطق لـ...", a: "سلام عليكم"}
-            ],
-            "تحدي الذكاء": [
-                {q: "ما هو الشيء الذي كلما أخذت منه كبر؟", a: "الحفرة"},
-                {q: "شيء بحجم الكف ولكن يملأ الغرفة، فما هو؟", a: "المصباح / الشمعة"}
-            ]
-        };
+        let questionBank = {};
+        let currentQ = "", currentA = "";
+
+        // جلب الأسئلة من ملف questions.json تلقائياً
+        fetch('questions.json')
+            .then(response => response.json())
+            .then(data => {
+                questionBank = data;
+                populateCategories();
+                loadRandomQuestion();
+            })
+            .catch(error => console.error('خطأ في تحميل الأسئلة:', error));
+
+        function populateCategories() {
+            const select = document.getElementById('categorySelect');
+            select.innerHTML = '';
+            for (const category in questionBank) {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                select.appendChild(option);
+            }
+        }
 
         function switchTab(index) {
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -132,43 +139,37 @@
             const container = document.getElementById(containerId);
             const div = document.createElement('div');
             div.className = 'member-row';
-            div.innerHTML = `<input type="text" class="${className}" placeholder="اسم العضو"><button class="btn-small btn-remove" onclick="removeRow(this)">-</button>`;
+            div.innerHTML = `<input type="text" class="${className}" placeholder="اسم العضو"><button class="btn-small" onclick="removeRow(this)">-</button>`;
             container.appendChild(div);
         }
 
-        function removeRow(btn) {
-            btn.parentElement.remove();
-        }
+        function removeRow(btn) { btn.parentElement.remove(); }
 
-        let currentQ = "", currentA = "";
         function loadRandomQuestion() {
             const cat = document.getElementById('categorySelect').value;
+            if(!cat || !questionBank[cat]) return;
             const list = questionBank[cat];
             const rand = list[Math.floor(Math.random() * list.length)];
             currentQ = rand.q;
             currentA = rand.a;
         }
-        loadRandomQuestion();
 
         function updateTeamData() {
             const t1Members = Array.from(document.querySelectorAll('.t1-member')).map(i => i.value).filter(v => v.trim() !== "");
             const t2Members = Array.from(document.querySelectorAll('.t2-member')).map(i => i.value).filter(v => v.trim() !== "");
 
             socket.emit('game_action', {
-                room: roomName,
-                action: 'UPDATE_TEAMS',
+                room: roomName, action: 'UPDATE_TEAMS',
                 t1: document.getElementById('team1Name').value,
                 t2: document.getElementById('team2Name').value,
-                m1: t1Members,
-                m2: t2Members
+                m1: t1Members, m2: t2Members
             });
             alert("تم تحديث الفرق بنجاح!");
         }
 
         function sendNomination() {
             socket.emit('game_action', {
-                room: roomName,
-                action: 'NOMINATE',
+                room: roomName, action: 'NOMINATE',
                 cat: document.getElementById('categorySelect').value,
                 p1: document.getElementById('player1Input').value,
                 p2: document.getElementById('player2Input').value
@@ -176,28 +177,19 @@
         }
 
         function showQuestion() {
-            socket.emit('game_action', { 
-                room: roomName, 
-                action: 'SHOW_Q', 
-                q: currentQ, 
-                a: currentA 
-            });
+            socket.emit('game_action', { room: roomName, action: 'SHOW_Q', q: currentQ, a: currentA });
         }
 
         function showAnswer() {
-            socket.emit('game_action', { 
-                room: roomName, 
-                action: 'SHOW_A' 
-            });
+            socket.emit('game_action', { room: roomName, action: 'SHOW_A' });
         }
 
         function updateScores() {
             socket.emit('game_action', {
-                room: roomName,
-                action: 'SCORE',
-                s1: document.getElementById('score1Input').value,
-                s2: document.getElementById('score2Input').value
+                room: roomName, action: 'SCORE',
+                s1: document.getElementById('score1Input').value, s2: document.getElementById('score2Input').value
             });
+            alert("تم تحديث النقاط!");
         }
     </script>
 </body>
