@@ -64,7 +64,7 @@
         .team-header { display: flex; justify-content: space-between; align-items: center; }
         .team-name { font-size: 1.1rem; color: #94a3b8; font-weight: 700; }
         .team-score { font-size: 1.8rem; font-weight: 900; color: #fff; }
-        .members-list { font-size: 0.85rem; color: #cbd5e1; background: rgba(15,23,42,0.5); padding: 8px; border-radius: 8px; min-height: 35px; }
+        .members-list { font-size: 0.85rem; color: #cbd5e1; background: rgba(15,23,42,0.5); padding: 8px; border-radius: 8px; min-height: 35px; line-height: 1.5; }
 
         .qr-section { background: rgba(30, 41, 59, 0.7); border-radius: 18px; padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #qrcode { background: #fff; padding: 8px; border-radius: 12px; margin-bottom: 8px; }
@@ -126,6 +126,7 @@
             socket.emit('join_room', roomId);
         });
 
+        // الاستماع المباشر للأحداث القادمة من السيرفر وتحديث الواجهة
         socket.on('game_action', (data) => {
             if (data.action === 'NOMINATE') {
                 document.getElementById('categoryTag').innerText = "🎯 الفئة: " + data.cat;
@@ -147,8 +148,8 @@
             } else if (data.action === 'UPDATE_TEAM_DATA') {
                 document.getElementById('displayTeamName1').innerText = data.t1;
                 document.getElementById('displayTeamName2').innerText = data.t2;
-                document.getElementById('displayMembers1').innerText = "الأعضاء: " + (data.m1 || "لا يوجد");
-                document.getElementById('displayMembers2').innerText = "الأعضاء: " + (data.m2 || "لا يوجد");
+                document.getElementById('displayMembers1').innerHTML = "الأعضاء: " + (data.m1.join('، ') || "لا يوجد");
+                document.getElementById('displayMembers2').innerHTML = "الأعضاء: " + (data.m2.join('، ') || "لا يوجد");
             }
         });
     </script>
