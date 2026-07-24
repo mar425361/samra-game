@@ -62,7 +62,8 @@
         .team-score { font-size: 2rem; font-weight: 900; color: #fff; }
         .members-list { font-size: 0.9rem; color: #cbd5e1; background: rgba(15,23,42,0.5); padding: 10px; border-radius: 8px; min-height: 40px; line-height: 1.6; }
         .qr-section { background: rgba(30, 41, 59, 0.85); border-radius: 18px; padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #qrcode { background: #fff; padding: 8px; border-radius: 12px; margin-bottom: 8px; }
+        #qrcode { background: #fff; padding: 8px; border-radius: 12px; margin-bottom: 5px; }
+        #qrLinkText { font-size: 0.65rem; color: #94a3b8; word-break: break-all; text-align: center; max-width: 150px; margin-bottom: 8px; }
         .status { font-size: 0.9rem; color: #34d399; font-weight: 700; }
     </style>
 </head>
@@ -105,30 +106,25 @@
 
             <div class="qr-section">
                 <div id="qrcode"></div>
+                <div id="qrLinkText"></div>
                 <div class="status"><span>🟢</span> متصل بالسحابية</div>
             </div>
         </div>
     </div>
 
     <script>
-        // الاتصال بسيرفر Render الموحد
         const socket = io("https://samra-server.onrender.com");
-        const roomName = "samra_room_1"; // اسم الغرفة الموحدة
+        const roomName = "samra_room_1";
 
         socket.on('connect', () => {
             socket.emit('join_room', roomName);
         });
 
-        // توليد رابط الجوال الصحيح بناءً على مسار الملف الحالي في غيت هب
-        let currentUrl = window.location.href.split('?')[0].split('#')[0];
-        if (currentUrl.endsWith('index.html')) {
-            currentUrl = currentUrl.replace('index.html', '');
-        }
-        if (!currentUrl.endsWith('/')) {
-            currentUrl += '/';
-        }
-        const mobileUrl = currentUrl + "mobile.html";
+        // طريقة احترافية تحسب رابط الجوال مهما كان مسار الموقع
+        const currentUrl = window.location.href;
+        const mobileUrl = new URL('mobile.html', currentUrl).href;
 
+        // توليد الباركود
         new QRCode(document.getElementById("qrcode"), { 
             text: mobileUrl, 
             width: 90, 
@@ -136,6 +132,9 @@
             colorDark: "#0f172a", 
             colorLight: "#ffffff" 
         });
+
+        // عرض الرابط كنص عشان نقدر نتحقق منه إذا واجهنا مشكلة
+        document.getElementById("qrLinkText").innerText = mobileUrl;
 
         // استقبال التحديثات من السيرفر وعرضها على الشاشة
         socket.on('game_update', (data) => {
