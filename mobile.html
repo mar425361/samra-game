@@ -2,182 +2,100 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>تحدي السمرة الكبرى - شاشة العرض الاستوديو</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ريموت تحدي السمرة</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
-        
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
         body {
-            background: radial-gradient(circle at center, #1b1b3a 0%, #0f0c29 100%);
+            background: #1a1a1a;
             color: #fff;
             font-family: 'Tajawal', sans-serif;
+            padding: 15px;
             text-align: center;
-            margin: 0;
-            padding: 20px;
-            overflow: hidden;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
         }
-
-        header h1 {
-            font-size: 2.8rem;
-            margin: 5px 0;
-            color: #ffd700;
-            text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
-            letter-spacing: 1px;
-        }
-
-        .scoreboard {
-            display: flex;
-            justify-content: space-around;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px 30px;
-            border-radius: 20px;
-            backdrop-filter: blur(12px);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            max-width: 800px;
-            margin: 0 auto;
-            width: 100%;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .team-box {
-            font-size: 1.6rem;
-            font-weight: 700;
-        }
-
-        .score {
-            font-size: 3rem;
-            color: #00ffcc;
-            display: block;
-            text-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
-        }
-
-        .game-box {
-            background: rgba(15, 12, 41, 0.75);
-            border-radius: 25px;
-            padding: 40px;
-            border: 3px solid rgba(255, 215, 0, 0.3);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.7);
-            max-width: 1000px;
-            margin: 0 auto;
-            width: 85%;
-            position: relative;
-        }
-
-        .category-tag {
-            background: linear-gradient(135deg, #ff4757, #ff6b81);
-            padding: 10px 30px;
-            border-radius: 50px;
-            font-size: 1.4rem;
-            display: inline-block;
-            margin-bottom: 25px;
-            font-weight: 900;
-            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
-        }
-
-        .question-text {
-            font-size: 2.5rem;
-            margin-bottom: 25px;
-            line-height: 1.5;
-            font-weight: 700;
-        }
-
-        .answer-text {
-            font-size: 2rem;
-            color: #2ed573;
-            margin-top: 20px;
-            display: none;
-            font-weight: bold;
-            background: rgba(46, 213, 115, 0.1);
+        h2 { color: #ffd700; }
+        .section {
+            background: rgba(255,255,255,0.05);
             padding: 15px;
             border-radius: 12px;
-            border: 1px dashed #2ed573;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-
-        /* نافذة التنبيهات والأزرار النارية */
-        #alert-box {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            background: rgba(15, 12, 41, 0.95);
-            border: 4px solid #ffd700;
-            padding: 50px 70px;
-            border-radius: 30px;
-            font-size: 3.5rem;
-            color: #ffd700;
-            z-index: 1000;
-            box-shadow: 0 0 70px rgba(255, 215, 0, 0.9);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            text-align: center;
-        }
-
-        #alert-box.show {
-            transform: translate(-50%, -50%) scale(1);
-        }
-
-        footer {
+        button {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            margin: 5px;
+            border-radius: 8px;
             font-size: 1rem;
-            color: rgba(255,255,255,0.4);
-            margin-bottom: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
         }
+        button.blue { background: #2ed573; color: #000; }
+        button.yellow { background: #ffa502; color: #000; }
+        button.purple { background: #9b59b6; }
+        .score-btns { display: flex; justify-content: space-between; }
+        .score-btns button { width: 48%; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>🔥 تحدي السمرة الكبرى 🔥</h1>
-    </header>
+    <h2>🎮 ريموت تحكم السمرة</h2>
 
-    <div class="scoreboard">
-        <div class="team-box">فريق 1<span id="score1" class="score">0</span></div>
-        <div class="team-box">فريق 2<span id="score2" class="score">0</span></div>
+    <!-- تحكم النقاط -->
+    <div class="section">
+        <h3>النقاط</h3>
+        <div class="score-btns">
+            <button class="blue" onclick="modifyScore(1, 1)">فريق 1 (+)</button>
+            <button class="blue" onclick="modifyScore(2, 1)">فريق 2 (+)</button>
+        </div>
+        <div class="score-btns">
+            <button onclick="modifyScore(1, -1)">فريق 1 (-)</button>
+            <button onclick="modifyScore(2, -1)">فريق 2 (-)</button>
+        </div>
     </div>
 
-    <div class="game-box">
-        <div id="category" class="category-tag">اختر فئة من الريموت لتبدأ الجلسة</div>
-        <div id="question" class="question-text">أهلاً بالشباب، جاهزين للحماس؟</div>
-        <div id="answer" class="answer-text"></div>
+    <!-- الأزرار السريعة -->
+    <div class="section">
+        <h3>أزرار التنبيه</h3>
+        <button class="purple" onclick="triggerAlert('أبشر بي!')">زر أبشر بي</button>
+        <button class="yellow" onclick="triggerAlert('سرقوها عينك عينك!')">زر السرقة</button>
     </div>
 
-    <div id="alert-box">أبشر بي!</div>
-
-    <footer>نظام مسابقات السمرة التفاعلي - النسخة الكاملة</footer>
+    <!-- إدارة الأسئلة -->
+    <div class="section">
+        <h3>الأسئلة</h3>
+        <button onclick="setQuestion('دراما كويتية', 'وش اسم الشخصية الشهيرة التي لعبها عبدالحسين عبدالرضا في درب الزلق؟', 'حسين بن عاقول')">سؤال: مسلسلات كويتية</button>
+        <button onclick="setQuestion('ون بيس (قسم مجانين الأنمي)', 'وش الاسم الحقيقي لساو لو عم روبين، وما رتبته السابقة؟', 'دير كلوفر / نائب الأدميرال جاغوار دي ساو')">🏴‍☠️ سؤال ون بيس الصعب</button>
+        <button onclick="setQuestion('سيارات التسعينات', 'وش اللقب المشهور لسيارة كابريس التسعينات بالخليج؟', 'الصابونة')">سؤال: سيارات</button>
+        
+        <button class="blue" onclick="showAnswer()">إظهار / إخفاء الإجابة</button>
+    </div>
 
     <script>
-        setInterval(() => {
-            document.getElementById('score1').innerText = localStorage.getItem('score1') || 0;
-            document.getElementById('score2').innerText = localStorage.getItem('score2') || 0;
-            
-            let q = localStorage.getItem('current_question');
-            let a = localStorage.getItem('current_answer');
-            let c = localStorage.getItem('current_category');
-            let showA = localStorage.getItem('show_answer');
-            let alertMsg = localStorage.getItem('alert_msg');
+        function modifyScore(team, val) {
+            let key = 'score' + team;
+            let current = parseInt(localStorage.getItem(key) || 0);
+            localStorage.setItem(key, Math.max(0, current + val));
+        }
 
-            if(q) document.getElementById('question').innerText = q;
-            if(c) document.getElementById('category').innerText = c;
-            
-            let ansDiv = document.getElementById('answer');
-            if(showA === 'true') {
-                ansDiv.innerText = "الإجابة الصحيحة: " + (a || "");
-                ansDiv.style.display = "block";
-            } else {
-                ansDiv.style.display = "none";
-            }
+        function setQuestion(cat, q, a) {
+            localStorage.setItem('current_category', cat);
+            localStorage.setItem('current_question', q);
+            localStorage.setItem('current_answer', a);
+            localStorage.setItem('show_answer', 'false');
+        }
 
-            let alertBox = document.getElementById('alert-box');
-            if(alertMsg) {
-                alertBox.innerText = alertMsg;
-                alertBox.classList.add('show');
-                setTimeout(() => {
-                    alertBox.classList.remove('show');
-                    localStorage.removeItem('alert_msg');
-                }, 3500);
-            }
-        }, 400);
+        function showAnswer() {
+            let current = localStorage.getItem('show_answer');
+            localStorage.setItem('show_answer', current === 'true' ? 'false' : 'true');
+        }
+
+        function triggerAlert(msg) {
+            localStorage.setItem('alert_msg', msg);
+        }
     </script>
 </body>
 </html>
