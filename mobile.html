@@ -98,9 +98,10 @@
             <select id="categorySelect"></select>
         </div>
 
-        <!-- عجلة الحظ -->
+        <!-- عجلة الحظ وعجلة المساعدات -->
         <div class="next-q-box" id="previewBox">اضغط على عجلة الحظ للبدء!</div>
         <button class="btn-main" style="background: #ef4444; margin-top: 0; font-size: 17px;" onclick="spinTheWheel()">🎡 تدوير عجلة الحظ لاختيار الفئة</button>
+        <button class="btn-main" style="background: #8b5cf6; margin-top: 8px; font-size: 17px;" onclick="spinPerksWheel()">🎁 تدوير عجلة المساعدات (3 إجابات متتالية)</button>
 
         <hr>
 
@@ -303,7 +304,24 @@
             }, 3000);
         }
 
-        // دالة نظام النقاط الحديث المباشر
+        function spinPerksWheel() {
+            socket.emit('game_action', { room: roomName, action: 'SPIN_PERKS_WHEEL' });
+            document.getElementById('previewBox').innerHTML = "🎁 عجلة المساعدات تدور للفريق الفائز!";
+            
+            // اختيار مساعدة عشوائية وتحديثها افتراضياً (يمكن تخصيصها حسب الفريق)
+            const perksList = [
+                "🎯 الهدية المفاجئة (+ نقطتين)", 
+                "🔀 تخطي السؤال (سؤال أسهل)", 
+                "👥 استشارة الفريق (60 ثانية)", 
+                "⭐ نقطة مضاعفة"
+            ];
+            const randomPerk = perksList[Math.floor(Math.random() * perksList.length)];
+            
+            setTimeout(() => {
+                document.getElementById('previewBox').innerHTML = `🎁 <span style="color:#10b981">نتيجة عجلة المساعدات:</span> <b>${randomPerk}</b>`;
+            }, 3000);
+        }
+
         function awardPoints(teamNumber) {
             const pointsValue = parseInt(document.getElementById('questionPointsValue').value) || 1;
             
@@ -315,7 +333,6 @@
                 document.getElementById('liveScore2').innerText = score2;
             }
 
-            // إرسال النتيجة فوراً للشاشة الكبيرة
             socket.emit('game_action', {
                 room: roomName, 
                 action: 'SCORE',
