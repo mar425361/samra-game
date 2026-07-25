@@ -2,47 +2,57 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>لوحة التحكم - سهرة العائلة</title>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: Tahoma, sans-serif; background: #121212; color: #fff; margin: 0; padding: 15px; direction: rtl; }
-        h2 { text-align: center; color: #f39c12; }
-        .tabs { display: flex; justify-content: space-around; margin-bottom: 20px; background: #1e1e1e; padding: 10px; border-radius: 10px; }
-        .tab-btn { background: none; border: none; color: #aaa; font-size: 16px; cursor: pointer; padding: 10px; font-weight: bold; }
-        .tab-btn.active { color: #f39c12; border-bottom: 2px solid #f39c12; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+        body { background: #0f172a; color: #f8fafc; padding: 15px; padding-bottom: 50px; direction: rtl; }
+        h2 { text-align: center; color: #f59e0b; margin-bottom: 15px; font-weight: 900; }
+        
+        .tabs { display: flex; justify-content: space-around; margin-bottom: 20px; background: #1e293b; padding: 10px; border-radius: 12px; border: 1px solid #334155; }
+        .tab-btn { background: none; border: none; color: #94a3b8; font-size: 15px; cursor: pointer; padding: 10px; font-weight: 700; transition: 0.2s; }
+        .tab-btn.active { color: #f59e0b; border-bottom: 2px solid #f59e0b; }
+        
         .panel { display: none; }
         .panel.active { display: block; }
+        
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; color: #ddd; }
-        input, select { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #222; color: #fff; box-sizing: border-box; }
-        button.btn-main { width: 100%; padding: 12px; background: #f39c12; border: none; color: #000; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px; }
-        button.btn-main:active { background: #d35400; }
+        label { display: block; margin-bottom: 5px; color: #cbd5e1; font-size: 0.9rem; font-weight: 700; }
+        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 1rem; }
+        
+        button.btn-main { width: 100%; padding: 12px; background: #f59e0b; border: none; color: #000; font-weight: 900; border-radius: 8px; cursor: pointer; font-size: 1rem; margin-top: 10px; transition: 0.2s; }
+        button.btn-main:active { transform: scale(0.97); opacity: 0.9; }
+        
         .member-row { display: flex; gap: 5px; margin-bottom: 8px; }
-        .btn-small { padding: 5px 10px; background: #e74c3c; border: none; color: white; border-radius: 5px; cursor: pointer; }
+        .btn-small { padding: 5px 12px; background: #ef4444; border: none; color: white; border-radius: 6px; cursor: pointer; font-weight: 700; }
         
         .players-picker-container { display: flex; gap: 10px; margin-bottom: 15px; }
-        .picker-box { flex: 1; background: #1a1a1a; padding: 10px; border-radius: 8px; border: 1px solid #333; }
-        .picker-box h4 { margin: 0 0 8px 0; font-size: 14px; color: #f39c12; text-align: center; }
-        .player-chips { display: flex; flex-wrap: wrap; gap: 5px; max-height: 120px; overflow-y: auto; }
-        .chip { background: #333; border: 1px solid #555; color: #fff; padding: 6px 10px; border-radius: 15px; font-size: 13px; cursor: pointer; transition: 0.2s; }
-        .chip:hover { background: #f39c12; color: #000; }
-        .chip.selected { background: #27ae60; border-color: #2ecc71; font-weight: bold; }
+        .picker-box { flex: 1; background: #1e293b; padding: 12px; border-radius: 12px; border: 1px solid #334155; }
+        .picker-box h4 { margin: 0 0 10px 0; font-size: 14px; color: #38bdf8; text-align: center; font-weight: 700; }
+        .player-chips { display: flex; flex-wrap: wrap; gap: 6px; max-height: 130px; overflow-y: auto; }
+        .chip { background: #0f172a; border: 1px solid #475569; color: #cbd5e1; padding: 6px 12px; border-radius: 20px; font-size: 13px; cursor: pointer; transition: 0.2s; }
+        .chip:hover { background: #3b82f6; color: #fff; }
+        .chip.selected { background: #10b981; border-color: #34d399; color: #fff; font-weight: bold; box-shadow: 0 0 10px rgba(16,185,129,0.4); }
 
         .score-control { display: flex; align-items: center; gap: 8px; }
-        .score-control input { text-align: center; font-size: 18px; font-weight: bold; }
-        .btn-score { padding: 10px 15px; background: #333; border: 1px solid #555; color: #fff; font-size: 18px; font-weight: bold; border-radius: 5px; cursor: pointer; }
-        .btn-score:active { background: #555; }
-        .next-q-box { background: #1e1e1e; padding: 10px; border-radius: 5px; border: 1px dashed #f39c12; margin-bottom: 15px; font-size: 14px; color: #f1c40f; text-align: center; }
+        .score-control input { text-align: center; font-size: 18px; font-weight: 900; color: #f59e0b; }
+        .btn-score { padding: 10px 18px; background: #334155; border: 1px solid #475569; color: #fff; font-size: 18px; font-weight: 900; border-radius: 8px; cursor: pointer; }
+        .btn-score:active { background: #475569; }
+        
+        .next-q-box { background: #1e293b; padding: 12px; border-radius: 8px; border: 1px dashed #f59e0b; margin-bottom: 15px; font-size: 13px; color: #fde047; text-align: center; line-height: 1.5; }
+        
+        hr { border-color: #334155; margin: 20px 0; }
     </style>
 </head>
 <body>
 
-    <h2>لوحة تحكم المايسترو</h2>
+    <h2>📱 لوحة تحكم المايسترو</h2>
 
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab(0)">الفرق والأعضاء</button>
-        <button class="tab-btn tab-btn-main" onclick="switchTab(1)">إدارة المواجهة</button>
+        <button class="tab-btn" onclick="switchTab(1)">إدارة المواجهة</button>
     </div>
 
     <!-- التاب الأول: الفرق والأعضاء -->
@@ -56,10 +66,10 @@
             <div id="t1MembersContainer">
                 <div class="member-row"><input type="text" class="t1-member" placeholder="اسم العضو"></div>
             </div>
-            <button class="btn-small" style="background:#27ae60;" onclick="addMemberField('t1MembersContainer', 't1-member')">+ إضافة عضو</button>
+            <button class="btn-small" style="background:#10b981; margin-top:5px;" onclick="addMemberField('t1MembersContainer', 't1-member')">+ إضافة عضو</button>
         </div>
 
-        <hr style="border-color: #333; margin: 20px 0;">
+        <hr>
 
         <div class="form-group">
             <label>اسم الفريق الثاني:</label>
@@ -70,7 +80,7 @@
             <div id="t2MembersContainer">
                 <div class="member-row"><input type="text" class="t2-member" placeholder="اسم العضو"></div>
             </div>
-            <button class="btn-small" style="background:#27ae60;" onclick="addMemberField('t2MembersContainer', 't2-member')">+ إضافة عضو</button>
+            <button class="btn-small" style="background:#10b981; margin-top:5px;" onclick="addMemberField('t2MembersContainer', 't2-member')">+ إضافة عضو</button>
         </div>
 
         <button class="btn-main" onclick="saveTeamsAndSync()">حفظ وتحديث أسماء الفرق والأعضاء</button>
@@ -83,25 +93,25 @@
             <select id="categorySelect"></select>
         </div>
 
-        <!-- زر عجلة الحظ -->
+        <!-- عجلة الحظ -->
         <div class="next-q-box" id="previewBox">اضغط على عجلة الحظ للبدء!</div>
-        <button class="btn-main" style="background: #e74c3c; margin-top: 0; font-size: 18px;" onclick="spinTheWheel()">🎡 تدوير عجلة الحظ لاختيار الفئة</button>
+        <button class="btn-main" style="background: #ef4444; margin-top: 0; font-size: 17px;" onclick="spinTheWheel()">🎡 تدوير عجلة الحظ لاختيار الفئة</button>
 
-        <hr style="border-color: #333; margin: 15px 0;">
+        <hr>
 
-        <!-- اختيار اللاعبين بالضغط -->
-        <label>اختر المتباريين بناءً على الفئة:</label>
+        <!-- اختيار اللاعبين -->
+        <label style="margin-bottom: 8px;">اختر المتنافسين بناءً على الفئة:</label>
         <div class="players-picker-container">
             <div class="picker-box">
-                <h4 id="t1LabelDisplay">الفريق الأول</h4>
+                <h4 id="t1LabelDisplay">فريق الصقور</h4>
                 <div class="player-chips" id="t1ChipsContainer">
-                    <span style="color:#777; font-size:12px;">أدخل الأعضاء في التاب الأول أولاً</span>
+                    <span style="color:#64748b; font-size:12px;">أدخل الأعضاء في التاب الأول أولاً</span>
                 </div>
             </div>
             <div class="picker-box">
-                <h4 id="t2LabelDisplay">الفريق الثاني</h4>
+                <h4 id="t2LabelDisplay">فريق النمور</h4>
                 <div class="player-chips" id="t2ChipsContainer">
-                    <span style="color:#777; font-size:12px;">أدخل الأعضاء في التاب الأول أولاً</span>
+                    <span style="color:#64748b; font-size:12px;">أدخل الأعضاء في التاب الأول أولاً</span>
                 </div>
             </div>
         </div>
@@ -111,14 +121,14 @@
             <input type="text" id="player2Input">
         </div>
 
-        <button class="btn-main" style="background:#3498db;" onclick="sendNomination()">بدء المواجهة (عرض اللاعبين)</button>
+        <button class="btn-main" style="background:#3b82f6;" onclick="sendNomination()">⚔️ بدء المواجهة (تصادم اللاعبين)</button>
         
-        <hr style="border-color: #333; margin: 20px 0;">
+        <hr>
 
-        <button class="btn-main" style="background:#9b59b6;" onclick="showQuestion()">إظهار السؤال على الشاشة</button>
-        <button class="btn-main" style="background:#e67e22;" onclick="showAnswer()">إظهار الإجابة الصحيحة</button>
+        <button class="btn-main" style="background:#8b5cf6;" onclick="showQuestion()">❓ إظهار السؤال على الشاشة</button>
+        <button class="btn-main" style="background:#10b981;" onclick="showAnswer()">💡 إظهار الإجابة الصحيحة</button>
 
-        <hr style="border-color: #333; margin: 20px 0;">
+        <hr>
 
         <!-- تحكم النقاط -->
         <div class="form-group">
@@ -138,7 +148,7 @@
                 <button class="btn-score" onclick="changeScore('score2Input', 1)">+</button>
             </div>
         </div>
-        <button class="btn-main" style="background:#27ae60;" onclick="updateScores()">تحديث وإرسال النقاط للشاشة</button>
+        <button class="btn-main" style="background:#f59e0b; color:#0f172a;" onclick="updateScores()">💾 تحديث وإرسال النقاط للشاشة</button>
     </div>
 
     <script>
@@ -211,7 +221,7 @@
             t2Container.innerHTML = "";
 
             if(t1Members.length === 0) {
-                t1Container.innerHTML = '<span style="color:#777; font-size:12px;">لم تدخل أعضاء</span>';
+                t1Container.innerHTML = '<span style="color:#64748b; font-size:12px;">لم تدخل أعضاء</span>';
             } else {
                 t1Members.forEach(name => {
                     const chip = document.createElement('div');
@@ -227,7 +237,7 @@
             }
 
             if(t2Members.length === 0) {
-                t2Container.innerHTML = '<span style="color:#777; font-size:12px;">لم تدخل أعضاء</span>';
+                t2Container.innerHTML = '<span style="color:#64748b; font-size:12px;">لم تدخل أعضاء</span>';
             } else {
                 t2Members.forEach(name => {
                     const chip = document.createElement('div');
@@ -243,16 +253,13 @@
             }
         }
 
-        // دالة تدوير عجلة الحظ
         function spinTheWheel() {
             const categories = Object.keys(questionBank);
             if(categories.length === 0) return;
 
-            // 1. أمر الشاشة الكبيرة ببدء الدوران
             socket.emit('game_action', { room: roomName, action: 'SPIN_WHEEL' });
-            document.getElementById('previewBox').innerHTML = "🎡 عجلة الحظ تدور الآن على الشاشة...";
+            document.getElementById('previewBox').innerHTML = "🎡 عجلة الحظ تدور الآن على الشاشة الكبيرة...";
 
-            // 2. بعد 3 ثواني تستقر العجلة ونختار الفئة والسؤال عشوائياً
             setTimeout(() => {
                 const randomCat = categories[Math.floor(Math.random() * categories.length)];
                 document.getElementById('categorySelect').value = randomCat;
@@ -263,11 +270,11 @@
                 currentQ = rand.q;
                 currentA = rand.a;
 
-                document.getElementById('previewBox').innerHTML = `<b>الفئة المستقرة:</b> <span style="color:#f1c40f">${currentCat}</span><br><b>السؤال:</b> ${currentQ}<br><span style="color:#2ecc71"><b>الجواب:</b> ${currentA}</span>`;
+                document.getElementById('previewBox').innerHTML = `<b>الفئة المستقرة:</b> <span style="color:#38bdf8">${currentCat}</span><br><b>السؤال:</b> ${currentQ}<br><span style="color:#34d399"><b>الجواب:</b> ${currentA}</span>`;
 
-                // إرسال الفئة المستقرة للشاشة الكبيرة
                 socket.emit('game_action', {
-                    room: roomName, action: 'SHOW_CATEGORY',
+                    room: roomName, 
+                    action: 'SHOW_CATEGORY',
                     cat: currentCat
                 });
             }, 3000);
@@ -310,7 +317,7 @@
 
             socket.emit('game_action', {
                 room: roomName, action: 'NOMINATE',
-                cat: currentCat,
+                cat: currentCat || document.getElementById('categorySelect').value,
                 p1: p1,
                 p2: p2
             });
@@ -327,9 +334,10 @@
         function updateScores() {
             socket.emit('game_action', {
                 room: roomName, action: 'SCORE',
-                s1: document.getElementById('score1Input').value, s2: document.getElementById('score2Input').value
+                s1: document.getElementById('score1Input').value, 
+                s2: document.getElementById('score2Input').value
             });
-            alert("تم تحديث النقاط!");
+            alert("تم تحديث النقاط بنجاح!");
         }
     </script>
 </body>
