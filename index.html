@@ -6,6 +6,8 @@
     <title>سهرة العائلة والأصدقاء - تحدي الخبراء</title>
     <!-- مكتبة توليد الباركود -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- مكتبة الألعاب النارية الفخمة (Confetti) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.9.4/confetti.min.js"></script>
     <!-- مكتبة السوكت آي أو -->
     <script src="https://samra-server.onrender.com/socket.io/socket.io.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
@@ -36,44 +38,29 @@
         
         .category-tag { font-size: 1.5rem; color: #38bdf8; font-weight: 700; margin-bottom: 20px; background: rgba(56, 189, 248, 0.1); padding: 8px 30px; border-radius: 50px; border: 1px solid rgba(56,189,248,0.3); }
         
-        /* تصميم عجلة الحظ المضافة */
+        /* عجلة الحظ */
         .wheel-container { position: relative; width: 250px; height: 250px; margin: 20px auto; display: none; }
         .wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #f59e0b; background: conic-gradient(#ef4444 0deg 90deg, #3b82f6 90deg 180deg, #10b981 180deg 270deg, #8b5cf6 270deg 360deg); box-shadow: 0 0 25px rgba(245,158,11,0.6); }
         .wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-bottom: 25px solid #f59e0b; z-index: 10; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
 
-        /* مؤقت التحدي الجديد */
+        /* مؤقت التحدي */
         #gameTimerDisplay { font-size: 1.8rem; font-weight: 900; color: #38bdf8; margin-top: 15px; background: rgba(56, 189, 248, 0.1); padding: 6px 20px; border-radius: 50px; border: 2px solid rgba(56, 189, 248, 0.3); display: none; }
 
-        /* تأثيرات التصادم واهتزاز الشاشة */
+        /* تأثيرات التصادم */
         .clash-container { display: flex; align-items: center; justify-content: center; gap: 25px; width: 100%; margin: 20px 0; }
         .clash-container.shake { animation: shakeScreen 0.5s cubic-bezier(.36,.07,.19,.97) both; }
         
         .fighter {
             font-size: 2rem; font-weight: 900; padding: 30px 40px; border-radius: 16px; background: rgba(15, 23, 42, 0.95);
-            border: 3px solid #3b82f6; box-shadow: 0 0 25px rgba(59,130,246,0.5); width: 42%; word-break: break-word;
-            opacity: 0;
+            border: 3px solid #3b82f6; box-shadow: 0 0 25px rgba(59,130,246,0.5); width: 42%; word-break: break-word; opacity: 0;
         }
         .fighter.team2 { border-color: #f59e0b; box-shadow: 0 0 25px rgba(245,158,11,0.5); }
-        
         .fighter.team1.clash-anim { animation: slideInRight 0.6s ease-in forwards; }
         .fighter.team2.clash-anim { animation: slideInLeft 0.6s ease-in forwards; }
         
-        @keyframes slideInRight {
-            0% { transform: translateX(200%); opacity: 0; }
-            70% { transform: translateX(-10%); opacity: 1; }
-            100% { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes slideInLeft {
-            0% { transform: translateX(-200%); opacity: 0; }
-            70% { transform: translateX(10%); opacity: 1; }
-            100% { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes shakeScreen {
-            10%, 90% { transform: translate3d(-2px, 2px, 0); }
-            20%, 80% { transform: translate3d(4px, -4px, 0); }
-            30%, 50%, 70% { transform: translate3d(-8px, 8px, 0); }
-            40%, 60% { transform: translate3d(8px, -8px, 0); }
-        }
+        @keyframes slideInRight { 0% { transform: translateX(200%); opacity: 0; } 70% { transform: translateX(-10%); opacity: 1; } 100% { transform: translateX(0); opacity: 1; } }
+        @keyframes slideInLeft { 0% { transform: translateX(-200%); opacity: 0; } 70% { transform: translateX(10%); opacity: 1; } 100% { transform: translateX(0); opacity: 1; } }
+        @keyframes shakeScreen { 10%, 90% { transform: translate3d(-2px, 2px, 0); } 20%, 80% { transform: translate3d(4px, -4px, 0); } 30%, 50%, 70% { transform: translate3d(-8px, 8px, 0); } 40%, 60% { transform: translate3d(8px, -8px, 0); } }
 
         .vs-badge { font-size: 3rem; font-weight: 900; color: #ef4444; text-shadow: 0 0 30px rgba(239,68,68,0.8); opacity: 0; transition: opacity 0.3s; }
         .vs-badge.show { opacity: 1; }
@@ -85,14 +72,23 @@
             padding: 15px 30px; border-radius: 14px; border: 2px dashed #10b981; display: none;
             box-shadow: 0 0 20px rgba(16,185,129,0.2);
         }
+
+        /* واجهة إعلان الفائز الكبرى */
+        .winner-screen { display: none; flex-direction: column; align-items: center; justify-content: center; gap: 20px; animation: zoomIn 0.5s ease; }
+        .winner-title { font-size: 3.5rem; color: #f59e0b; font-weight: 900; text-shadow: 0 0 30px rgba(245,158,11,0.6); }
+        .winner-name { font-size: 4rem; color: #38bdf8; font-weight: 900; background: rgba(56, 189, 248, 0.15); padding: 10px 40px; border-radius: 20px; border: 3px solid #38bdf8; }
+        .winner-stats { font-size: 1.5rem; color: #34d399; margin-top: 10px; line-height: 1.6; }
         
+        @keyframes zoomIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
         .sidebar { flex: 1; display: flex; flex-direction: column; gap: 15px; max-width: 340px; }
         .score-box { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 8px; }
         .team1-box { border-right: 5px solid #3b82f6; }
         .team2-box { border-right: 5px solid #f59e0b; }
         .team-header { display: flex; justify-content: space-between; align-items: center; }
         .team-name { font-size: 1.2rem; color: #94a3b8; font-weight: 700; }
-        .team-score { font-size: 2rem; font-weight: 900; color: #fff; }
+        .team-score { font-size: 2rem; font-weight: 900; color: #fff; transition: transform 0.3s; }
+        .team-score.pulse { transform: scale(1.3); color: #f59e0b; }
         .members-list { font-size: 0.9rem; color: #cbd5e1; background: rgba(15,23,42,0.5); padding: 10px; border-radius: 8px; min-height: 40px; line-height: 1.6; }
         .qr-section { background: rgba(30, 41, 59, 0.85); border-radius: 18px; padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;}
         #qrcode { background: #fff; padding: 8px; border-radius: 12px; margin-bottom: 5px; }
@@ -102,7 +98,6 @@
 </head>
 <body>
 
-    <!-- إضافة ملفات الصوت -->
     <audio id="soundClash" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" preload="auto"></audio>
     <audio id="soundPop" src="https://assets.mixkit.co/active_storage/sfx/1114/1114-preview.mp3" preload="auto"></audio>
     <audio id="soundWin" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3" preload="auto"></audio>
@@ -113,7 +108,6 @@
         <div class="card" id="mainCard">
             <div class="category-tag" id="categoryTag">امسح كود الجوال للبدء 📱</div>
             
-            <!-- عجلة الحظ المضافة -->
             <div class="wheel-container" id="wheelContainer">
                 <div class="wheel-pointer"></div>
                 <div class="wheel" id="spinningWheel"></div>
@@ -130,7 +124,13 @@
                 <div class="answer-text" id="answerText">💡 الإجابة: ...</div>
             </div>
 
-            <!-- مكان عداد الوقت الجديد -->
+            <!-- شاشة إعلان الفائز والأجوبة -->
+            <div class="winner-screen" id="winnerScreen">
+                <div class="winner-title">🏆 مبروك الفوز! 🏆</div>
+                <div class="winner-name" id="winnerTeamName">الفريق الفائز</div>
+                <div class="winner-stats" id="winnerStatsText">إحصائيات الأجوبة الصحيحة لكل لاعب...</div>
+            </div>
+
             <div id="gameTimerDisplay"></div>
         </div>
 
@@ -190,7 +190,6 @@
             }).catch(()=>{});
         }, { once: true });
 
-        // دالة المؤقت التنازلي الجديدة
         function startTimer(duration = 30) {
             let timer = duration;
             const display = document.getElementById('gameTimerDisplay');
@@ -201,7 +200,6 @@
             
             countdownInterval = setInterval(function () {
                 display.textContent = `⏳ الوقت باقي: ${timer} ثانية`;
-                
                 if (timer <= 5) {
                     display.style.color = '#ef4444';
                     display.style.borderColor = '#ef4444';
@@ -209,7 +207,6 @@
                     display.style.color = '#38bdf8';
                     display.style.borderColor = 'rgba(56, 189, 248, 0.3)';
                 }
-
                 if (--timer < 0) {
                     clearInterval(countdownInterval);
                     display.textContent = `⏰ انتهى الوقت!`;
@@ -221,27 +218,31 @@
         function stopAndHideTimer() {
             clearInterval(countdownInterval);
             const display = document.getElementById('gameTimerDisplay');
-            if (display) {
-                display.style.display = 'none';
-            }
+            if (display) display.style.display = 'none';
+        }
+
+        function hideAllStages() {
+            stopAndHideTimer();
+            document.getElementById('wheelContainer').style.display = 'none';
+            document.getElementById('clashContainer').style.display = 'none';
+            document.getElementById('questionContentBox').style.display = 'none';
+            document.getElementById('winnerScreen').style.display = 'none';
         }
 
         socket.on('game_update', (data) => {
             const wheelContainer = document.getElementById('wheelContainer');
             const clashCont = document.getElementById('clashContainer');
             const qBox = document.getElementById('questionContentBox');
+            const winnerScreen = document.getElementById('winnerScreen');
 
             if (data.action === 'SPIN_WHEEL') {
-                stopAndHideTimer();
-                clashCont.style.display = 'none';
-                qBox.style.display = 'none';
+                hideAllStages();
                 wheelContainer.style.display = 'block';
                 document.getElementById('categoryTag').innerText = "🎡 عجلة الحظ تدور لاختيار الفئة...";
                 
                 const wheel = document.getElementById('spinningWheel');
                 wheel.style.transition = 'none';
                 wheel.style.transform = 'rotate(0deg)';
-                
                 setTimeout(() => {
                     wheel.style.transition = 'transform 3s cubic-bezier(0.15, 0.9, 0.2, 1)';
                     const randomDegree = Math.floor(1440 + Math.random() * 1080);
@@ -249,13 +250,11 @@
                 }, 50);
             }
             else if (data.action === 'SHOW_CATEGORY') {
-                stopAndHideTimer();
-                wheelContainer.style.display = 'none';
+                hideAllStages();
                 document.getElementById('categoryTag').innerText = "🎯 الفئة المختارة: " + data.cat;
             }
             else if (data.action === 'NOMINATE') {
-                stopAndHideTimer();
-                wheelContainer.style.display = 'none';
+                hideAllStages();
                 document.getElementById('categoryTag').innerText = "🎯 الفئة: " + data.cat;
                 
                 const p1 = document.getElementById('displayPlayer1');
@@ -264,8 +263,6 @@
                 
                 p1.innerText = data.p1;
                 p2.innerText = data.p2;
-                
-                qBox.style.display = 'none';
                 clashCont.style.display = 'flex';
                 
                 p1.classList.remove('clash-anim');
@@ -274,7 +271,6 @@
                 vs.classList.remove('show');
                 
                 void p1.offsetWidth; 
-                
                 p1.classList.add('clash-anim');
                 p2.classList.add('clash-anim');
                 
@@ -283,38 +279,64 @@
                     vs.classList.add('show');
                     playSound('soundClash');
                 }, 600);
-
             } 
             else if (data.action === 'SHOW_Q') {
-                playSound('soundPop');
-                wheelContainer.style.display = 'none';
-                clashCont.style.display = 'none';
+                hideAllStages();
                 qBox.style.display = 'flex';
+                playSound('soundPop');
                 document.getElementById('questionText').innerText = data.q;
                 document.getElementById('answerText').innerText = "💡 الإجابة: " + data.a;
                 document.getElementById('answerText').style.display = 'none';
-                
-                // تشغيل المؤقت التنازلي مع السؤال
                 startTimer(30);
-                
             } 
             else if (data.action === 'SHOW_A') {
                 stopAndHideTimer();
                 playSound('soundWin');
                 document.getElementById('answerText').style.display = 'block';
-                
             } 
             else if (data.action === 'UPDATE_TEAMS') {
-                stopAndHideTimer();
+                hideAllStages();
                 document.getElementById('displayTeamName1').innerText = data.t1;
                 document.getElementById('displayTeamName2').innerText = data.t2;
                 document.getElementById('displayMembers1').innerHTML = "الأعضاء: " + (data.m1 && data.m1.length > 0 ? data.m1.join('، ') : "لا يوجد");
                 document.getElementById('displayMembers2').innerHTML = "الأعضاء: " + (data.m2 && data.m2.length > 0 ? data.m2.join('، ') : "لا يوجد");
-                
             } 
             else if (data.action === 'SCORE') {
-                document.getElementById('score1').innerText = data.s1;
-                document.getElementById('score2').innerText = data.s2;
+                const s1El = document.getElementById('score1');
+                const s2El = document.getElementById('score2');
+                s1El.innerText = data.s1;
+                s2El.innerText = data.s2;
+                
+                // تأثير نبض النقاط
+                s1El.classList.add('pulse');
+                s2El.classList.add('pulse');
+                setTimeout(() => {
+                    s1El.classList.remove('pulse');
+                    s2El.classList.remove('pulse');
+                }, 400);
+            }
+            else if (data.action === 'SHOW_WINNER') {
+                hideAllStages();
+                document.getElementById('categoryTag').innerText = "🏆 نهاية السهرة الاحتفالية 🏆";
+                winnerScreen.style.display = 'flex';
+                document.getElementById('winnerTeamName').innerText = data.winnerName;
+                
+                // تنسيق إحصائيات الأجوبة لكل شخص
+                let statsHtml = "📊 إحصائيات إجابات اللاعبين:<br>";
+                if (data.playerStats) {
+                    for (let [player, count] of Object.entries(data.playerStats)) {
+                        statsHtml += `👤 ${player}: <b>${count} إجابات صحيحة</b><br>`;
+                    }
+                }
+                document.getElementById('winnerStatsText').innerHTML = statsHtml;
+
+                // إطلاق الألعاب النارية والقصاصات (Confetti)
+                playSound('soundWin');
+                confetti({
+                    particleCount: 150,
+                    spread: 90,
+                    origin: { y: 0.6 }
+                });
             }
         });
     </script>
