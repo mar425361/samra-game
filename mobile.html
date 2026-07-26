@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>لوحة التحكم - سهرة العائلة</title>
+    <title>لوحة التحكم - صدام الأفكار مع عمار الدمار</title>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -12,7 +12,7 @@
         h2 { text-align: center; color: #f59e0b; margin-bottom: 15px; font-weight: 900; }
         
         .tabs { display: flex; justify-content: space-around; margin-bottom: 20px; background: #1e293b; padding: 10px; border-radius: 12px; border: 1px solid #334155; }
-        .tab-btn { background: none; border: none; color: #94a3b8; font-size: 15px; cursor: pointer; padding: 10px; font-weight: 700; transition: 0.2s; }
+        .tab-btn { background: none; border: none; color: #94a3b8; font-size: 14px; cursor: pointer; padding: 8px; font-weight: 700; transition: 0.2s; }
         .tab-btn.active { color: #f59e0b; border-bottom: 2px solid #f59e0b; }
         
         .panel { display: none; }
@@ -44,17 +44,14 @@
         .team-score-title { font-size: 0.85rem; color: #94a3b8; font-weight: 700; }
         .team-score-value { font-size: 2rem; font-weight: 900; color: #fff; margin: 5px 0; }
         .quick-award-btn { background: #10b981; color: #fff; border: none; padding: 6px 10px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer; width: 100%; margin-bottom: 5px; }
-        .quick-award-btn:active { transform: scale(0.95); }
-        
-        /* زر الخصم الجديد */
         .btn-minus { background: #ef4444; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer; width: 100%; }
-        .btn-minus:active { transform: scale(0.95); }
+
+        .perk-management-box { background: #1e293b; border: 1px solid #f59e0b; border-radius: 12px; padding: 12px; margin-bottom: 15px; text-align: center; }
+        .perk-management-box h4 { color: #f59e0b; margin-bottom: 8px; font-size: 14px; }
+        .perk-status-text { font-size: 13px; color: #cbd5e1; margin-bottom: 8px; }
 
         .next-q-box { background: #1e293b; padding: 12px; border-radius: 8px; border: 1px dashed #f59e0b; margin-bottom: 10px; font-size: 13px; color: #fde047; text-align: center; line-height: 1.5; }
-        
-        /* زر تغيير السؤال */
         .btn-change-q { background: #64748b; color: #fff; margin-bottom: 15px; display: none; }
-        
         hr { border-color: #334155; margin: 20px 0; }
     </style>
 </head>
@@ -107,11 +104,24 @@
 
         <div class="next-q-box" id="previewBox">اضغط على عجلة الحظ للبدء!</div>
         
-        <!-- زر تغيير السؤال الطارئ -->
-        <button class="btn-main btn-change-q" id="changeQBtn" onclick="changeQuestionLocally()">🔄 تغيير السؤال (سؤال بديل من نفس الفئة)</button>
+        <button class="btn-main btn-change-q" id="changeQBtn" onclick="changeQuestionLocally()">🔄 تغيير السؤال (سؤال بديل)</button>
 
         <button class="btn-main" style="background: #ef4444; margin-top: 0; font-size: 17px;" onclick="spinTheWheel()">🎡 تدوير عجلة الحظ لاختيار الفئة</button>
         <button class="btn-main" style="background: #8b5cf6; margin-top: 8px; font-size: 17px;" onclick="spinPerksWheel()">🎁 تدوير عجلة المساعدات</button>
+
+        <!-- لوحة إدارة المساعدات المحفوظة للفريقين -->
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <div class="perk-management-box" style="flex:1;">
+                <h4 id="perkBoxTitle1">فريق الصقور</h4>
+                <div class="perk-status-text" id="t1PerkText">لا توجد مساعدة</div>
+                <button class="btn-small" style="background:#3b82f6; width:100%; display:none;" id="t1UsePerkBtn" onclick="usePerk(1)">✨ استخدام المساعدة</button>
+            </div>
+            <div class="perk-management-box" style="flex:1;">
+                <h4 id="perkBoxTitle2">فريق النمور</h4>
+                <div class="perk-status-text" id="t2PerkText">لا توجد مساعدة</div>
+                <button class="btn-small" style="background:#f59e0b; color:#000; width:100%; display:none;" id="t2UsePerkBtn" onclick="usePerk(2)">✨ استخدام المساعدة</button>
+            </div>
+        </div>
 
         <hr>
 
@@ -119,15 +129,11 @@
         <div class="players-picker-container">
             <div class="picker-box">
                 <h4 id="t1LabelDisplay">فريق الصقور</h4>
-                <div class="player-chips" id="t1ChipsContainer">
-                    <span style="color:#64748b; font-size:12px;">أدخل الأعضاء في التاب الأول أولاً</span>
-                </div>
+                <div class="player-chips" id="t1ChipsContainer"></div>
             </div>
             <div class="picker-box">
                 <h4 id="t2LabelDisplay">فريق النمور</h4>
-                <div class="player-chips" id="t2ChipsContainer">
-                    <span style="color:#64748b; font-size:12px;">أدخل الأعضاء في التاب الأول أولاً</span>
-                </div>
+                <div class="player-chips" id="t2ChipsContainer"></div>
             </div>
         </div>
 
@@ -147,9 +153,8 @@
 
         <div class="modern-score-panel">
             <label style="margin-bottom: 10px; color: #f59e0b;">⚡ نظام النقاط السريع:</label>
-            
             <div class="form-group" style="margin-bottom: 12px;">
-                <label style="font-size: 0.8rem;">قيمة السؤال الحالي (النقاط المكتسبة):</label>
+                <label style="font-size: 0.8rem;">قيمة السؤال الحالي:</label>
                 <select id="questionPointsValue" style="padding: 8px; font-size: 0.9rem;">
                     <option value="1">1 نقطة (سؤال عادي)</option>
                     <option value="2">نقاط مضاعفة (2)</option>
@@ -162,18 +167,15 @@
                     <div class="team-score-title" id="scoreCardT1Name">الفريق الأول</div>
                     <div class="team-score-value" id="liveScore1">0</div>
                     <button class="quick-award-btn" onclick="awardPoints(1)">+ منح</button>
-                    <!-- التعديل: زر خصم نقطة -->
                     <button class="btn-minus" onclick="deductPoints(1)">-1 خطأ</button>
                 </div>
                 <div class="team-score-card t2">
                     <div class="team-score-title" id="scoreCardT2Name">الفريق الثاني</div>
                     <div class="team-score-value" id="liveScore2">0</div>
                     <button class="quick-award-btn" onclick="awardPoints(2)" style="background: #f59e0b; color: #0f172a;">+ منح</button>
-                    <!-- التعديل: زر خصم نقطة -->
                     <button class="btn-minus" onclick="deductPoints(2)">-1 خطأ</button>
                 </div>
             </div>
-            
             <button class="btn-small" style="background: #475569; width: 100%; padding: 8px; font-size: 0.85rem;" onclick="resetScores()">🔄 تصفير النقاط</button>
         </div>
     </div>
@@ -191,13 +193,13 @@
         let selectedPlayer1 = "";
         let selectedPlayer2 = "";
         let score1 = 0, score2 = 0;
+        let team1Perk = "";
+        let team2Perk = "";
+        let lastPerkWinnerTeam = 1; // يحدد أي فريق فاز بآخر عجلة مساعدات
 
         fetch('questions.json?v=' + new Date().getTime())
             .then(response => response.json())
-            .then(data => {
-                questionBank = data;
-                populateCategories();
-            })
+            .then(data => { questionBank = data; populateCategories(); })
             .catch(error => console.error('خطأ في تحميل الأسئلة:', error));
 
         function populateCategories() {
@@ -216,18 +218,16 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.panel')[index].classList.add('active');
             document.querySelectorAll('.tab-btn')[index].classList.add('active');
-            
-            if(index === 1) {
-                updatePlayerChips();
-                updateScoreCardNames();
-            }
+            if(index === 1) { updatePlayerChips(); updateScoreCardNames(); }
         }
 
         function updateScoreCardNames() {
             const t1 = document.getElementById('team1Name').value || "الفريق الأول";
             const t2 = document.getElementById('team2Name').value || "الفريق الثاني";
             document.getElementById('scoreCardT1Name').innerText = t1;
+            document.getElementById('perkBoxTitle1').innerText = t1;
             document.getElementById('scoreCardT2Name').innerText = t2;
+            document.getElementById('perkBoxTitle2').innerText = t2;
         }
 
         function addMemberField(containerId, className) {
@@ -243,7 +243,6 @@
         function updatePlayerChips() {
             const t1Name = document.getElementById('team1Name').value || "الفريق الأول";
             const t2Name = document.getElementById('team2Name').value || "الفريق الثاني";
-            
             document.getElementById('t1LabelDisplay').innerText = t1Name;
             document.getElementById('t2LabelDisplay').innerText = t2Name;
 
@@ -253,46 +252,28 @@
             const t1Container = document.getElementById('t1ChipsContainer');
             const t2Container = document.getElementById('t2ChipsContainer');
 
-            t1Container.innerHTML = "";
-            t2Container.innerHTML = "";
+            t1Container.innerHTML = t1Members.length === 0 ? '<span style="color:#64748b; font-size:12px;">لم تدخل أعضاء</span>' : "";
+            t1Members.forEach(name => {
+                const chip = document.createElement('div');
+                chip.className = 'chip' + (selectedPlayer1 === name ? ' selected' : '');
+                chip.innerText = name;
+                chip.onclick = () => { selectedPlayer1 = name; document.getElementById('player1Input').value = name; updatePlayerChips(); };
+                t1Container.appendChild(chip);
+            });
 
-            if(t1Members.length === 0) {
-                t1Container.innerHTML = '<span style="color:#64748b; font-size:12px;">لم تدخل أعضاء</span>';
-            } else {
-                t1Members.forEach(name => {
-                    const chip = document.createElement('div');
-                    chip.className = 'chip' + (selectedPlayer1 === name ? ' selected' : '');
-                    chip.innerText = name;
-                    chip.onclick = () => {
-                        selectedPlayer1 = name;
-                        document.getElementById('player1Input').value = name;
-                        updatePlayerChips();
-                    };
-                    t1Container.appendChild(chip);
-                });
-            }
-
-            if(t2Members.length === 0) {
-                t2Container.innerHTML = '<span style="color:#64748b; font-size:12px;">لم تدخل أعضاء</span>';
-            } else {
-                t2Members.forEach(name => {
-                    const chip = document.createElement('div');
-                    chip.className = 'chip' + (selectedPlayer2 === name ? ' selected' : '');
-                    chip.innerText = name;
-                    chip.onclick = () => {
-                        selectedPlayer2 = name;
-                        document.getElementById('player2Input').value = name;
-                        updatePlayerChips();
-                    };
-                    t2Container.appendChild(chip);
-                });
-            }
+            t2Container.innerHTML = t2Members.length === 0 ? '<span style="color:#64748b; font-size:12px;">لم تدخل أعضاء</span>' : "";
+            t2Members.forEach(name => {
+                const chip = document.createElement('div');
+                chip.className = 'chip' + (selectedPlayer2 === name ? ' selected' : '');
+                chip.innerText = name;
+                chip.onclick = () => { selectedPlayer2 = name; document.getElementById('player2Input').value = name; updatePlayerChips(); };
+                t2Container.appendChild(chip);
+            });
         }
 
         function spinTheWheel() {
             const categories = Object.keys(questionBank);
             if(categories.length === 0) return;
-
             socket.emit('game_action', { room: roomName, action: 'SPIN_WHEEL' });
             document.getElementById('previewBox').innerHTML = "🎡 عجلة الحظ تدور الآن على الشاشة الكبيرة...";
             document.getElementById('changeQBtn').style.display = 'none';
@@ -301,91 +282,81 @@
                 const randomCat = categories[Math.floor(Math.random() * categories.length)];
                 document.getElementById('categorySelect').value = randomCat;
                 currentCat = randomCat;
-
                 const list = questionBank[randomCat];
                 const rand = list[Math.floor(Math.random() * list.length)];
                 currentQ = rand.q;
                 currentA = rand.a;
 
-                document.getElementById('previewBox').innerHTML = `<b>الفئة المستقرة:</b> <span style="color:#38bdf8">${currentCat}</span><br><b>السؤال:</b> ${currentQ}<br><span style="color:#34d399"><b>الجواب:</b> ${currentA}</span>`;
-                
-                // إظهار زر التغيير بمجرد استقرار العجلة وظهور السؤال
+                document.getElementById('previewBox').innerHTML = `<b>الفئة:</b> <span style="color:#38bdf8">${currentCat}</span><br><b>السؤال:</b> ${currentQ}<br><span style="color:#34d399"><b>الجواب:</b> ${currentA}</span>`;
                 document.getElementById('changeQBtn').style.display = 'block';
-
-                socket.emit('game_action', {
-                    room: roomName, 
-                    action: 'SHOW_CATEGORY',
-                    cat: currentCat
-                });
+                socket.emit('game_action', { room: roomName, action: 'SHOW_CATEGORY', cat: currentCat });
             }, 3000);
         }
 
-        // التعديل: تغيير السؤال يدوياً إذا كان صعباً
         function changeQuestionLocally() {
             if (!currentCat || !questionBank[currentCat]) return;
-            
             const list = questionBank[currentCat];
             const rand = list[Math.floor(Math.random() * list.length)];
             currentQ = rand.q;
             currentA = rand.a;
-
-            document.getElementById('previewBox').innerHTML = `<b>الفئة المستقرة:</b> <span style="color:#38bdf8">${currentCat}</span><br><b>السؤال <span style="color:#ef4444">(البديل)</span>:</b> ${currentQ}<br><span style="color:#34d399"><b>الجواب:</b> ${currentA}</span>`;
+            document.getElementById('previewBox').innerHTML = `<b>الفئة:</b> <span style="color:#38bdf8">${currentCat}</span><br><b>السؤال <span style="color:#ef4444">(بديل)</span>:</b> ${currentQ}<br><span style="color:#34d399"><b>الجواب:</b> ${currentA}</span>`;
         }
 
         function spinPerksWheel() {
-            const perksList = [
-                "🎯 الهدية المفاجئة (+ نقطتين)", 
-                "🔀 تخطي السؤال", 
-                "👥 استشارة الفريق (60 ثانية)", 
-                "⭐ نقطة مضاعفة"
-            ];
-            // التعديل: اختيار المساعدة من الجوال وإرسالها كأمر صريح للسيرفر
+            const perksList = ["🎯 الهدية المفاجئة (+ نقطتين)", "🔀 تخطي السؤال", "👥 استشارة الفريق (60 ثانية)", "⭐ نقطة مضاعفة"];
             const randomPerk = perksList[Math.floor(Math.random() * perksList.length)];
             
-            socket.emit('game_action', { 
-                room: roomName, 
-                action: 'SPIN_PERKS_WHEEL', 
-                perk: randomPerk 
-            });
+            // تبديل الفريق المستحق للمساعدة تلقائياً أو بناءً على الاختيار
+            lastPerkWinnerTeam = lastPerkWinnerTeam === 1 ? 2 : 1; 
+
+            if(lastPerkWinnerTeam === 1) {
+                team1Perk = randomPerk;
+                document.getElementById('t1PerkText').innerText = randomPerk;
+                document.getElementById('t1UsePerkBtn').style.display = 'block';
+            } else {
+                team2Perk = randomPerk;
+                document.getElementById('t2PerkText').innerText = randomPerk;
+                document.getElementById('t2UsePerkBtn').style.display = 'block';
+            }
+
+            socket.emit('game_action', { room: roomName, action: 'SPIN_PERKS_WHEEL' });
+            socket.emit('game_action', { room: roomName, action: 'UPDATE_PERK', team: lastPerkWinnerTeam, perk: randomPerk });
             
-            document.getElementById('previewBox').innerHTML = "🎁 عجلة المساعدات تدور الآن...";
-            document.getElementById('changeQBtn').style.display = 'none';
-            
-            setTimeout(() => {
-                document.getElementById('previewBox').innerHTML = `🎁 <span style="color:#10b981">نتيجة عجلة المساعدات:</span> <b>${randomPerk}</b>`;
-            }, 3000);
+            document.getElementById('previewBox').innerHTML = `🎁 <span style="color:#10b981">مساعدة جديدة لـ (الفريق ${lastPerkWinnerTeam}):</span> <b>${randomPerk}</b>`;
+        }
+
+        function usePerk(teamNum) {
+            if(teamNum === 1) {
+                alert("تم تطبيق مساعدة فريق الصقور: " + team1Perk);
+                team1Perk = "";
+                document.getElementById('t1PerkText').innerText = "لا توجد مساعدة";
+                document.getElementById('t1UsePerkBtn').style.display = 'none';
+                socket.emit('game_action', { room: roomName, action: 'UPDATE_PERK', team: 1, perk: null });
+            } else {
+                alert("تم تطبيق مساعدة فريق النمور: " + team2Perk);
+                team2Perk = "";
+                document.getElementById('t2PerkText').innerText = "لا توجد مساعدة";
+                document.getElementById('t2UsePerkBtn').style.display = 'none';
+                socket.emit('game_action', { room: roomName, action: 'UPDATE_PERK', team: 2, perk: null });
+            }
         }
 
         function awardPoints(teamNumber) {
             const pointsValue = parseInt(document.getElementById('questionPointsValue').value) || 1;
-            
-            if(teamNumber === 1) {
-                score1 += pointsValue;
-                document.getElementById('liveScore1').innerText = score1;
-            } else {
-                score2 += pointsValue;
-                document.getElementById('liveScore2').innerText = score2;
-            }
-
+            if(teamNumber === 1) { score1 += pointsValue; document.getElementById('liveScore1').innerText = score1; }
+            else { score2 += pointsValue; document.getElementById('liveScore2').innerText = score2; }
             socket.emit('game_action', { room: roomName, action: 'SCORE', s1: score1, s2: score2 });
         }
 
-        // التعديل: دالة خصم النقاط للتحكيم
         function deductPoints(teamNumber) {
-            if(teamNumber === 1) {
-                score1 = Math.max(0, score1 - 1); // يخصم 1 ولا يسمح بالسالب
-                document.getElementById('liveScore1').innerText = score1;
-            } else {
-                score2 = Math.max(0, score2 - 1);
-                document.getElementById('liveScore2').innerText = score2;
-            }
+            if(teamNumber === 1) { score1 = Math.max(0, score1 - 1); document.getElementById('liveScore1').innerText = score1; }
+            else { score2 = Math.max(0, score2 - 1); document.getElementById('liveScore2').innerText = score2; }
             socket.emit('game_action', { room: roomName, action: 'SCORE', s1: score1, s2: score2 });
         }
 
         function resetScores() {
             if(confirm("هل أنت متأكد من تصفير النقاط؟")) {
-                score1 = 0;
-                score2 = 0;
+                score1 = 0; score2 = 0;
                 document.getElementById('liveScore1').innerText = 0;
                 document.getElementById('liveScore2').innerText = 0;
                 socket.emit('game_action', { room: roomName, action: 'SCORE', s1: 0, s2: 0 });
@@ -393,14 +364,8 @@
         }
 
         function saveTeamsAndSync() {
-            updateTeamData();
-            switchTab(1);
-        }
-
-        function updateTeamData() {
             const t1Members = Array.from(document.querySelectorAll('.t1-member')).map(i => i.value).filter(v => v.trim() !== "");
             const t2Members = Array.from(document.querySelectorAll('.t2-member')).map(i => i.value).filter(v => v.trim() !== "");
-
             socket.emit('game_action', {
                 room: roomName, action: 'UPDATE_TEAMS',
                 t1: document.getElementById('team1Name').value,
@@ -408,28 +373,20 @@
                 m1: t1Members, m2: t2Members
             });
             updateScoreCardNames();
+            switchTab(1);
             alert("تم حفظ وتحديث الفرق والأعضاء بنجاح!");
         }
 
         function sendNomination() {
             const p1 = document.getElementById('player1Input').value;
             const p2 = document.getElementById('player2Input').value;
-
-            if(!p1 || !p2) {
-                alert("الرجاء اختيار لاعب من الفريق الأول ولاعب من الفريق الثاني أولاً!");
-                return;
-            }
-
-            socket.emit('game_action', {
-                room: roomName, action: 'NOMINATE',
-                cat: currentCat || document.getElementById('categorySelect').value,
-                p1: p1,
-                p2: p2
-            });
+            if(!p1 || !p2) { alert("الرجاء اختيار لاعب من الفريق الأول ولاعب من الفريق الثاني أولاً!"); return; }
+            socket.emit('game_action', { room: roomName, action: 'NOMINATE', cat: currentCat || document.getElementById('categorySelect').value, p1: p1, p2: p2 });
         }
 
         function showQuestion() {
-            socket.emit('game_action', { room: roomName, action: 'SHOW_Q', q: currentQ, a: currentA });
+            const isConsult = team1Perk.includes("استشارة") || team2Perk.includes("استشارة");
+            socket.emit('game_action', { room: roomName, action: 'SHOW_Q', q: currentQ, a: currentA, isConsultation: isConsult });
         }
 
         function showAnswer() {
