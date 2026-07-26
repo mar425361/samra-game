@@ -56,6 +56,10 @@
         .perks-wheel-container { position: relative; width: 220px; height: 220px; margin: 15px auto; display: none; }
         .perks-wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #10b981; background: conic-gradient(#f59e0b 0deg 90deg, #3b82f6 90deg 180deg, #8b5cf6 180deg 270deg, #ef4444 270deg 360deg); box-shadow: 0 0 30px rgba(16,185,129,0.7); }
 
+        /* صندوق إعلان البيرk الكبير بوسط الشاشة */
+        #perkResultBanner { font-size: 1.8rem; font-weight: 900; color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 15px 30px; border-radius: 16px; border: 2px dashed #10b981; margin: 20px 0; display: none; box-shadow: 0 0 30px rgba(16,185,129,0.4); animation: popIn 0.5s ease; }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
         #gameTimerDisplay { font-size: 1.6rem; font-weight: 900; color: #38bdf8; margin-top: 15px; background: rgba(56, 189, 248, 0.1); padding: 5px 18px; border-radius: 50px; border: 2px solid rgba(56, 189, 248, 0.3); display: none; }
 
         .clash-container { display: flex; align-items: center; justify-content: center; gap: 20px; width: 100%; margin: 15px 0; }
@@ -94,7 +98,8 @@
         .team-score { font-size: 1.8rem; font-weight: 900; color: #fff; }
         .members-list { font-size: 0.85rem; color: #cbd5e1; background: rgba(15,23,42,0.5); padding: 8px; border-radius: 8px; min-height: 35px; line-height: 1.5; }
         
-        .perk-display-box { background: rgba(245, 158, 11, 0.15); border: 1px dashed #f59e0b; color: #fde047; padding: 6px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; text-align: center; margin-top: 4px; display: none; }
+        /* صندوق عرض البيرك تحت كل فريق */
+        .perk-display-box { background: rgba(245, 158, 11, 0.15); border: 1px dashed #f59e0b; color: #fde047; padding: 8px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; text-align: center; margin-top: 6px; display: none; }
 
         .qr-section { background: rgba(30, 41, 59, 0.85); border-radius: 18px; padding: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;}
         #qrcode { background: #fff; padding: 6px; border-radius: 10px; margin-bottom: 4px; }
@@ -109,7 +114,7 @@
     <audio id="soundWin" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3" preload="auto"></audio>
 
     <div class="header-container">
-        <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/4QBaRXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPAEbAAUAAAABAAAARgEoAAMAAAABAAIAAAExAAIAAAARAAAATgAAAAAAAABIAAAAAQAAAEgAAAABcGFnZSIgY29udGVudGVkIGluIGEgY29udGludW91cyBmbG93LiBZb3Ugc2hvdWxkIHlvdSBjYW4gcmVwb3J0IGlzIHJlYWR5Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi5gAABJRUkJggg==" alt="الشعار" class="header-logo">
+        <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/4QBaRXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPAEbAAUAAAABAAAARgEoAAMAAAABAAIAAAExAAIAAAARAAAATgAAAAAAAABIAAAAAQAAAEgAAAABcGFnZSIgY29udGVudGVkIGluIGEgY29udGludW91cyBmbG93LiBZb3Ugc2hvdWxkIHlvdSBjYW4gcmVwb3J0 iisgcmVhZHkuLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi5gAABJRUkJggg==" alt="الشعار" class="header-logo">
         <h1>🔥 صدام الأفكار.. مع عمار الدمار 🔥</h1>
     </div>
 
@@ -127,6 +132,9 @@
                 <div class="wheel-pointer"></div>
                 <div class="perks-wheel" id="spinningPerksWheel"></div>
             </div>
+
+            <!-- صندوق عرض النتيجة الكبيرة لعجلة المساعدات -->
+            <div id="perkResultBanner">🎁 البيرك القادم: ...</div>
 
             <div class="clash-container" id="clashContainer">
                 <div class="fighter team1" id="displayPlayer1">الفريق الأول</div>
@@ -149,6 +157,7 @@
                     <span class="team-score" id="score1">0</span>
                 </div>
                 <div class="members-list" id="displayMembers1">الأعضاء: لم يتم الإضافة</div>
+                <!-- صندوق المساعدة تحت اسم الفريق -->
                 <div class="perk-display-box" id="team1PerkDisplay">✨ مساعدة: لا توجد</div>
             </div>
 
@@ -158,6 +167,7 @@
                     <span class="team-score" id="score2">0</span>
                 </div>
                 <div class="members-list" id="displayMembers2">الأعضاء: لم يتم الإضافة</div>
+                <!-- صندوق المساعدة تحت اسم الفريق -->
                 <div class="perk-display-box" id="team2PerkDisplay">✨ مساعدة: لا توجد</div>
             </div>
 
@@ -240,12 +250,14 @@
             const perksWheelContainer = document.getElementById('perksWheelContainer');
             const clashCont = document.getElementById('clashContainer');
             const qBox = document.getElementById('questionContentBox');
+            const perkBanner = document.getElementById('perkResultBanner');
 
             if (data.action === 'SPIN_WHEEL') {
                 stopAndHideTimer();
                 clashCont.style.display = 'none';
                 qBox.style.display = 'none';
                 perksWheelContainer.style.display = 'none';
+                perkBanner.style.display = 'none';
                 wheelContainer.style.display = 'block';
                 document.getElementById('categoryTag').innerText = "🎡 عجلة الحظ تدور لاختيار الفئة...";
                 
@@ -264,6 +276,7 @@
                 clashCont.style.display = 'none';
                 qBox.style.display = 'none';
                 wheelContainer.style.display = 'none';
+                perkBanner.style.display = 'none';
                 perksWheelContainer.style.display = 'block';
                 document.getElementById('categoryTag').innerText = "🎁 عجلة المساعدات تدور للفريق الفائز...";
 
@@ -287,6 +300,7 @@
                 stopAndHideTimer();
                 wheelContainer.style.display = 'none';
                 perksWheelContainer.style.display = 'none';
+                perkBanner.style.display = 'none';
                 document.getElementById('categoryTag').innerText = "🎯 الفئة: " + data.cat;
                 
                 const p1 = document.getElementById('displayPlayer1');
@@ -319,6 +333,7 @@
                 playSound('soundPop');
                 wheelContainer.style.display = 'none';
                 perksWheelContainer.style.display = 'none';
+                perkBanner.style.display = 'none';
                 clashCont.style.display = 'none';
                 qBox.style.display = 'flex';
                 document.getElementById('questionText').innerText = data.q;
@@ -348,17 +363,26 @@
                 const perkBox1 = document.getElementById('team1PerkDisplay');
                 const perkBox2 = document.getElementById('team2PerkDisplay');
                 
+                // إظهار البيرك الكبير بوسط الشاشة فور ظهوره
+                if(data.perk) {
+                    perkBanner.style.display = 'block';
+                    perkBanner.innerText = `🎁 البيرك الفائز لـ (الفريق ${data.team}): ${data.perk}`;
+                } else {
+                    perkBanner.style.display = 'none';
+                }
+
+                // تحديث صندوق المساعدة تحت اسم الفريق في الـ Sidebar
                 if(data.team === 1) {
                     if(data.perk) {
                         perkBox1.style.display = 'block';
-                        perkBox1.innerText = "✨ " + data.perk;
+                        perkBox1.innerText = "✨ مساعدة: " + data.perk;
                     } else {
                         perkBox1.style.display = 'none';
                     }
                 } else if(data.team === 2) {
                     if(data.perk) {
                         perkBox2.style.display = 'block';
-                        perkBox2.innerText = "✨ " + data.perk;
+                        perkBox2.innerText = "✨ مساعدة: " + data.perk;
                     } else {
                         perkBox2.style.display = 'none';
                     }
