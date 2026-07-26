@@ -18,20 +18,8 @@
         }
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         
-        .header-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-top: 5px;
-        }
-        .header-logo {
-            width: 70px;
-            height: 70px;
-            object-fit: cover;
-            border-radius: 50%;
-            border: 2px solid #f59e0b;
-            box-shadow: 0 0 15px rgba(245, 158, 11, 0.6);
-        }
+        .header-container { display: flex; align-items: center; gap: 15px; margin-top: 5px; }
+        .header-logo { width: 70px; height: 70px; object-fit: cover; border-radius: 50%; border: 2px solid #f59e0b; box-shadow: 0 0 15px rgba(245, 158, 11, 0.6); }
         h1 { font-size: 1.8rem; color: #f59e0b; text-shadow: 0 0 20px rgba(245, 158, 11, 0.4); font-weight: 900; }
         
         .main-container { display: flex; flex-direction: row-reverse; width: 100%; max-width: 1400px; height: 80vh; gap: 20px; align-items: stretch; }
@@ -54,6 +42,7 @@
         .wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-bottom: 25px solid #f59e0b; z-index: 10; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
 
         .perks-wheel-container { position: relative; width: 220px; height: 220px; margin: 15px auto; display: none; }
+        /* عجلة المساعدات مقسومة إلى 3 أقسام متساوية (120 درجة لكل قسم) */
         .perks-wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #10b981; background: conic-gradient(#f59e0b 0deg 120deg, #3b82f6 120deg 240deg, #8b5cf6 240deg 360deg); box-shadow: 0 0 30px rgba(16,185,129,0.7); }
 
         #perkResultBanner { font-size: 1.8rem; font-weight: 900; color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 15px 30px; border-radius: 16px; border: 2px dashed #10b981; margin: 20px 0; display: none; box-shadow: 0 0 30px rgba(16,185,129,0.4); animation: popIn 0.5s ease; }
@@ -110,11 +99,11 @@
     <audio id="soundClash" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" preload="auto"></audio>
     <audio id="soundPop" src="https://assets.mixkit.co/active_storage/sfx/1114/1114-preview.mp3" preload="auto"></audio>
     <audio id="soundWin" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3" preload="auto"></audio>
-    <!-- صوت التكتكة للعد التنازلي -->
     <audio id="soundTick" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
     <div class="header-container">
-        <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/4QBaRXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPAEbAAUAAAABAAAARgEoAAMAAAABAAIAAAExAAIAAAARAAAATgAAAAAAAABIAAAAAQAAAEgAAAABcGFnZSIgY29udGVudGVkIGluIGEgY29udGludW91cyBmbG93LiBZb3Ugc2hvdWxkIHlvdSBjYW4gcmVwb3J0 iisgcmVhZHkuLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi5gAABJRUkJggg==" alt="الشعار" class="header-logo">
+        <!-- تم تعديل الشعار لتجنب ظهور كلمة الشعار في حال عدم توفر الصورة -->
+        <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="" class="header-logo" id="headerLogoImg" style="display:none;">
         <h1>🔥 صدام الأفكار.. مع عمار الدمار 🔥</h1>
     </div>
 
@@ -217,7 +206,6 @@
             countdownInterval = setInterval(function () {
                 display.textContent = `⏳ الوقت باقي: ${timer} ثانية`;
                 
-                // تشغيل صوت التكتكة في آخر 10 ثوانٍ مع التسارع
                 if (timer <= 10 && timer > 0) {
                     playSound('soundTick');
                 }
@@ -279,7 +267,7 @@
                 wheelContainer.style.display = 'none';
                 perkBanner.style.display = 'none';
                 perksWheelContainer.style.display = 'block';
-                document.getElementById('categoryTag').innerText = "🎁 عجلة المساعدات تدور...";
+                document.getElementById('categoryTag').innerText = "🎁 عجلة المساعدات تدور بسبب الستريك 🔥...";
 
                 const perksWheel = document.getElementById('spinningPerksWheel');
                 perksWheel.style.transition = 'none';
@@ -345,7 +333,6 @@
                 startTimer(timerSeconds);
             } 
             else if (data.action === 'START_CONSULTATION_TIMER') {
-                // تفعيل عداد 60 ثانية خصيصاً عند استخدام مساعدة الاستشارة
                 startTimer(60);
             }
             else if (data.action === 'SHOW_A') {
@@ -370,19 +357,20 @@
                 
                 if(data.perk) {
                     perkBanner.style.display = 'block';
-                    perkBanner.innerText = `🎁 البيرك الفائز لـ (الفريق ${data.team}): ${data.perk}`;
+                    // استخدام اسم الفريق الحقيقي المرسل من لوحة التحكم (مثل: بريدة، عنيزة)
+                    perkBanner.innerText = `🎁 ميزة جديدة لـ (${data.teamName}): ${data.perk}`;
                 } else {
                     perkBanner.style.display = 'none';
                 }
 
-                if(data.team === 1) {
+                if(data.teamNum === 1) {
                     if(data.perk) {
                         perkBox1.style.display = 'block';
                         perkBox1.innerText = "✨ مساعدة: " + data.perk;
                     } else {
                         perkBox1.style.display = 'none';
                     }
-                } else if(data.team === 2) {
+                } else if(data.teamNum === 2) {
                     if(data.perk) {
                         perkBox2.style.display = 'block';
                         perkBox2.innerText = "✨ مساعدة: " + data.perk;
