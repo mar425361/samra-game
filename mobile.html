@@ -36,7 +36,6 @@
         .chip:hover { background: #3b82f6; color: #fff; }
         .chip.selected { background: #10b981; border-color: #34d399; color: #fff; font-weight: bold; box-shadow: 0 0 10px rgba(16,185,129,0.4); }
 
-        /* تصميم نظام النقاط الحديث */
         .modern-score-panel { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
         .teams-score-row { display: flex; justify-content: space-between; gap: 15px; margin-bottom: 15px; }
         .team-score-card { flex: 1; background: #0f172a; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #475569; }
@@ -98,14 +97,12 @@
             <select id="categorySelect"></select>
         </div>
 
-        <!-- عجلة الحظ وعجلة المساعدات -->
         <div class="next-q-box" id="previewBox">اضغط على عجلة الحظ للبدء!</div>
         <button class="btn-main" style="background: #ef4444; margin-top: 0; font-size: 17px;" onclick="spinTheWheel()">🎡 تدوير عجلة الحظ لاختيار الفئة</button>
-        <button class="btn-main" style="background: #8b5cf6; margin-top: 8px; font-size: 17px;" onclick="spinPerksWheel()">🎁 تدوير عجلة المساعدات (3 إجابات متتالية)</button>
+        <button class="btn-main" style="background: #8b5cf6; margin-top: 8px; font-size: 17px;" onclick="spinPerksWheel()">🎁 تدوير عجلة المساعدات</button>
 
         <hr>
 
-        <!-- اختيار اللاعبين -->
         <label style="margin-bottom: 8px;">اختر المتنافسين بناءً على الفئة:</label>
         <div class="players-picker-container">
             <div class="picker-box">
@@ -136,7 +133,6 @@
 
         <hr>
 
-        <!-- نظام النقاط الحديث والمتطور -->
         <div class="modern-score-panel">
             <label style="margin-bottom: 10px; color: #f59e0b;">⚡ نظام النقاط السريع:</label>
             
@@ -306,12 +302,11 @@
 
         function spinPerksWheel() {
             socket.emit('game_action', { room: roomName, action: 'SPIN_PERKS_WHEEL' });
-            document.getElementById('previewBox').innerHTML = "🎁 عجلة المساعدات تدور للفريق الفائز!";
+            document.getElementById('previewBox').innerHTML = "🎁 عجلة المساعدات تدور الآن...";
             
-            // اختيار مساعدة عشوائية وتحديثها افتراضياً (يمكن تخصيصها حسب الفريق)
             const perksList = [
                 "🎯 الهدية المفاجئة (+ نقطتين)", 
-                "🔀 تخطي السؤال (سؤال أسهل)", 
+                "🔀 تخطي السؤال", 
                 "👥 استشارة الفريق (60 ثانية)", 
                 "⭐ نقطة مضاعفة"
             ];
