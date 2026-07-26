@@ -43,10 +43,18 @@
         .team-score-card.t2 { border-right: 4px solid #f59e0b; }
         .team-score-title { font-size: 0.85rem; color: #94a3b8; font-weight: 700; }
         .team-score-value { font-size: 2rem; font-weight: 900; color: #fff; margin: 5px 0; }
-        .quick-award-btn { background: #10b981; color: #fff; border: none; padding: 6px 10px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer; width: 100%; }
+        .quick-award-btn { background: #10b981; color: #fff; border: none; padding: 6px 10px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer; width: 100%; margin-bottom: 5px; }
         .quick-award-btn:active { transform: scale(0.95); }
+        
+        /* زر الخصم الجديد */
+        .btn-minus { background: #ef4444; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer; width: 100%; }
+        .btn-minus:active { transform: scale(0.95); }
 
-        .next-q-box { background: #1e293b; padding: 12px; border-radius: 8px; border: 1px dashed #f59e0b; margin-bottom: 15px; font-size: 13px; color: #fde047; text-align: center; line-height: 1.5; }
+        .next-q-box { background: #1e293b; padding: 12px; border-radius: 8px; border: 1px dashed #f59e0b; margin-bottom: 10px; font-size: 13px; color: #fde047; text-align: center; line-height: 1.5; }
+        
+        /* زر تغيير السؤال */
+        .btn-change-q { background: #64748b; color: #fff; margin-bottom: 15px; display: none; }
+        
         hr { border-color: #334155; margin: 20px 0; }
     </style>
 </head>
@@ -98,6 +106,10 @@
         </div>
 
         <div class="next-q-box" id="previewBox">اضغط على عجلة الحظ للبدء!</div>
+        
+        <!-- زر تغيير السؤال الطارئ -->
+        <button class="btn-main btn-change-q" id="changeQBtn" onclick="changeQuestionLocally()">🔄 تغيير السؤال (سؤال بديل من نفس الفئة)</button>
+
         <button class="btn-main" style="background: #ef4444; margin-top: 0; font-size: 17px;" onclick="spinTheWheel()">🎡 تدوير عجلة الحظ لاختيار الفئة</button>
         <button class="btn-main" style="background: #8b5cf6; margin-top: 8px; font-size: 17px;" onclick="spinPerksWheel()">🎁 تدوير عجلة المساعدات</button>
 
@@ -149,12 +161,16 @@
                 <div class="team-score-card t1">
                     <div class="team-score-title" id="scoreCardT1Name">الفريق الأول</div>
                     <div class="team-score-value" id="liveScore1">0</div>
-                    <button class="quick-award-btn" onclick="awardPoints(1)">+ منح النقطة</button>
+                    <button class="quick-award-btn" onclick="awardPoints(1)">+ منح</button>
+                    <!-- التعديل: زر خصم نقطة -->
+                    <button class="btn-minus" onclick="deductPoints(1)">-1 خطأ</button>
                 </div>
                 <div class="team-score-card t2">
                     <div class="team-score-title" id="scoreCardT2Name">الفريق الثاني</div>
                     <div class="team-score-value" id="liveScore2">0</div>
-                    <button class="quick-award-btn" onclick="awardPoints(2)" style="background: #f59e0b; color: #0f172a;">+ منح النقطة</button>
+                    <button class="quick-award-btn" onclick="awardPoints(2)" style="background: #f59e0b; color: #0f172a;">+ منح</button>
+                    <!-- التعديل: زر خصم نقطة -->
+                    <button class="btn-minus" onclick="deductPoints(2)">-1 خطأ</button>
                 </div>
             </div>
             
@@ -279,6 +295,7 @@
 
             socket.emit('game_action', { room: roomName, action: 'SPIN_WHEEL' });
             document.getElementById('previewBox').innerHTML = "🎡 عجلة الحظ تدور الآن على الشاشة الكبيرة...";
+            document.getElementById('changeQBtn').style.display = 'none';
 
             setTimeout(() => {
                 const randomCat = categories[Math.floor(Math.random() * categories.length)];
@@ -291,6 +308,9 @@
                 currentA = rand.a;
 
                 document.getElementById('previewBox').innerHTML = `<b>الفئة المستقرة:</b> <span style="color:#38bdf8">${currentCat}</span><br><b>السؤال:</b> ${currentQ}<br><span style="color:#34d399"><b>الجواب:</b> ${currentA}</span>`;
+                
+                // إظهار زر التغيير بمجرد استقرار العجلة وظهور السؤال
+                document.getElementById('changeQBtn').style.display = 'block';
 
                 socket.emit('game_action', {
                     room: roomName, 
@@ -300,17 +320,36 @@
             }, 3000);
         }
 
-        function spinPerksWheel() {
-            socket.emit('game_action', { room: roomName, action: 'SPIN_PERKS_WHEEL' });
-            document.getElementById('previewBox').innerHTML = "🎁 عجلة المساعدات تدور الآن...";
+        // التعديل: تغيير السؤال يدوياً إذا كان صعباً
+        function changeQuestionLocally() {
+            if (!currentCat || !questionBank[currentCat]) return;
             
+            const list = questionBank[currentCat];
+            const rand = list[Math.floor(Math.random() * list.length)];
+            currentQ = rand.q;
+            currentA = rand.a;
+
+            document.getElementById('previewBox').innerHTML = `<b>الفئة المستقرة:</b> <span style="color:#38bdf8">${currentCat}</span><br><b>السؤال <span style="color:#ef4444">(البديل)</span>:</b> ${currentQ}<br><span style="color:#34d399"><b>الجواب:</b> ${currentA}</span>`;
+        }
+
+        function spinPerksWheel() {
             const perksList = [
                 "🎯 الهدية المفاجئة (+ نقطتين)", 
                 "🔀 تخطي السؤال", 
                 "👥 استشارة الفريق (60 ثانية)", 
                 "⭐ نقطة مضاعفة"
             ];
+            // التعديل: اختيار المساعدة من الجوال وإرسالها كأمر صريح للسيرفر
             const randomPerk = perksList[Math.floor(Math.random() * perksList.length)];
+            
+            socket.emit('game_action', { 
+                room: roomName, 
+                action: 'SPIN_PERKS_WHEEL', 
+                perk: randomPerk 
+            });
+            
+            document.getElementById('previewBox').innerHTML = "🎁 عجلة المساعدات تدور الآن...";
+            document.getElementById('changeQBtn').style.display = 'none';
             
             setTimeout(() => {
                 document.getElementById('previewBox').innerHTML = `🎁 <span style="color:#10b981">نتيجة عجلة المساعدات:</span> <b>${randomPerk}</b>`;
@@ -328,12 +367,19 @@
                 document.getElementById('liveScore2').innerText = score2;
             }
 
-            socket.emit('game_action', {
-                room: roomName, 
-                action: 'SCORE',
-                s1: score1, 
-                s2: score2
-            });
+            socket.emit('game_action', { room: roomName, action: 'SCORE', s1: score1, s2: score2 });
+        }
+
+        // التعديل: دالة خصم النقاط للتحكيم
+        function deductPoints(teamNumber) {
+            if(teamNumber === 1) {
+                score1 = Math.max(0, score1 - 1); // يخصم 1 ولا يسمح بالسالب
+                document.getElementById('liveScore1').innerText = score1;
+            } else {
+                score2 = Math.max(0, score2 - 1);
+                document.getElementById('liveScore2').innerText = score2;
+            }
+            socket.emit('game_action', { room: roomName, action: 'SCORE', s1: score1, s2: score2 });
         }
 
         function resetScores() {
