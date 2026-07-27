@@ -51,7 +51,7 @@
 
         .perk-management-box { background: #1e293b; border: 1px solid #f59e0b; border-radius: 12px; padding: 12px; margin-bottom: 15px; text-align: center; }
         .perk-management-box h4 { color: #f59e0b; margin-bottom: 8px; font-size: 14px; }
-        .perk-status-text { font-size: 13px; color: #cbd5e1; margin-bottom: 8px; }
+        .perk-status-text { font-size: 12px; color: #cbd5e1; margin-bottom: 8px; max-height: 80px; overflow-y: auto; text-align: right; line-height: 1.4; }
 
         .next-q-box { background: #1e293b; padding: 12px; border-radius: 8px; border: 1px dashed #f59e0b; margin-bottom: 10px; font-size: 13px; color: #fde047; text-align: center; line-height: 1.5; }
         .btn-change-q { background: #64748b; color: #fff; margin-bottom: 15px; display: none; }
@@ -110,19 +110,18 @@
         <button class="btn-main btn-change-q" id="changeQBtn" onclick="changeQuestionLocally()">🔄 تغيير السؤال (سؤال بديل)</button>
 
         <button class="btn-main" style="background: #ef4444; margin-top: 0; font-size: 17px;" onclick="spinTheWheel()">🎡 تدوير عجلة الحظ لاختيار الفئة</button>
-        <button class="btn-main" style="background: #8b5cf6; margin-top: 8px; font-size: 17px;" onclick="spinPerksWheel(0)">🎁 تدوير عجلة المساعدات</button>
 
-        <!-- لوحة إدارة المساعدات المحفوظة للفريقين -->
+        <!-- لوحة إدارة المساعدات المتراكمة للفريقين (بدون زر تدوير يدوي) -->
         <div style="display: flex; gap: 10px; margin-top: 15px;">
             <div class="perk-management-box" style="flex:1;">
                 <h4 id="perkBoxTitle1">فريق الصقور</h4>
-                <div class="perk-status-text" id="t1PerkText">لا توجد مساعدة</div>
-                <button class="btn-small" style="background:#3b82f6; width:100%; display:none;" id="t1UsePerkBtn" onclick="usePerk(1)">✨ استخدام المساعدة</button>
+                <div class="perk-status-text" id="t1PerkText">لا توجد ميزات محفوظة</div>
+                <button class="btn-small" style="background:#3b82f6; width:100%; display:none;" id="t1UsePerkBtn" onclick="usePerk(1)">✨ استخدام أقدم ميزة</button>
             </div>
             <div class="perk-management-box" style="flex:1;">
                 <h4 id="perkBoxTitle2">فريق النمور</h4>
-                <div class="perk-status-text" id="t2PerkText">لا توجد مساعدة</div>
-                <button class="btn-small" style="background:#f59e0b; color:#000; width:100%; display:none;" id="t2UsePerkBtn" onclick="usePerk(2)">✨ استخدام المساعدة</button>
+                <div class="perk-status-text" id="t2PerkText">لا توجد ميزات محفوظة</div>
+                <button class="btn-small" style="background:#f59e0b; color:#000; width:100%; display:none;" id="t2UsePerkBtn" onclick="usePerk(2)">✨ استخدام أقدم ميزة</button>
             </div>
         </div>
 
@@ -197,13 +196,14 @@
         let currentCat = "", currentQ = "", currentA = "";
         let selectedPlayer1 = "";
         let selectedPlayer2 = "";
-        let lastPlayer1 = ""; // لحفظ آخر شخص لعب من الفريق الأول
-        let lastPlayer2 = ""; // لحفظ آخر شخص لعب من الفريق الثاني
+        let lastPlayer1 = ""; 
+        let lastPlayer2 = ""; 
         let score1 = 0, score2 = 0;
         let streak1 = 0, streak2 = 0;
-        let team1Perk = "";
-        let team2Perk = "";
-        let lastPerkWinnerTeam = 1;
+        
+        // قوائم لتخزين الميزات المتراكمة لكل فريق بلا حدود
+        let team1Perks = [];
+        let team2Perks = [];
 
         fetch('questions.json?v=' + new Date().getTime())
             .then(response => response.json())
@@ -328,56 +328,74 @@
             document.getElementById('previewBox').innerHTML = `<b>الفئة:</b> <span style="color:#38bdf8">${currentCat}</span><br><b>السؤال <span style="color:#ef4444">(بديل)</span>:</b> ${currentQ}<br><span style="color:#34d399"><b>الجواب:</b> ${currentA}</span>`;
         }
 
-        function spinPerksWheel(targetTeam = 0) {
+        // تفعيل عجلة المساعدات تلقائياً عند الستريك (بدون زر يدوي)
+        function triggerPerksWheel(targetTeamNum) {
             const perksList = ["🎯 الهدية المفاجئة (+ نقطة واحدة)", "👥 استشارة الفريق (60 ثانية)", "⭐ نقطة مضاعفة"];
             const randomPerk = perksList[Math.floor(Math.random() * perksList.length)];
             
             const t1RealName = document.getElementById('team1Name').value || "الفريق الأول";
             const t2RealName = document.getElementById('team2Name').value || "الفريق الثاني";
+            let winningTeamName = (targetTeamNum === 1) ? t1RealName : t2RealName;
 
-            // إذا تم تمرير الفريق المستحق (من الستريك)، نحدده، وإلا نبدل بينهم أو نأخذ الافتراضي
-            let winningTeamNum = targetTeam > 0 ? targetTeam : (lastPerkWinnerTeam === 1 ? 2 : 1);
-            lastPerkWinnerTeam = winningTeamNum;
-            let winningTeamName = (winningTeamNum === 1) ? t1RealName : t2RealName;
+            // إذا طلعت الهدية المفاجئة، تنضاف النقطة تلقائياً للرصيد فوراً
+            if(randomPerk.includes("الهدية المفاجئة")) {
+                if(targetTeamNum === 1) {
+                    score1 += 1;
+                    document.getElementById('liveScore1').innerText = score1;
+                } else {
+                    score2 += 1;
+                    document.getElementById('liveScore2').innerText = score2;
+                }
+                socket.emit('game_action', { room: roomName, action: 'SCORE', s1: score1, s2: score2 });
+            }
 
-            if(winningTeamNum === 1) {
-                team1Perk = randomPerk;
-                document.getElementById('t1PerkText').innerText = randomPerk;
+            // إضافة الميزة الجديدة لقائمة الفريق بدون مسح الميزات السابقة
+            if(targetTeamNum === 1) {
+                team1Perks.push(randomPerk);
+                document.getElementById('t1PerkText').innerHTML = team1Perks.join('<br>');
                 document.getElementById('t1UsePerkBtn').style.display = 'block';
             } else {
-                team2Perk = randomPerk;
-                document.getElementById('t2PerkText').innerText = randomPerk;
+                team2Perks.push(randomPerk);
+                document.getElementById('t2PerkText').innerHTML = team2Perks.join('<br>');
                 document.getElementById('t2UsePerkBtn').style.display = 'block';
             }
 
             socket.emit('game_action', { room: roomName, action: 'SPIN_PERKS_WHEEL' });
-            socket.emit('game_action', { room: roomName, action: 'UPDATE_PERK', teamNum: winningTeamNum, teamName: winningTeamName, perk: randomPerk });
+            socket.emit('game_action', { 
+                room: roomName, 
+                action: 'UPDATE_PERK', 
+                teamNum: targetTeamNum, 
+                teamName: winningTeamName, 
+                perks: (targetTeamNum === 1 ? team1Perks : team2Perks), 
+                latestPerk: randomPerk 
+            });
             
             document.getElementById('previewBox').innerHTML = `🎁 <span style="color:#10b981">مساعدة جديدة لـ (${winningTeamName}):</span> <b>${randomPerk}</b>`;
         }
 
         function usePerk(teamNum) {
-            let perkText = teamNum === 1 ? team1Perk : team2Perk;
+            let perksList = teamNum === 1 ? team1Perks : team2Perks;
+            if(perksList.length === 0) return;
+
+            let perkToUse = perksList.shift(); // أخذ أقدم ميزة (FIFO)
             const t1RealName = document.getElementById('team1Name').value || "الفريق الأول";
             const t2RealName = document.getElementById('team2Name').value || "الفريق الثاني";
             let teamName = teamNum === 1 ? t1RealName : t2RealName;
             
-            if(perkText.includes("استشارة")) {
+            if(perkToUse.includes("استشارة")) {
                 socket.emit('game_action', { room: roomName, action: 'START_CONSULTATION_TIMER' });
             }
 
-            alert(`تم تطبيق مساعدة (${teamName}): ` + perkText);
+            alert(`تم تطبيق مساعدة (${teamName}): ` + perkToUse);
 
             if(teamNum === 1) {
-                team1Perk = "";
-                document.getElementById('t1PerkText').innerText = "لا توجد مساعدة";
-                document.getElementById('t1UsePerkBtn').style.display = 'none';
-                socket.emit('game_action', { room: roomName, action: 'UPDATE_PERK', teamNum: 1, teamName: t1RealName, perk: null });
+                document.getElementById('t1PerkText').innerHTML = team1Perks.length > 0 ? team1Perks.join('<br>') : "لا توجد ميزات محفوظة";
+                if(team1Perks.length === 0) document.getElementById('t1UsePerkBtn').style.display = 'none';
+                socket.emit('game_action', { room: roomName, action: 'UPDATE_PERK', teamNum: 1, teamName: t1RealName, perks: team1Perks, latestPerk: null });
             } else {
-                team2Perk = "";
-                document.getElementById('t2PerkText').innerText = "لا توجد مساعدة";
-                document.getElementById('t2UsePerkBtn').style.display = 'none';
-                socket.emit('game_action', { room: roomName, action: 'UPDATE_PERK', teamNum: 2, teamName: t2RealName, perk: null });
+                document.getElementById('t2PerkText').innerHTML = team2Perks.length > 0 ? team2Perks.join('<br>') : "لا توجد ميزات محفوظة";
+                if(team2Perks.length === 0) document.getElementById('t2UsePerkBtn').style.display = 'none';
+                socket.emit('game_action', { room: roomName, action: 'UPDATE_PERK', teamNum: 2, teamName: t2RealName, perks: team2Perks, latestPerk: null });
             }
         }
 
@@ -393,8 +411,8 @@
                 streak1++;
                 if(streak1 >= 3) {
                     streak1 = 0;
-                    alert(`🔥 (${t1RealName}) حقق 3 إجابات صحيحة ورا بعض! تفعيل عجلة المساعدات وجائزة فورية تلقائياً!`);
-                    spinPerksWheel(1); // تفعيل عجلة المساعدات للفريق الأول تلقائياً
+                    alert(`🔥 (${t1RealName}) حقق 3 إجابات صحيحة ورا بعض! تفعيل عجلة المساعدات تلقائياً!`);
+                    triggerPerksWheel(1); 
                 }
                 document.getElementById('streak1Display').innerText = `الستريك: ${streak1}/3 🔥`;
                 streak2 = 0;
@@ -407,8 +425,8 @@
                 streak2++;
                 if(streak2 >= 3) {
                     streak2 = 0;
-                    alert(`🔥 (${t2RealName}) حقق 3 إجابات صحيحة ورا بعض! تفعيل عجلة المساعدات وجائزة فورية تلقائياً!`);
-                    spinPerksWheel(2); // تفعيل عجلة المساعدات للفريق الثاني تلقائياً
+                    alert(`🔥 (${t2RealName}) حقق 3 إجابات صحيحة ورا بعض! تفعيل عجلة المساعدات تلقائياً!`);
+                    triggerPerksWheel(2); 
                 }
                 document.getElementById('streak2Display').innerText = `الستريك: ${streak2}/3 🔥`;
                 streak1 = 0;
@@ -434,13 +452,18 @@
         }
 
         function resetScores() {
-            if(confirm("هل أنت متأكد من تصفير النقاط والستريك؟")) {
+            if(confirm("هل أنت متأكد من تصفير النقاط والستريك والميزات؟")) {
                 score1 = 0; score2 = 0;
                 streak1 = 0; streak2 = 0;
+                team1Perks = []; team2Perks = [];
                 document.getElementById('liveScore1').innerText = 0;
                 document.getElementById('liveScore2').innerText = 0;
                 document.getElementById('streak1Display').innerText = `الستريك: 0/3 🔥`;
                 document.getElementById('streak2Display').innerText = `الستريك: 0/3 🔥`;
+                document.getElementById('t1PerkText').innerText = "لا توجد ميزات محفوظة";
+                document.getElementById('t1UsePerkBtn').style.display = 'none';
+                document.getElementById('t2PerkText').innerText = "لا توجد ميزات محفوظة";
+                document.getElementById('t2UsePerkBtn').style.display = 'none';
                 socket.emit('game_action', { room: roomName, action: 'SCORE', s1: 0, s2: 0 });
             }
         }
@@ -464,19 +487,15 @@
             const p2 = document.getElementById('player2Input').value;
             if(!p1 || !p2) { alert("الرجاء اختيار لاعب من الفريق الأول ولاعب من الفريق الثاني أولاً!"); return; }
             
-            // حفظ اللاعبين كآخر من شارك ليتم قفلهم (لون أحمر) في الجولة التالية
             lastPlayer1 = p1;
             lastPlayer2 = p2;
             
             socket.emit('game_action', { room: roomName, action: 'NOMINATE', cat: currentCat || document.getElementById('categorySelect').value, p1: p1, p2: p2 });
-            
-            // تحديث الواجهة لتلوينهم بالأحمر فوراً
             updatePlayerChips();
         }
 
         function showQuestion() {
-            const isConsult = team1Perk.includes("استشارة") || team2Perk.includes("استشارة");
-            socket.emit('game_action', { room: roomName, action: 'SHOW_Q', q: currentQ, a: currentA, isConsultation: isConsult });
+            socket.emit('game_action', { room: roomName, action: 'SHOW_Q', q: currentQ, a: currentA });
         }
 
         function showAnswer() {
