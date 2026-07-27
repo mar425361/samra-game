@@ -63,7 +63,7 @@
 </head>
 <body>
 
-    <h2>📱 لوحة تحكم </h2>
+    <h2>📱 لوحة تحكم المايسترو</h2>
 
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab(0)">الفرق والأعضاء</button>
@@ -216,8 +216,6 @@
         
         let team1Perks = [];
         let team2Perks = [];
-        
-        // كائن لتخزين عدد الإجابات الصحيحة لكل لاعب بالتحديد
         let playerCorrectCounts = {};
 
         fetch('questions.json?v=' + new Date().getTime())
@@ -272,7 +270,6 @@
             const t1Members = Array.from(document.querySelectorAll('.t1-member')).map(i => i.value).filter(v => v.trim() !== "");
             const t2Members = Array.from(document.querySelectorAll('.t2-member')).map(i => i.value).filter(v => v.trim() !== "");
 
-            // تهيئة عداد الإجابات للأعضاء الجدد
             t1Members.concat(t2Members).forEach(name => {
                 if(playerCorrectCounts[name] === undefined) playerCorrectCounts[name] = 0;
             });
@@ -383,7 +380,7 @@
                     document.getElementById('liveScore2').innerText = score2;
                 }
                 socket.emit('game_action', { room: roomName, action: 'SCORE', s1: score1, s2: score2 });
-                checkWinner();
+                checkWinnerAndBroadcast();
             }
 
             if(targetTeamNum === 1) {
@@ -440,7 +437,6 @@
             const t1RealName = document.getElementById('team1Name').value || "الفريق الأول";
             const t2RealName = document.getElementById('team2Name').value || "الفريق الثاني";
             
-            // تسجيل نقطة صحيحة للاعب الذي شارك للتو
             if(teamNumber === 1 && selectedPlayer1) {
                 playerCorrectCounts[selectedPlayer1] = (playerCorrectCounts[selectedPlayer1] || 0) + 1;
             } else if(teamNumber === 2 && selectedPlayer2) {
@@ -479,16 +475,48 @@
             }
 
             socket.emit('game_action', { room: roomName, action: 'SCORE', s1: score1, s2: score2 });
-            checkWinner();
+            checkWinnerAndBroadcast();
         }
 
-        function checkWinner() {
+        function checkWinnerAndBroadcast() {
             const t1RealName = document.getElementById('team1Name').value || "الفريق الأول";
             const t2RealName = document.getElementById('team2Name').value || "الفريق الثاني";
+            
+            let winningTeam = null;
+            let losingTeam = null;
+            let winningScore = 0;
+            let losingScore = 0;
+
             if(score1 >= targetWinningPoints) {
-                alert(`🏆 مبروك الفوز لـ (${t1RealName}) بوصوله لهدف النقاط (${targetWinningPoints})!`);
+                winningTeam = t1RealName; losingTeam = t2RealName; winningScore = score1; losingScore = score2;
             } else if(score2 >= targetWinningPoints) {
-                alert(`🏆 مبروك الفوز لـ (${t2RealName}) بوصوله لهدف النقاط (${targetWinningPoints})!`);
+                winningTeam = t2RealName; losingTeam = t1RealName; winningScore = score2; losingScore = score1;
+            }
+
+            if(winningTeam) {
+                // إيجاد الـ MVP
+                let mvpName = "لا يوجد";
+                let maxCount = -1;
+                for(let p in playerCorrectCounts) {
+                    if(playerCorrectCounts[p] > maxCount) {
+                        maxCount = playerCorrectCounts[p];
+                        mvpName = p;
+                    }
+                }
+                if(maxCount <= 0) mvpName = "لم يسجل إجابات";
+
+                socket.emit('game_action', {
+                    room: roomName,
+                    action: 'GAME_OVER',
+                    winner: winningTeam,
+                    loser: losingTeam,
+                    winScore: winningScore,
+                    loseScore: losingScore,
+                    mvp: mvpName,
+                    mvpCount: maxCount > 0 ? maxCount : 0,
+                    allStats: playerCorrectCounts
+                });
+                alert(`🏆 وانتهت اللعبة بفوز (${winningTeam})! تم إرسال النتائج للشاشة الكبيرة.`);
             }
         }
 
@@ -512,6 +540,7 @@
                 score1 = 0; score2 = 0;
                 streak1 = 0; streak2 = 0;
                 team1Perks = []; team2Perks = [];
+                playerCorrectCounts = {};
                 document.getElementById('liveScore1').innerText = 0;
                 document.getElementById('liveScore2').innerText = 0;
                 document.getElementById('streak1Display').innerText = `الستريك: 0/3 🔥`;
@@ -520,6 +549,7 @@
                 document.getElementById('t1UsePerkBtn').style.display = 'none';
                 document.getElementById('t2PerkText').innerText = "لا توجد ميزات محفوظة";
                 document.getElementById('t2UsePerkBtn').style.display = 'none';
+                updateStatsUI();
                 socket.emit('game_action', { room: roomName, action: 'SCORE', s1: 0, s2: 0 });
             }
         }
