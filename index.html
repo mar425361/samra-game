@@ -42,7 +42,6 @@
         .wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-bottom: 25px solid #f59e0b; z-index: 10; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
 
         .perks-wheel-container { position: relative; width: 220px; height: 220px; margin: 15px auto; display: none; }
-        /* عجلة المساعدات مقسومة إلى 3 أقسام متساوية (120 درجة لكل قسم) */
         .perks-wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #10b981; background: conic-gradient(#f59e0b 0deg 120deg, #3b82f6 120deg 240deg, #8b5cf6 240deg 360deg); box-shadow: 0 0 30px rgba(16,185,129,0.7); }
 
         #perkResultBanner { font-size: 1.8rem; font-weight: 900; color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 15px 30px; border-radius: 16px; border: 2px dashed #10b981; margin: 20px 0; display: none; box-shadow: 0 0 30px rgba(16,185,129,0.4); animation: popIn 0.5s ease; }
@@ -86,7 +85,7 @@
         .team-score { font-size: 1.8rem; font-weight: 900; color: #fff; }
         .members-list { font-size: 0.85rem; color: #cbd5e1; background: rgba(15,23,42,0.5); padding: 8px; border-radius: 8px; min-height: 35px; line-height: 1.5; }
         
-        .perk-display-box { background: rgba(245, 158, 11, 0.15); border: 1px dashed #f59e0b; color: #fde047; padding: 8px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; text-align: center; margin-top: 6px; display: none; }
+        .perk-display-box { background: rgba(245, 158, 11, 0.15); border: 1px dashed #f59e0b; color: #fde047; padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; text-align: right; margin-top: 6px; display: none; max-height: 90px; overflow-y: auto; line-height: 1.4; }
 
         .qr-section { background: rgba(30, 41, 59, 0.85); border-radius: 18px; padding: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;}
         #qrcode { background: #fff; padding: 6px; border-radius: 10px; margin-bottom: 4px; }
@@ -100,9 +99,10 @@
     <audio id="soundPop" src="https://assets.mixkit.co/active_storage/sfx/1114/1114-preview.mp3" preload="auto"></audio>
     <audio id="soundWin" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3" preload="auto"></audio>
     <audio id="soundTick" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+    <!-- جرس نهاية الوقت -->
+    <audio id="soundBell" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
     <div class="header-container">
-        <!-- تم تعديل الشعار لتجنب ظهور كلمة الشعار في حال عدم توفر الصورة -->
         <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="" class="header-logo" id="headerLogoImg" style="display:none;">
         <h1>🔥 صدام الأفكار.. مع عمار الدمار 🔥</h1>
     </div>
@@ -144,7 +144,7 @@
                     <span class="team-score" id="score1">0</span>
                 </div>
                 <div class="members-list" id="displayMembers1">الأعضاء: لم يتم الإضافة</div>
-                <div class="perk-display-box" id="team1PerkDisplay">✨ مساعدة: لا توجد</div>
+                <div class="perk-display-box" id="team1PerkDisplay">✨ الميزات: لا توجد</div>
             </div>
 
             <div class="score-box team2-box">
@@ -153,7 +153,7 @@
                     <span class="team-score" id="score2">0</span>
                 </div>
                 <div class="members-list" id="displayMembers2">الأعضاء: لم يتم الإضافة</div>
-                <div class="perk-display-box" id="team2PerkDisplay">✨ مساعدة: لا توجد</div>
+                <div class="perk-display-box" id="team2PerkDisplay">✨ الميزات: لا توجد</div>
             </div>
 
             <div class="qr-section">
@@ -222,6 +222,7 @@
                     clearInterval(countdownInterval);
                     display.textContent = `⏰ انتهى الوقت!`;
                     display.style.color = '#f59e0b';
+                    playSound('soundBell'); // تشغيل الجرس عند انتهاء الوقت تماماً
                 }
             }, 1000);
         }
@@ -329,11 +330,10 @@
                 document.getElementById('answerText').innerText = "💡 الإجابة: " + data.a;
                 document.getElementById('answerText').style.display = 'none';
                 
-                let timerSeconds = data.isConsultation ? 60 : 30;
-                startTimer(timerSeconds);
+                startTimer(30); // الوقت الافتراضي 30 ثانية للسؤال
             } 
             else if (data.action === 'START_CONSULTATION_TIMER') {
-                startTimer(60);
+                startTimer(60); // 60 ثانية لميزة استشارة الفريق
             }
             else if (data.action === 'SHOW_A') {
                 stopAndHideTimer();
@@ -355,25 +355,24 @@
                 const perkBox1 = document.getElementById('team1PerkDisplay');
                 const perkBox2 = document.getElementById('team2PerkDisplay');
                 
-                if(data.perk) {
+                if(data.latestPerk) {
                     perkBanner.style.display = 'block';
-                    // استخدام اسم الفريق الحقيقي المرسل من لوحة التحكم (مثل: بريدة، عنيزة)
-                    perkBanner.innerText = `🎁 ميزة جديدة لـ (${data.teamName}): ${data.perk}`;
+                    perkBanner.innerText = `🎁 ميزة جديدة لـ (${data.teamName}): ${data.latestPerk}`;
                 } else {
                     perkBanner.style.display = 'none';
                 }
 
                 if(data.teamNum === 1) {
-                    if(data.perk) {
+                    if(data.perks && data.perks.length > 0) {
                         perkBox1.style.display = 'block';
-                        perkBox1.innerText = "✨ مساعدة: " + data.perk;
+                        perkBox1.innerHTML = "✨ الميزات:<br>" + data.perks.join('<br>');
                     } else {
                         perkBox1.style.display = 'none';
                     }
                 } else if(data.teamNum === 2) {
-                    if(data.perk) {
+                    if(data.perks && data.perks.length > 0) {
                         perkBox2.style.display = 'block';
-                        perkBox2.innerText = "✨ مساعدة: " + data.perk;
+                        perkBox2.innerHTML = "✨ الميزات:<br>" + data.perks.join('<br>');
                     } else {
                         perkBox2.style.display = 'none';
                     }
