@@ -194,7 +194,10 @@
                     <button class="btn-minus" onclick="deductPoints(2)">-1 خطأ</button>
                 </div>
             </div>
-            <button class="btn-small" style="background: #475569; width: 100%; padding: 8px; font-size: 0.85rem;" onclick="resetScores()">🔄 تصفير النقاط والستريك</button>
+            
+            <!-- زر إعادة اللعب والعودة للبداية -->
+            <button class="btn-main" style="background: #ef4444; color: white; margin-top: 10px;" onclick="resetAndRestartGame()">🔄 إنهاء الجولة وإعادة اللعب من جديد</button>
+            <button class="btn-small" style="background: #475569; width: 100%; padding: 8px; font-size: 0.85rem; margin-top: 8px;" onclick="resetScores()">🔄 تصفير النقاط والستريك فقط</button>
         </div>
     </div>
 
@@ -494,7 +497,6 @@
             }
 
             if(winningTeam) {
-                // إيجاد الـ MVP
                 let mvpName = "لا يوجد";
                 let maxCount = -1;
                 for(let p in playerCorrectCounts) {
@@ -505,6 +507,9 @@
                 }
                 if(maxCount <= 0) mvpName = "لم يسجل إجابات";
 
+                const t1Members = Array.from(document.querySelectorAll('.t1-member')).map(i => i.value).filter(v => v.trim() !== "");
+                const t2Members = Array.from(document.querySelectorAll('.t2-member')).map(i => i.value).filter(v => v.trim() !== "");
+
                 socket.emit('game_action', {
                     room: roomName,
                     action: 'GAME_OVER',
@@ -514,9 +519,36 @@
                     loseScore: losingScore,
                     mvp: mvpName,
                     mvpCount: maxCount > 0 ? maxCount : 0,
+                    t1Name: t1RealName,
+                    t2Name: t2RealName,
+                    t1Members: t1Members,
+                    t2Members: t2Members,
                     allStats: playerCorrectCounts
                 });
                 alert(`🏆 وانتهت اللعبة بفوز (${winningTeam})! تم إرسال النتائج للشاشة الكبيرة.`);
+            }
+        }
+
+        function resetAndRestartGame() {
+            if(confirm("هل تريد إنهاء الجولة والعودة للبداية لبدء لعبة جديدة؟")) {
+                score1 = 0; score2 = 0;
+                streak1 = 0; streak2 = 0;
+                team1Perks = []; team2Perks = [];
+                playerCorrectCounts = {};
+                lastPlayer1 = ""; lastPlayer2 = "";
+                selectedPlayer1 = ""; selectedPlayer2 = "";
+                document.getElementById('liveScore1').innerText = 0;
+                document.getElementById('liveScore2').innerText = 0;
+                document.getElementById('streak1Display').innerText = `الستريك: 0/3 🔥`;
+                document.getElementById('streak2Display').innerText = `الستريك: 0/3 🔥`;
+                document.getElementById('t1PerkText').innerText = "لا توجد ميزات محفوظة";
+                document.getElementById('t1UsePerkBtn').style.display = 'none';
+                document.getElementById('t2PerkText').innerText = "لا توجد ميزات محفوظة";
+                document.getElementById('t2UsePerkBtn').style.display = 'none';
+                updateStatsUI();
+                socket.emit('game_action', { room: roomName, action: 'RESTART_GAME' });
+                switchTab(0);
+                alert("تمت العودة للبداية بنجاح! جاهزون لجولة جديدة.");
             }
         }
 
