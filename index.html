@@ -76,18 +76,23 @@
             box-shadow: 0 0 20px rgba(16,185,129,0.2);
         }
 
-        /* نافذة نهاية اللعبة (Game Over Modal) */
+        /* نافذة نهاية اللعبة المرتبة (Game Over Modal) */
         #gameOverModal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(15px);
+            background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(15px);
             display: none; flex-direction: column; align-items: center; justify-content: center;
             z-index: 100; padding: 20px; text-align: center; animation: fadeIn 0.5s ease;
         }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        .game-over-title { font-size: 3rem; color: #f59e0b; font-weight: 900; margin-bottom: 15px; text-shadow: 0 0 30px rgba(245,158,11,0.6); }
-        .winner-box { font-size: 2rem; color: #10b981; font-weight: 900; margin-bottom: 10px; background: rgba(16,185,129,0.1); padding: 10px 30px; border-radius: 50px; border: 2px solid #10b981; }
-        .mvp-box { font-size: 1.6rem; color: #fde047; font-weight: 700; margin: 15px 0; background: rgba(245,158,11,0.15); padding: 8px 25px; border-radius: 14px; border: 1px dashed #f59e0b; }
-        .stats-summary-list { font-size: 1.1rem; color: #cbd5e1; background: rgba(30,41,59,0.9); padding: 15px 25px; border-radius: 14px; max-height: 200px; overflow-y: auto; width: 100%; max-width: 600px; line-height: 1.6; border: 1px solid #334155; }
+        .game-over-title { font-size: 2.5rem; color: #f59e0b; font-weight: 900; margin-bottom: 10px; text-shadow: 0 0 25px rgba(245,158,11,0.6); }
+        .mvp-banner { font-size: 1.4rem; color: #fde047; font-weight: 700; margin-bottom: 20px; background: rgba(245,158,11,0.15); padding: 8px 25px; border-radius: 14px; border: 1px dashed #f59e0b; }
+        
+        .teams-summary-row { display: flex; justify-content: center; gap: 20px; width: 100%; max-width: 900px; margin-bottom: 15px; }
+        .team-summary-card { flex: 1; background: rgba(30, 41, 59, 0.9); border: 2px solid #334155; border-radius: 16px; padding: 15px; text-align: right; }
+        .team-summary-card.winner { border-color: #10b981; box-shadow: 0 0 20px rgba(16,185,129,0.3); }
+        .team-summary-card.loser { border-color: #ef4444; opacity: 0.85; }
+        .team-summary-title { font-size: 1.3rem; font-weight: 900; margin-bottom: 8px; display: flex; justify-content: space-between; }
+        .team-members-stats { font-size: 0.95rem; color: #cbd5e1; line-height: 1.6; max-height: 150px; overflow-y: auto; }
         
         .sidebar { flex: 1; display: flex; flex-direction: column; gap: 12px; max-width: 320px; }
         .score-box { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; padding: 15px; display: flex; flex-direction: column; gap: 6px; }
@@ -114,13 +119,21 @@
     <audio id="soundTick" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
     <audio id="soundBell" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
-    <!-- نافذة النهاية تظهر تلقائياً عند فوز أحد الفريقين -->
+    <!-- نافذة النهاية المرتبة جنب بعض -->
     <div id="gameOverModal">
         <div class="game-over-title">🏆 نهاية المعركة الكبرى 🏆</div>
-        <div class="winner-box" id="modalWinnerName">الفائز: الفريق الأول</div>
-        <div style="color: #94a3b8; font-size: 1.1rem; margin-bottom: 10px;" id="modalScoreDetails">النتيجة: 10 مقابل 5</div>
-        <div class="mvp-box" id="modalMvpDisplay">⭐ نجم المعركة (MVP): ...</div>
-        <div class="stats-summary-list" id="modalStatsList">قائمة تفاصيل الإجابات...</div>
+        <div class="mvp-banner" id="modalMvpDisplay">⭐ نجم المعركة (MVP): ...</div>
+        
+        <div class="teams-summary-row">
+            <div class="team-summary-card" id="teamCard1">
+                <div class="team-summary-title" id="summaryTeam1Name">الفريق الأول <span>0</span></div>
+                <div class="team-members-stats" id="summaryTeam1Members">الأعضاء...</div>
+            </div>
+            <div class="team-summary-card" id="teamCard2">
+                <div class="team-summary-title" id="summaryTeam2Name">الفريق الثاني <span>0</span></div>
+                <div class="team-members-stats" id="summaryTeam2Members">الأعضاء...</div>
+            </div>
+        </div>
     </div>
 
     <div class="header-container">
@@ -403,18 +416,50 @@
                 stopAndHideTimer();
                 playSound('soundWin');
                 
-                document.getElementById('modalWinnerName').innerText = `🏆 الفائز: ${data.winner}`;
-                document.getElementById('modalScoreDetails').innerText = `النتيجة النهائية: (${data.winScore}) مقابل (${data.loseScore}) الخاسر: (${data.loser})`;
                 document.getElementById('modalMvpDisplay').innerText = `⭐ نجم المعركة (MVP): ${data.mvp} (${data.mvpCount} إجابات صحيحة)`;
 
-                let statsHtml = "<b>📊 قائمة إجابات الأفراد الصحيحة:</b><br>";
-                let sorted = Object.keys(data.allStats).sort((a,b) => data.allStats[b] - data.allStats[a]);
-                sorted.forEach(p => {
-                    statsHtml += `• ${p}: <b>${data.allStats[p]}</b> إجابات<br>`;
-                });
-                document.getElementById('modalStatsList').innerHTML = statsHtml;
+                let t1Card = document.getElementById('teamCard1');
+                let t2Card = document.getElementById('teamCard2');
+                
+                document.getElementById('summaryTeam1Name').innerHTML = `${data.t1Name} <span>(${data.t1Name === data.winner ? data.winScore : data.loseScore})</span>`;
+                document.getElementById('summaryTeam2Name').innerHTML = `${data.t2Name} <span>(${data.t2Name === data.winner ? data.winScore : data.loseScore})</span>`;
+
+                if(data.t1Name === data.winner) {
+                    t1Card.className = "team-summary-card winner";
+                    t2Card.className = "team-summary-card loser";
+                } else {
+                    t1Card.className = "team-summary-card loser";
+                    t2Card.className = "team-summary-card winner";
+                }
+
+                let t1Html = "<b>أعضاء الفريق وإجاباتهم:</b><br>";
+                if(data.t1Members && data.t1Members.length > 0) {
+                    data.t1Members.forEach(m => {
+                        let count = data.allStats[m] || 0;
+                        t1Html += `• ${m}: <b>${count}</b> صح<br>`;
+                    });
+                } else { t1Html += "لا توجد أعضاء مسجلة"; }
+                document.getElementById('summaryTeam1Members').innerHTML = t1Html;
+
+                let t2Html = "<b>أعضاء الفريق وإجاباتهم:</b><br>";
+                if(data.t2Members && data.t2Members.length > 0) {
+                    data.t2Members.forEach(m => {
+                        let count = data.allStats[m] || 0;
+                        t2Html += `• ${m}: <b>${count}</b> صح<br>`;
+                    });
+                } else { t2Html += "لا توجد أعضاء مسجلة"; }
+                document.getElementById('summaryTeam2Members').innerHTML = t2Html;
 
                 document.getElementById('gameOverModal').style.display = 'flex';
+            }
+            else if (data.action === 'RESTART_GAME') {
+                stopAndHideTimer();
+                document.getElementById('gameOverModal').style.display = 'none';
+                document.getElementById('score1').innerText = '0';
+                document.getElementById('score2').innerText = '0';
+                document.getElementById('categoryTag').innerText = "امسح كود الجوال للبدء 📱";
+                document.getElementById('questionContentBox').style.display = 'none';
+                document.getElementById('clashContainer').style.display = 'none';
             }
         });
     </script>
