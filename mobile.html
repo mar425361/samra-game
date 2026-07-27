@@ -53,6 +53,9 @@
         .perk-management-box h4 { color: #f59e0b; margin-bottom: 8px; font-size: 14px; }
         .perk-status-text { font-size: 12px; color: #cbd5e1; margin-bottom: 8px; max-height: 80px; overflow-y: auto; text-align: right; line-height: 1.4; }
 
+        .stats-box { background: #1e293b; border: 1px solid #38bdf8; border-radius: 12px; padding: 12px; margin-bottom: 15px; font-size: 0.85rem; }
+        .stats-box h4 { color: #38bdf8; margin-bottom: 6px; text-align: center; }
+
         .next-q-box { background: #1e293b; padding: 12px; border-radius: 8px; border: 1px dashed #f59e0b; margin-bottom: 10px; font-size: 13px; color: #fde047; text-align: center; line-height: 1.5; }
         .btn-change-q { background: #64748b; color: #fff; margin-bottom: 15px; display: none; }
         hr { border-color: #334155; margin: 20px 0; }
@@ -69,6 +72,11 @@
 
     <!-- التاب الأول: الفرق والأعضاء -->
     <div class="panel active">
+        <div class="form-group">
+            <label>هدف الفوز (عدد النقاط المطلوبة للحسم):</label>
+            <input type="number" id="targetWinningPoints" value="10" min="1">
+        </div>
+        <hr>
         <div class="form-group">
             <label>اسم الفريق الأول:</label>
             <input type="text" id="team1Name" value="فريق الصقور">
@@ -111,7 +119,7 @@
 
         <button class="btn-main" style="background: #ef4444; margin-top: 0; font-size: 17px;" onclick="spinTheWheel()">🎡 تدوير عجلة الحظ لاختيار الفئة</button>
 
-        <!-- لوحة إدارة المساعدات المتراكمة للفريقين (بدون زر تدوير يدوي) -->
+        <!-- لوحة إدارة المساعدات المتراكمة -->
         <div style="display: flex; gap: 10px; margin-top: 15px;">
             <div class="perk-management-box" style="flex:1;">
                 <h4 id="perkBoxTitle1">فريق الصقور</h4>
@@ -123,6 +131,12 @@
                 <div class="perk-status-text" id="t2PerkText">لا توجد ميزات محفوظة</div>
                 <button class="btn-small" style="background:#f59e0b; color:#000; width:100%; display:none;" id="t2UsePerkBtn" onclick="usePerk(2)">✨ استخدام أقدم ميزة</button>
             </div>
+        </div>
+
+        <!-- لوحة إحصائيات الأفراد وتتبع الإجابات الصحيحة -->
+        <div class="stats-box">
+            <h4>📊 إحصائيات إجابات الأعضاء (كم جاوب صح):</h4>
+            <div id="playerStatsDisplay" style="color: #cbd5e1; line-height: 1.5;">لم يتم رصد إجابات بعد</div>
         </div>
 
         <hr>
@@ -169,14 +183,14 @@
                     <div class="team-score-title" id="scoreCardT1Name">الفريق الأول</div>
                     <div class="team-score-value" id="liveScore1">0</div>
                     <div class="streak-indicator" id="streak1Display">الستريك: 0/3 🔥</div>
-                    <button class="quick-award-btn" onclick="awardPoints(1)" style="margin-top: 8px;">+ منح</button>
+                    <button class="quick-award-btn" onclick="awardPoints(1)" style="margin-top: 8px;">+ منح للفريق</button>
                     <button class="btn-minus" onclick="deductPoints(1)">-1 خطأ</button>
                 </div>
                 <div class="team-score-card t2">
                     <div class="team-score-title" id="scoreCardT2Name">الفريق الثاني</div>
                     <div class="team-score-value" id="liveScore2">0</div>
                     <div class="streak-indicator" id="streak2Display">الستريك: 0/3 🔥</div>
-                    <button class="quick-award-btn" onclick="awardPoints(2)" style="background: #f59e0b; color: #0f172a; margin-top: 8px;">+ منح</button>
+                    <button class="quick-award-btn" onclick="awardPoints(2)" style="background: #f59e0b; color: #0f172a; margin-top: 8px;">+ منح للفريق</button>
                     <button class="btn-minus" onclick="deductPoints(2)">-1 خطأ</button>
                 </div>
             </div>
@@ -194,16 +208,17 @@
 
         let questionBank = {};
         let currentCat = "", currentQ = "", currentA = "";
-        let selectedPlayer1 = "";
-        let selectedPlayer2 = "";
-        let lastPlayer1 = ""; 
-        let lastPlayer2 = ""; 
+        let selectedPlayer1 = "", selectedPlayer2 = "";
+        let lastPlayer1 = "", lastPlayer2 = ""; 
         let score1 = 0, score2 = 0;
         let streak1 = 0, streak2 = 0;
+        let targetWinningPoints = 10;
         
-        // قوائم لتخزين الميزات المتراكمة لكل فريق بلا حدود
         let team1Perks = [];
         let team2Perks = [];
+        
+        // كائن لتخزين عدد الإجابات الصحيحة لكل لاعب بالتحديد
+        let playerCorrectCounts = {};
 
         fetch('questions.json?v=' + new Date().getTime())
             .then(response => response.json())
@@ -226,7 +241,7 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.panel')[index].classList.add('active');
             document.querySelectorAll('.tab-btn')[index].classList.add('active');
-            if(index === 1) { updatePlayerChips(); updateScoreCardNames(); }
+            if(index === 1) { updatePlayerChips(); updateScoreCardNames(); updateStatsUI(); }
         }
 
         function updateScoreCardNames() {
@@ -257,6 +272,11 @@
             const t1Members = Array.from(document.querySelectorAll('.t1-member')).map(i => i.value).filter(v => v.trim() !== "");
             const t2Members = Array.from(document.querySelectorAll('.t2-member')).map(i => i.value).filter(v => v.trim() !== "");
 
+            // تهيئة عداد الإجابات للأعضاء الجدد
+            t1Members.concat(t2Members).forEach(name => {
+                if(playerCorrectCounts[name] === undefined) playerCorrectCounts[name] = 0;
+            });
+
             const t1Container = document.getElementById('t1ChipsContainer');
             const t2Container = document.getElementById('t2ChipsContainer');
 
@@ -265,7 +285,7 @@
                 const chip = document.createElement('div');
                 let isRecent = (lastPlayer1 === name);
                 chip.className = 'chip' + (selectedPlayer1 === name ? ' selected' : '') + (isRecent ? ' disabled-recent' : '');
-                chip.innerText = name + (isRecent ? ' (شارك)' : '');
+                chip.innerText = `${name} (${playerCorrectCounts[name]} صح)` + (isRecent ? ' [شارك]' : '');
                 chip.onclick = () => {
                     if(isRecent) {
                         alert("⚠️ هذا اللاعب شارك في الجولة الأخيرة! اختر عضواً آخر لكي لا يتكرر.");
@@ -283,7 +303,7 @@
                 const chip = document.createElement('div');
                 let isRecent = (lastPlayer2 === name);
                 chip.className = 'chip' + (selectedPlayer2 === name ? ' selected' : '') + (isRecent ? ' disabled-recent' : '');
-                chip.innerText = name + (isRecent ? ' (شارك)' : '');
+                chip.innerText = `${name} (${playerCorrectCounts[name]} صح)` + (isRecent ? ' [شارك]' : '');
                 chip.onclick = () => {
                     if(isRecent) {
                         alert("⚠️ هذا اللاعب شارك في الجولة الأخيرة! اختر عضواً آخر لكي لا يتكرر.");
@@ -295,6 +315,24 @@
                 };
                 t2Container.appendChild(chip);
             });
+        }
+
+        function updateStatsUI() {
+            const statsContainer = document.getElementById('playerStatsDisplay');
+            let html = "";
+            let sortedPlayers = Object.keys(playerCorrectCounts).sort((a,b) => playerCorrectCounts[b] - playerCorrectCounts[a]);
+            
+            if(sortedPlayers.length === 0 || sortedPlayers.every(p => playerCorrectCounts[p] === 0)) {
+                statsContainer.innerHTML = "لم يسجل أي لاعب إجابات صحيحة حتى الآن.";
+                return;
+            }
+
+            sortedPlayers.forEach(name => {
+                if(playerCorrectCounts[name] > 0) {
+                    html += `⭐ <b>${name}</b>: ${playerCorrectCounts[name]} إجابات صحيحة<br>`;
+                }
+            });
+            statsContainer.innerHTML = html;
         }
 
         function spinTheWheel() {
@@ -328,7 +366,6 @@
             document.getElementById('previewBox').innerHTML = `<b>الفئة:</b> <span style="color:#38bdf8">${currentCat}</span><br><b>السؤال <span style="color:#ef4444">(بديل)</span>:</b> ${currentQ}<br><span style="color:#34d399"><b>الجواب:</b> ${currentA}</span>`;
         }
 
-        // تفعيل عجلة المساعدات تلقائياً عند الستريك (بدون زر يدوي)
         function triggerPerksWheel(targetTeamNum) {
             const perksList = ["🎯 الهدية المفاجئة (+ نقطة واحدة)", "👥 استشارة الفريق (60 ثانية)", "⭐ نقطة مضاعفة"];
             const randomPerk = perksList[Math.floor(Math.random() * perksList.length)];
@@ -337,7 +374,6 @@
             const t2RealName = document.getElementById('team2Name').value || "الفريق الثاني";
             let winningTeamName = (targetTeamNum === 1) ? t1RealName : t2RealName;
 
-            // إذا طلعت الهدية المفاجئة، تنضاف النقطة تلقائياً للرصيد فوراً
             if(randomPerk.includes("الهدية المفاجئة")) {
                 if(targetTeamNum === 1) {
                     score1 += 1;
@@ -347,9 +383,9 @@
                     document.getElementById('liveScore2').innerText = score2;
                 }
                 socket.emit('game_action', { room: roomName, action: 'SCORE', s1: score1, s2: score2 });
+                checkWinner();
             }
 
-            // إضافة الميزة الجديدة لقائمة الفريق بدون مسح الميزات السابقة
             if(targetTeamNum === 1) {
                 team1Perks.push(randomPerk);
                 document.getElementById('t1PerkText').innerHTML = team1Perks.join('<br>');
@@ -377,7 +413,7 @@
             let perksList = teamNum === 1 ? team1Perks : team2Perks;
             if(perksList.length === 0) return;
 
-            let perkToUse = perksList.shift(); // أخذ أقدم ميزة (FIFO)
+            let perkToUse = perksList.shift(); 
             const t1RealName = document.getElementById('team1Name').value || "الفريق الأول";
             const t2RealName = document.getElementById('team2Name').value || "الفريق الثاني";
             let teamName = teamNum === 1 ? t1RealName : t2RealName;
@@ -404,6 +440,15 @@
             const t1RealName = document.getElementById('team1Name').value || "الفريق الأول";
             const t2RealName = document.getElementById('team2Name').value || "الفريق الثاني";
             
+            // تسجيل نقطة صحيحة للاعب الذي شارك للتو
+            if(teamNumber === 1 && selectedPlayer1) {
+                playerCorrectCounts[selectedPlayer1] = (playerCorrectCounts[selectedPlayer1] || 0) + 1;
+            } else if(teamNumber === 2 && selectedPlayer2) {
+                playerCorrectCounts[selectedPlayer2] = (playerCorrectCounts[selectedPlayer2] || 0) + 1;
+            }
+            updatePlayerChips();
+            updateStatsUI();
+
             if(teamNumber === 1) {
                 score1 += pointsValue;
                 document.getElementById('liveScore1').innerText = score1;
@@ -434,6 +479,17 @@
             }
 
             socket.emit('game_action', { room: roomName, action: 'SCORE', s1: score1, s2: score2 });
+            checkWinner();
+        }
+
+        function checkWinner() {
+            const t1RealName = document.getElementById('team1Name').value || "الفريق الأول";
+            const t2RealName = document.getElementById('team2Name').value || "الفريق الثاني";
+            if(score1 >= targetWinningPoints) {
+                alert(`🏆 مبروك الفوز لـ (${t1RealName}) بوصوله لهدف النقاط (${targetWinningPoints})!`);
+            } else if(score2 >= targetWinningPoints) {
+                alert(`🏆 مبروك الفوز لـ (${t2RealName}) بوصوله لهدف النقاط (${targetWinningPoints})!`);
+            }
         }
 
         function deductPoints(teamNumber) {
@@ -469,6 +525,7 @@
         }
 
         function saveTeamsAndSync() {
+            targetWinningPoints = parseInt(document.getElementById('targetWinningPoints').value) || 10;
             const t1Members = Array.from(document.querySelectorAll('.t1-member')).map(i => i.value).filter(v => v.trim() !== "");
             const t2Members = Array.from(document.querySelectorAll('.t2-member')).map(i => i.value).filter(v => v.trim() !== "");
             socket.emit('game_action', {
@@ -478,8 +535,9 @@
                 m1: t1Members, m2: t2Members
             });
             updateScoreCardNames();
+            updatePlayerChips();
             switchTab(1);
-            alert("تم حفظ وتحديث الفرق والأعضاء بنجاح!");
+            alert("تم حفظ وتحديث الفرق والأهداف بنجاح!");
         }
 
         function sendNomination() {
