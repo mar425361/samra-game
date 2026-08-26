@@ -1,626 +1,354 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>لوحة التحكم - صدام الأفكار مع عمار الدمار</title>
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
-        body { background: #0f172a; color: #f8fafc; padding: 15px; padding-bottom: 50px; direction: rtl; }
-        h2 { text-align: center; color: #f59e0b; margin-bottom: 15px; font-weight: 900; }
-        
-        .tabs { display: flex; justify-content: space-around; margin-bottom: 20px; background: #1e293b; padding: 10px; border-radius: 12px; border: 1px solid #334155; }
-        .tab-btn { background: none; border: none; color: #94a3b8; font-size: 14px; cursor: pointer; padding: 8px; font-weight: 700; transition: 0.2s; }
-        .tab-btn.active { color: #f59e0b; border-bottom: 2px solid #f59e0b; }
-        
-        .panel { display: none; }
-        .panel.active { display: block; }
-        
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; color: #cbd5e1; font-size: 0.9rem; font-weight: 700; }
-        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 1rem; }
-        
-        button.btn-main { width: 100%; padding: 12px; background: #f59e0b; border: none; color: #000; font-weight: 900; border-radius: 8px; cursor: pointer; font-size: 1rem; margin-top: 10px; transition: 0.2s; }
-        button.btn-main:active { transform: scale(0.97); opacity: 0.9; }
-        
-        .member-row { display: flex; gap: 5px; margin-bottom: 8px; }
-        .btn-small { padding: 5px 12px; background: #ef4444; border: none; color: white; border-radius: 6px; cursor: pointer; font-weight: 700; }
-        
-        .players-picker-container { display: flex; gap: 10px; margin-bottom: 15px; }
-        .picker-box { flex: 1; background: #1e293b; padding: 12px; border-radius: 12px; border: 1px solid #334155; }
-        .picker-box h4 { margin: 0 0 10px 0; font-size: 14px; color: #38bdf8; text-align: center; font-weight: 700; }
-        .player-chips { display: flex; flex-wrap: wrap; gap: 6px; max-height: 130px; overflow-y: auto; }
-        .chip { background: #0f172a; border: 1px solid #475569; color: #cbd5e1; padding: 6px 12px; border-radius: 20px; font-size: 13px; cursor: pointer; transition: 0.2s; }
-        .chip:hover { background: #3b82f6; color: #fff; }
-        .chip.selected { background: #10b981; border-color: #34d399; color: #fff; font-weight: bold; box-shadow: 0 0 10px rgba(16,185,129,0.4); }
-        .chip.disabled-recent { background: #7f1d1d !important; border-color: #ef4444 !important; color: #fca5a5 !important; cursor: not-allowed; opacity: 0.7; text-decoration: line-through; }
-
-        .modern-score-panel { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
-        .teams-score-row { display: flex; justify-content: space-between; gap: 15px; margin-bottom: 15px; }
-        .team-score-card { flex: 1; background: #0f172a; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #475569; }
-        .team-score-card.t1 { border-right: 4px solid #3b82f6; }
-        .team-score-card.t2 { border-right: 4px solid #f59e0b; }
-        .team-score-title { font-size: 0.85rem; color: #94a3b8; font-weight: 700; }
-        .team-score-value { font-size: 2rem; font-weight: 900; color: #fff; margin: 5px 0; }
-        .streak-indicator { font-size: 0.75rem; color: #fde047; margin-top: 4px; font-weight: 700; background: #334155; padding: 2px 6px; border-radius: 4px; display: inline-block; }
-        
-        .quick-award-btn { background: #10b981; color: #fff; border: none; padding: 6px 10px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer; width: 100%; margin-bottom: 5px; }
-        .btn-minus { background: #ef4444; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer; width: 100%; }
-
-        .perk-management-box { background: #1e293b; border: 1px solid #f59e0b; border-radius: 12px; padding: 12px; margin-bottom: 15px; text-align: center; }
-        .perk-management-box h4 { color: #f59e0b; margin-bottom: 8px; font-size: 14px; }
-        .perk-status-text { font-size: 12px; color: #cbd5e1; margin-bottom: 8px; max-height: 80px; overflow-y: auto; text-align: right; line-height: 1.4; }
-
-        .stats-box { background: #1e293b; border: 1px solid #38bdf8; border-radius: 12px; padding: 12px; margin-bottom: 15px; font-size: 0.85rem; }
-        .stats-box h4 { color: #38bdf8; margin-bottom: 6px; text-align: center; }
-
-        .next-q-box { background: #1e293b; padding: 12px; border-radius: 8px; border: 1px dashed #f59e0b; margin-bottom: 10px; font-size: 13px; color: #fde047; text-align: center; line-height: 1.5; }
-        .btn-change-q { background: #64748b; color: #fff; margin-bottom: 15px; display: none; }
-        hr { border-color: #334155; margin: 20px 0; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة التحكم — صدام الأفكار</title>
+  <script src="https://samra-server.onrender.com/socket.io/socket.io.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0f172a; --panel:#1e293b; --line:#334155; --muted:#94a3b8; --gold:#f59e0b; --blue:#3b82f6; --green:#10b981; --red:#ef4444; --purple:#8b5cf6; }
+    * { box-sizing:border-box; margin:0; padding:0; font-family:'Cairo',sans-serif; }
+    body { background:var(--bg); color:#f8fafc; padding:15px; padding-bottom:42px; }
+    h1 { text-align:center; color:var(--gold); font-size:1.35rem; font-weight:900; margin-bottom:5px; }
+    .connection { text-align:center; color:var(--muted); font-size:.76rem; margin-bottom:16px; }
+    .connection.online { color:#34d399; }.connection.offline { color:#f87171; }.connection.connecting { color:#fbbf24; }
+    .tabs { display:flex; justify-content:space-around; gap:5px; margin-bottom:18px; background:var(--panel); padding:7px; border-radius:12px; border:1px solid var(--line); }
+    .tab-btn { flex:1; background:none; border:none; color:var(--muted); font-size:.82rem; cursor:pointer; padding:9px 6px; font-weight:700; transition:.2s; }
+    .tab-btn.active { color:var(--gold); border-bottom:2px solid var(--gold); }
+    .panel { display:none; }.panel.active { display:block; }
+    .card, .modern-score-panel, .perk-management-box, .stats-box, .picker-box { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:13px; margin-bottom:14px; }
+    .form-group { margin-bottom:14px; } label { display:block; margin-bottom:5px; color:#cbd5e1; font-size:.86rem; font-weight:700; }
+    input,select { width:100%; padding:11px; border-radius:8px; border:1px solid #475569; background:var(--bg); color:#fff; font-size:.95rem; }
+    button { font-family:inherit; } button:disabled { cursor:not-allowed; opacity:.45; }
+    .btn-main { width:100%; padding:11px; background:var(--gold); border:none; color:#111827; font-weight:900; border-radius:8px; cursor:pointer; font-size:.92rem; margin-top:8px; transition:.2s; }
+    .btn-main:not(:disabled):active { transform:scale(.98); }
+    .btn-danger { background:var(--red); color:#fff; }.btn-blue { background:var(--blue); color:#fff; }.btn-green { background:var(--green); color:#fff; }.btn-purple { background:var(--purple); color:#fff; }.btn-slate { background:#475569; color:#fff; }
+    .btn-small { padding:5px 10px; background:var(--red); border:none; color:#fff; border-radius:6px; cursor:pointer; font-weight:700; font-size:.76rem; }
+    .member-row { display:flex; gap:6px; margin-bottom:7px; }.member-row input { min-width:0; }
+    .section-title { color:var(--gold); font-size:.86rem; font-weight:900; margin:2px 0 9px; }
+    .hint { color:var(--muted); font-size:.76rem; line-height:1.6; }.notice { background:rgba(245,158,11,.12); border:1px dashed var(--gold); border-radius:8px; padding:10px; color:#fde68a; line-height:1.55; font-size:.8rem; text-align:center; margin:10px 0; }
+    .notice.error { border-color:var(--red); color:#fecaca; background:rgba(239,68,68,.1); }.notice.success { border-color:var(--green); color:#bbf7d0; background:rgba(16,185,129,.1); }
+    .players-picker-container { display:flex; gap:9px; margin:12px 0; }.picker-box { flex:1; margin:0; padding:10px; }.picker-box h4 { margin:0 0 8px; font-size:.78rem; color:#7dd3fc; text-align:center; }
+    .player-chips { display:flex; flex-wrap:wrap; gap:6px; max-height:145px; overflow-y:auto; }.chip { background:var(--bg); border:1px solid #475569; color:#cbd5e1; padding:6px 9px; border-radius:18px; font-size:.72rem; cursor:pointer; transition:.2s; }.chip:hover { background:#334155; }.chip.selected { background:var(--green); border-color:#34d399; color:#fff; font-weight:bold; }.chip.recent { border-color:var(--red); color:#fca5a5; }.chip.disabled { background:#7f1d1d; color:#fecaca; cursor:not-allowed; opacity:.7; text-decoration:line-through; }
+    .teams-score-row { display:flex; gap:10px; margin-top:8px; }.team-score-card { flex:1; background:var(--bg); padding:11px; border-radius:8px; text-align:center; border:1px solid #475569; }.team-score-card.t1 { border-right:4px solid var(--blue); }.team-score-card.t2 { border-right:4px solid var(--gold); }.team-score-title { font-size:.78rem; color:var(--muted); font-weight:700; }.team-score-value { font-size:1.8rem; font-weight:900; color:#fff; margin:4px 0; }.streak-indicator { font-size:.68rem; color:#fde047; background:#334155; padding:2px 5px; border-radius:4px; display:inline-block; }.quick-award-btn { background:var(--green); color:#fff; border:none; padding:6px; border-radius:6px; font-weight:700; font-size:.72rem; cursor:pointer; width:100%; margin-top:7px; }.btn-minus { background:var(--red); color:#fff; border:none; padding:6px; border-radius:6px; font-weight:700; font-size:.72rem; cursor:pointer; width:100%; margin-top:5px; }
+    .perk-grid { display:flex; gap:10px; margin:14px 0; }.perk-management-box { flex:1; border-color:rgba(245,158,11,.7); margin:0; padding:10px; }.perk-management-box h4 { color:var(--gold); margin-bottom:6px; font-size:.76rem; text-align:center; }.perk-status-text { font-size:.72rem; color:#cbd5e1; min-height:38px; max-height:90px; overflow-y:auto; text-align:right; line-height:1.5; }.use-perk { width:100%; margin-top:7px; background:var(--blue); color:#fff; border:none; padding:6px; border-radius:6px; font-size:.7rem; cursor:pointer; font-weight:700; }
+    .stats-box { border-color:#38bdf8; font-size:.78rem; line-height:1.6; }.stats-box h4 { color:#7dd3fc; text-align:center; margin-bottom:6px; }
+    hr { border:0; border-top:1px solid var(--line); margin:18px 0; }.hidden { display:none !important; }
+  </style>
 </head>
 <body>
+  <h1>لوحة تحكم المايسترو</h1>
+  <div id="connectionStatus" class="connection connecting">◌ جارٍ الاتصال بسيرفر اللعبة…</div>
 
-    <h2>📱 لوحة تحكم المايسترو</h2>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="0" onclick="switchTab(0)">الفرق والأعضاء</button>
+    <button class="tab-btn" data-tab="1" onclick="switchTab(1)">إدارة المواجهة</button>
+  </div>
 
-    <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab(0)">الفرق والأعضاء</button>
-        <button class="tab-btn" onclick="switchTab(1)">إدارة المواجهة</button>
+  <section class="panel active" id="teamsPanel">
+    <div class="card">
+      <div class="form-group">
+        <label for="targetWinningPoints">هدف الفوز (نقاط صحيحة موجبة)</label>
+        <input type="number" id="targetWinningPoints" value="10" min="1" step="1" inputmode="numeric">
+      </div>
+      <hr>
+      <div class="form-group">
+        <label for="team1Name">اسم الفريق الأول</label>
+        <input type="text" id="team1Name" value="فريق الصقور" maxlength="40">
+      </div>
+      <div class="form-group">
+        <label>أعضاء الفريق الأول</label>
+        <div id="t1MembersContainer"><div class="member-row"><input type="text" class="t1-member" placeholder="اسم العضو" maxlength="40"></div></div>
+        <button class="btn-small" style="background:#10b981; margin-top:4px" onclick="addMemberField('t1MembersContainer','t1-member')">+ إضافة عضو</button>
+      </div>
+      <hr>
+      <div class="form-group">
+        <label for="team2Name">اسم الفريق الثاني</label>
+        <input type="text" id="team2Name" value="فريق النمور" maxlength="40">
+      </div>
+      <div class="form-group">
+        <label>أعضاء الفريق الثاني</label>
+        <div id="t2MembersContainer"><div class="member-row"><input type="text" class="t2-member" placeholder="اسم العضو" maxlength="40"></div></div>
+        <button class="btn-small" style="background:#10b981; margin-top:4px" onclick="addMemberField('t2MembersContainer','t2-member')">+ إضافة عضو</button>
+      </div>
+      <div id="teamsNotice" class="notice hidden"></div>
+      <button class="btn-main" onclick="saveTeamsAndSync()">حفظ الفرق وبدء الإعداد</button>
+    </div>
+  </section>
+
+  <section class="panel" id="gamePanel">
+    <div class="card">
+      <div class="section-title">حالة الجولة: <span id="phaseLabel">أدخل الفرق أولاً</span></div>
+      <div id="roundNotice" class="notice">احفظ الفرق أولاً، ثم دوّر العجلة لاختيار الفئة والسؤال.</div>
+      <div class="form-group">
+        <label for="categorySelect">الفئة المختارة</label>
+        <select id="categorySelect" disabled></select>
+      </div>
+      <button id="spinBtn" class="btn-main btn-danger" onclick="spinTheWheel()" disabled>تدوير العجلة واختيار الفئة</button>
+      <button id="changeQBtn" class="btn-main btn-slate hidden" onclick="changeQuestionLocally()">تغيير السؤال بسؤال جديد من نفس الفئة</button>
     </div>
 
-    <!-- التاب الأول: الفرق والأعضاء -->
-    <div class="panel active">
-        <div class="form-group">
-            <label>هدف الفوز (عدد النقاط المطلوبة للحسم):</label>
-            <input type="number" id="targetWinningPoints" value="10" min="1">
-        </div>
-        <hr>
-        <div class="form-group">
-            <label>اسم الفريق الأول:</label>
-            <input type="text" id="team1Name" value="فريق الصقور">
-        </div>
-        <div class="form-group">
-            <label>أعضاء الفريق الأول:</label>
-            <div id="t1MembersContainer">
-                <div class="member-row"><input type="text" class="t1-member" placeholder="اسم العضو"></div>
-            </div>
-            <button class="btn-small" style="background:#10b981; margin-top:5px;" onclick="addMemberField('t1MembersContainer', 't1-member')">+ إضافة عضو</button>
-        </div>
-
-        <hr>
-
-        <div class="form-group">
-            <label>اسم الفريق الثاني:</label>
-            <input type="text" id="team2Name" value="فريق النمور">
-        </div>
-        <div class="form-group">
-            <label>أعضاء الفريق الثاني:</label>
-            <div id="t2MembersContainer">
-                <div class="member-row"><input type="text" class="t2-member" placeholder="اسم العضو"></div>
-            </div>
-            <button class="btn-small" style="background:#10b981; margin-top:5px;" onclick="addMemberField('t2MembersContainer', 't2-member')">+ إضافة عضو</button>
-        </div>
-
-        <button class="btn-main" onclick="saveTeamsAndSync()">حفظ وتحديث أسماء الفرق والأعضاء</button>
+    <div class="perk-grid">
+      <div class="perk-management-box"><h4 id="perkBoxTitle1">الفريق الأول</h4><div id="t1PerkText" class="perk-status-text">لا توجد ميزات محفوظة</div><button id="t1UsePerkBtn" class="use-perk hidden" onclick="usePerk(1)">استخدام أقدم ميزة</button></div>
+      <div class="perk-management-box"><h4 id="perkBoxTitle2">الفريق الثاني</h4><div id="t2PerkText" class="perk-status-text">لا توجد ميزات محفوظة</div><button id="t2UsePerkBtn" class="use-perk hidden" onclick="usePerk(2)">استخدام أقدم ميزة</button></div>
     </div>
 
-    <!-- التاب الثاني: المواجهة والأسئلة -->
-    <div class="panel">
-        <div class="form-group">
-            <label>الفئة الحالية:</label>
-            <select id="categorySelect"></select>
-        </div>
+    <div class="stats-box"><h4>إحصاءات الإجابات الصحيحة</h4><div id="playerStatsDisplay">لم تسجل إجابات صحيحة حتى الآن.</div></div>
 
-        <div class="next-q-box" id="previewBox">اضغط على عجلة الحظ للبدء!</div>
-        
-        <button class="btn-main btn-change-q" id="changeQBtn" onclick="changeQuestionLocally()">🔄 تغيير السؤال (سؤال بديل)</button>
-
-        <button class="btn-main" style="background: #ef4444; margin-top: 0; font-size: 17px;" onclick="spinTheWheel()">🎡 تدوير عجلة الحظ لاختيار الفئة</button>
-
-        <!-- لوحة إدارة المساعدات المتراكمة -->
-        <div style="display: flex; gap: 10px; margin-top: 15px;">
-            <div class="perk-management-box" style="flex:1;">
-                <h4 id="perkBoxTitle1">فريق الصقور</h4>
-                <div class="perk-status-text" id="t1PerkText">لا توجد ميزات محفوظة</div>
-                <button class="btn-small" style="background:#3b82f6; width:100%; display:none;" id="t1UsePerkBtn" onclick="usePerk(1)">✨ استخدام أقدم ميزة</button>
-            </div>
-            <div class="perk-management-box" style="flex:1;">
-                <h4 id="perkBoxTitle2">فريق النمور</h4>
-                <div class="perk-status-text" id="t2PerkText">لا توجد ميزات محفوظة</div>
-                <button class="btn-small" style="background:#f59e0b; color:#000; width:100%; display:none;" id="t2UsePerkBtn" onclick="usePerk(2)">✨ استخدام أقدم ميزة</button>
-            </div>
-        </div>
-
-        <!-- لوحة إحصائيات الأفراد وتتبع الإجابات الصحيحة -->
-        <div class="stats-box">
-            <h4>📊 إحصائيات إجابات الأعضاء (كم جاوب صح):</h4>
-            <div id="playerStatsDisplay" style="color: #cbd5e1; line-height: 1.5;">لم يتم رصد إجابات بعد</div>
-        </div>
-
-        <hr>
-
-        <label style="margin-bottom: 8px;">اختر المتنافسين (المكتوب عليه أحمر يعني شارك للتو):</label>
-        <div class="players-picker-container">
-            <div class="picker-box">
-                <h4 id="t1LabelDisplay">فريق الصقور</h4>
-                <div class="player-chips" id="t1ChipsContainer"></div>
-            </div>
-            <div class="picker-box">
-                <h4 id="t2LabelDisplay">فريق النمور</h4>
-                <div class="player-chips" id="t2ChipsContainer"></div>
-            </div>
-        </div>
-
-        <div class="form-group" style="display:none;">
-            <input type="text" id="player1Input">
-            <input type="text" id="player2Input">
-        </div>
-
-        <button class="btn-main" style="background:#3b82f6;" onclick="sendNomination()">⚔️ بدء المواجهة (تصادم اللاعبين)</button>
-        
-        <hr>
-
-        <button class="btn-main" style="background:#8b5cf6;" onclick="showQuestion()">❓ إظهار السؤال على الشاشة</button>
-        <button class="btn-main" style="background:#10b981;" onclick="showAnswer()">💡 إظهار الإجابة الصحيحة</button>
-
-        <hr>
-
-        <div class="modern-score-panel">
-            <label style="margin-bottom: 10px; color: #f59e0b;">⚡ نظام النقاط السريع:</label>
-            <div class="form-group" style="margin-bottom: 12px;">
-                <label style="font-size: 0.8rem;">قيمة السؤال الحالي:</label>
-                <select id="questionPointsValue" style="padding: 8px; font-size: 0.9rem;">
-                    <option value="1">1 نقطة (سؤال عادي)</option>
-                    <option value="2">نقاط مضاعفة (2)</option>
-                    <option value="3">تحدي خاص (3 نقاط)</option>
-                </select>
-            </div>
-
-            <div class="teams-score-row">
-                <div class="team-score-card t1">
-                    <div class="team-score-title" id="scoreCardT1Name">الفريق الأول</div>
-                    <div class="team-score-value" id="liveScore1">0</div>
-                    <div class="streak-indicator" id="streak1Display">الستريك: 0/3 🔥</div>
-                    <button class="quick-award-btn" onclick="awardPoints(1)" style="margin-top: 8px;">+ منح للفريق</button>
-                    <button class="btn-minus" onclick="deductPoints(1)">-1 خطأ</button>
-                </div>
-                <div class="team-score-card t2">
-                    <div class="team-score-title" id="scoreCardT2Name">الفريق الثاني</div>
-                    <div class="team-score-value" id="liveScore2">0</div>
-                    <div class="streak-indicator" id="streak2Display">الستريك: 0/3 🔥</div>
-                    <button class="quick-award-btn" onclick="awardPoints(2)" style="background: #f59e0b; color: #0f172a; margin-top: 8px;">+ منح للفريق</button>
-                    <button class="btn-minus" onclick="deductPoints(2)">-1 خطأ</button>
-                </div>
-            </div>
-            
-            <!-- زر إعادة اللعب والعودة للبداية -->
-            <button class="btn-main" style="background: #ef4444; color: white; margin-top: 10px;" onclick="resetAndRestartGame()">🔄 إنهاء الجولة وإعادة اللعب من جديد</button>
-            <button class="btn-small" style="background: #475569; width: 100%; padding: 8px; font-size: 0.85rem; margin-top: 8px;" onclick="resetScores()">🔄 تصفير النقاط والستريك فقط</button>
-        </div>
+    <div class="card">
+      <label>اختر متنافسًا من كل فريق</label>
+      <p class="hint">لا يتكرر لاعب الجولة السابقة إذا كان يوجد بديل في فريقه.</p>
+      <div class="players-picker-container">
+        <div class="picker-box"><h4 id="t1LabelDisplay">الفريق الأول</h4><div id="t1ChipsContainer" class="player-chips"></div></div>
+        <div class="picker-box"><h4 id="t2LabelDisplay">الفريق الثاني</h4><div id="t2ChipsContainer" class="player-chips"></div></div>
+      </div>
+      <button id="nominateBtn" class="btn-main btn-blue" onclick="sendNomination()" disabled>بدء المواجهة</button>
+      <hr>
+      <button id="showQuestionBtn" class="btn-main btn-purple" onclick="showQuestion()" disabled>إظهار السؤال على الشاشة</button>
+      <button id="showAnswerBtn" class="btn-main btn-green" onclick="showAnswer()" disabled>إظهار الإجابة الصحيحة</button>
     </div>
 
-    <script>
-        const socket = io("https://samra-server.onrender.com");
-        const roomName = "samra_room_1";
+    <div class="modern-score-panel">
+      <label>احتساب نقاط هذه الجولة</label>
+      <div class="form-group" style="margin-top:8px">
+        <label for="questionPointsValue" class="hint">قيمة السؤال</label>
+        <select id="questionPointsValue"><option value="1">1 نقطة — سؤال عادي</option><option value="2">2 نقطة — مضاعفة</option><option value="3">3 نقاط — تحدٍ خاص</option></select>
+      </div>
+      <div class="teams-score-row">
+        <div class="team-score-card t1"><div class="team-score-title" id="scoreCardT1Name">الفريق الأول</div><div class="team-score-value" id="liveScore1">0</div><div id="streak1Display" class="streak-indicator">الستريك: 0/3</div><button id="award1Btn" class="quick-award-btn" onclick="awardPoints(1)" disabled>منح النقاط</button><button id="deduct1Btn" class="btn-minus" onclick="deductPoints(1)" disabled>خصم نقطة</button></div>
+        <div class="team-score-card t2"><div class="team-score-title" id="scoreCardT2Name">الفريق الثاني</div><div class="team-score-value" id="liveScore2">0</div><div id="streak2Display" class="streak-indicator">الستريك: 0/3</div><button id="award2Btn" class="quick-award-btn" style="background:#f59e0b;color:#111827" onclick="awardPoints(2)" disabled>منح النقاط</button><button id="deduct2Btn" class="btn-minus" onclick="deductPoints(2)" disabled>خصم نقطة</button></div>
+      </div>
+      <button id="restartBtn" class="btn-main btn-danger" onclick="resetAndRestartGame()">إنهاء الجولة وبدء لعبة جديدة</button>
+      <button id="resetScoreBtn" class="btn-main btn-slate" onclick="resetScores()">تصفير النقاط والستريك فقط</button>
+    </div>
+  </section>
 
-        socket.on('connect', () => {
-            socket.emit('join_room', roomName);
+  <script>
+    const SERVER_URL = 'https://samra-server.onrender.com';
+    const roomName = new URLSearchParams(location.search).get('room') || 'samra_room_1';
+    const socket = io(SERVER_URL, { transports: ['websocket', 'polling'] });
+
+    const game = {
+      questionBank: {}, usedQuestions: {}, currentCategory: '', currentQuestion: null,
+      selected: { 1: '', 2: '' }, last: { 1: '', 2: '' },
+      scores: { 1: 0, 2: 0 }, streaks: { 1: 0, 2: 0 }, target: 10,
+      perks: { 1: [], 2: [] }, pendingMultiplier: { 1: false, 2: false },
+      playerStats: {}, phase: 'setup', isSpinning: false, isPerkSpinning: false, finished: false
+    };
+
+    const $ = id => document.getElementById(id);
+    const playerId = (team, name) => `${team}::${name.trim()}`;
+    const teamName = team => ($(team === 1 ? 'team1Name' : 'team2Name').value.trim() || `الفريق ${team === 1 ? 'الأول' : 'الثاني'}`);
+    const members = team => Array.from(document.querySelectorAll(team === 1 ? '.t1-member' : '.t2-member')).map(input => input.value.trim()).filter(Boolean);
+    const emit = (action, data = {}) => socket.emit('game_action', { room: roomName, action, ...data });
+
+    function setConnection(text, state) { const el = $('connectionStatus'); el.textContent = text; el.className = `connection ${state}`; }
+    socket.on('connect', () => { socket.emit('join_room', roomName); setConnection(`● متصل — غرفة اللعبة: ${roomName}`, 'online'); });
+    socket.on('disconnect', () => setConnection('● انقطع الاتصال — لن تُرسل الأوامر حتى يعود', 'offline'));
+    socket.on('connect_error', () => setConnection('● تعذّر الاتصال بالسيرفر', 'offline'));
+
+    fetch('questions.json?v=' + Date.now())
+      .then(response => { if (!response.ok) throw new Error(`HTTP ${response.status}`); return response.json(); })
+      .then(data => { game.questionBank = data; populateCategories(); updateUI(); })
+      .catch(error => { showNotice('roundNotice', `تعذر تحميل questions.json: ${error.message}. شغّل الملفات من استضافة HTTP(S) وليس مباشرة من الجهاز.`, 'error'); });
+
+    function populateCategories() {
+      const select = $('categorySelect'); select.innerHTML = '';
+      Object.keys(game.questionBank).forEach(category => { const option = document.createElement('option'); option.value = category; option.textContent = category; select.appendChild(option); });
+    }
+
+    function switchTab(index) {
+      document.querySelectorAll('.panel').forEach((panel, i) => panel.classList.toggle('active', i === index));
+      document.querySelectorAll('.tab-btn').forEach((button, i) => button.classList.toggle('active', i === index));
+      if (index === 1) { updatePlayerChips(); updateUI(); }
+    }
+
+    function addMemberField(containerId, className) {
+      const row = document.createElement('div'); row.className = 'member-row';
+      const input = document.createElement('input'); input.type = 'text'; input.className = className; input.placeholder = 'اسم العضو'; input.maxLength = 40;
+      const remove = document.createElement('button'); remove.className = 'btn-small'; remove.textContent = '−'; remove.type = 'button'; remove.onclick = () => row.remove();
+      row.append(input, remove); $(containerId).appendChild(row);
+    }
+
+    function showNotice(id, text, type = '') { const el = $(id); el.textContent = text; el.className = `notice ${type}`; }
+    function setPhase(phase, label, notice, type = '') { game.phase = phase; $('phaseLabel').textContent = label; if (notice) showNotice('roundNotice', notice, type); updateUI(); }
+
+    function saveTeamsAndSync() {
+      const target = Number($('targetWinningPoints').value);
+      if (!Number.isInteger(target) || target < 1) { showNotice('teamsNotice', 'هدف الفوز يجب أن يكون عددًا صحيحًا موجبًا (1 أو أكثر).', 'error'); return; }
+      const m1 = members(1), m2 = members(2);
+      if (!m1.length || !m2.length) { showNotice('teamsNotice', 'أضف لاعبًا واحدًا على الأقل في كل فريق.', 'error'); return; }
+      game.target = target;
+      [...m1.map(name => [1, name]), ...m2.map(name => [2, name])].forEach(([team, name]) => {
+        const id = playerId(team, name); if (!game.playerStats[id]) game.playerStats[id] = { team, name, correct: 0 };
+      });
+      emit('UPDATE_TEAMS', { t1: teamName(1), t2: teamName(2), m1, m2 });
+      showNotice('teamsNotice', 'تم حفظ الفرق بنجاح.', 'success');
+      if (game.phase === 'setup') setPhase('ready_to_spin', 'جاهز لاختيار الفئة', 'دوّر العجلة لاختيار الفئة والسؤال.');
+      updatePlayerChips(); updateUI(); switchTab(1);
+    }
+
+    function questionIndex(question) { return `${game.currentCategory}::${question.q}::${question.a}`; }
+    function drawQuestion(category) {
+      const list = game.questionBank[category] || [];
+      if (!list.length) return null;
+      const used = game.usedQuestions[category] || new Set();
+      let candidates = list.map((item, index) => ({ item, index })).filter(({ index }) => !used.has(index));
+      if (!candidates.length) { used.clear(); candidates = list.map((item, index) => ({ item, index })); showNotice('roundNotice', 'انتهت أسئلة هذه الفئة؛ بدأنا دورة جديدة منها.', 'success'); }
+      const choice = candidates[Math.floor(Math.random() * candidates.length)]; used.add(choice.index); game.usedQuestions[category] = used;
+      return { ...choice.item, id: questionIndex(choice.item) };
+    }
+
+    function spinTheWheel() {
+      if (game.isSpinning || game.isPerkSpinning || game.finished) return;
+      if (!Object.keys(game.questionBank).length) { showNotice('roundNotice', 'بنك الأسئلة غير محمّل بعد.', 'error'); return; }
+      const categories = Object.keys(game.questionBank);
+      game.isSpinning = true; game.selected = { 1: '', 2: '' };
+      setPhase('spinning', 'العجلة تدور', 'يجري اختيار الفئة والسؤال…');
+      emit('SPIN_WHEEL');
+      window.setTimeout(() => {
+        game.currentCategory = categories[Math.floor(Math.random() * categories.length)];
+        game.currentQuestion = drawQuestion(game.currentCategory);
+        $('categorySelect').value = game.currentCategory;
+        game.isSpinning = false;
+        emit('SHOW_CATEGORY', { cat: game.currentCategory });
+        setPhase('category_ready', 'الفئة والسؤال جاهزان', `الفئة: ${game.currentCategory}. اختر متنافسين ثم ابدأ المواجهة.`, 'success');
+        updatePlayerChips();
+      }, 3000);
+    }
+
+    function changeQuestionLocally() {
+      if (game.phase !== 'category_ready' || !game.currentCategory) return;
+      const next = drawQuestion(game.currentCategory); if (!next) return;
+      game.currentQuestion = next;
+      showNotice('roundNotice', 'تم اختيار سؤال جديد غير مكرر من الفئة نفسها.', 'success');
+    }
+
+    function updatePlayerChips() {
+      [1, 2].forEach(team => {
+        const nameLabel = team === 1 ? 't1LabelDisplay' : 't2LabelDisplay';
+        const container = $(team === 1 ? 't1ChipsContainer' : 't2ChipsContainer');
+        $(nameLabel).textContent = teamName(team); container.textContent = '';
+        const list = members(team);
+        if (!list.length) { container.textContent = 'أضف أعضاء للفريق'; return; }
+        list.forEach(name => {
+          const id = playerId(team, name); const stats = game.playerStats[id] || { correct: 0 }; const recent = game.last[team] === name; const blockRecent = recent && list.length > 1;
+          const chip = document.createElement('button'); chip.type = 'button'; chip.className = `chip${game.selected[team] === name ? ' selected' : ''}${recent ? ' recent' : ''}${blockRecent ? ' disabled' : ''}`;
+          chip.textContent = `${name} (${stats.correct} صح)${recent ? ' — آخر جولة' : ''}`; chip.disabled = blockRecent || game.isSpinning || game.finished;
+          chip.onclick = () => { game.selected[team] = name; updatePlayerChips(); updateUI(); };
+          container.appendChild(chip);
         });
+      });
+    }
 
-        let questionBank = {};
-        let currentCat = "", currentQ = "", currentA = "";
-        let selectedPlayer1 = "", selectedPlayer2 = "";
-        let lastPlayer1 = "", lastPlayer2 = ""; 
-        let score1 = 0, score2 = 0;
-        let streak1 = 0, streak2 = 0;
-        let targetWinningPoints = 10;
-        
-        let team1Perks = [];
-        let team2Perks = [];
-        let playerCorrectCounts = {};
+    function sendNomination() {
+      if (game.phase !== 'category_ready' || !game.currentQuestion) { showNotice('roundNotice', 'اختر الفئة والسؤال أولًا عبر العجلة.', 'error'); return; }
+      const p1 = game.selected[1], p2 = game.selected[2];
+      if (!p1 || !p2) { showNotice('roundNotice', 'اختر لاعبًا من كل فريق قبل بدء المواجهة.', 'error'); return; }
+      game.last = { 1: p1, 2: p2 };
+      emit('NOMINATE', { cat: game.currentCategory, p1, p2 });
+      setPhase('nominated', 'تم اختيار المتنافسين', 'اضغط «إظهار السؤال» لبدء عداد 30 ثانية.'); updatePlayerChips();
+    }
 
-        fetch('questions.json?v=' + new Date().getTime())
-            .then(response => response.json())
-            .then(data => { questionBank = data; populateCategories(); })
-            .catch(error => console.error('خطأ في تحميل الأسئلة:', error));
+    function showQuestion() {
+      if (game.phase !== 'nominated' || !game.currentQuestion) return;
+      emit('SHOW_Q', { q: game.currentQuestion.q, a: game.currentQuestion.a });
+      setPhase('question_open', 'السؤال ظاهر', 'السؤال أمام اللاعبين. عند الانتهاء أظهر الإجابة ثم احتسب النقاط.');
+    }
 
-        function populateCategories() {
-            const select = document.getElementById('categorySelect');
-            select.innerHTML = '';
-            for (const category in questionBank) {
-                const option = document.createElement('option');
-                option.value = category;
-                option.textContent = category;
-                select.appendChild(option);
-            }
+    function showAnswer() {
+      if (game.phase !== 'question_open') return;
+      emit('SHOW_A'); setPhase('answer_open', 'الإجابة ظاهرة', 'اختر الفريق الفائز وامنحه النقاط.');
+    }
+
+    function triggerPerksWheel(team) {
+      const outcomes = [
+        { type: 'gift', label: 'هدية مفاجئة (+1 نقطة)' },
+        { type: 'consultation', label: 'استشارة الفريق (60 ثانية)' },
+        { type: 'multiplier', label: 'نقطة مضاعفة للجولة القادمة' }
+      ];
+      const outcome = outcomes[Math.floor(Math.random() * outcomes.length)];
+      game.isPerkSpinning = true; emit('SPIN_PERKS_WHEEL'); showNotice('roundNotice', `عجلة المساعدات تدور لـ ${teamName(team)}…`);
+      window.setTimeout(() => {
+        game.isPerkSpinning = false;
+        if (outcome.type === 'gift') {
+          game.scores[team] += 1; emit('SCORE', { s1: game.scores[1], s2: game.scores[2] });
+          emit('UPDATE_PERK', { teamNum: team, teamName: teamName(team), perks: game.perks[team].map(p => p.label), latestPerk: 'هدية فورية: +1 نقطة' });
+          showNotice('roundNotice', `${teamName(team)} حصل على هدية فورية: نقطة إضافية.`, 'success');
+          checkWinnerAndBroadcast();
+        } else {
+          game.perks[team].push(outcome); emit('UPDATE_PERK', { teamNum: team, teamName: teamName(team), perks: game.perks[team].map(p => p.label), latestPerk: outcome.label });
+          showNotice('roundNotice', `${teamName(team)} ربح ميزة: ${outcome.label}`, 'success');
         }
+        updateUI();
+      }, 3000);
+    }
 
-        function switchTab(index) {
-            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.panel')[index].classList.add('active');
-            document.querySelectorAll('.tab-btn')[index].classList.add('active');
-            if(index === 1) { updatePlayerChips(); updateScoreCardNames(); updateStatsUI(); }
-        }
+    function usePerk(team) {
+      if (game.finished || game.isPerkSpinning || !game.perks[team].length) return;
+      const perk = game.perks[team].shift();
+      if (perk.type === 'consultation') { emit('START_CONSULTATION_TIMER'); showNotice('roundNotice', `فُعّلت استشارة ${teamName(team)} لمدة 60 ثانية.`, 'success'); }
+      if (perk.type === 'multiplier') { game.pendingMultiplier[team] = true; showNotice('roundNotice', `فُعّلت النقطة المضاعفة لـ ${teamName(team)} في الإجابة الصحيحة القادمة.`, 'success'); }
+      emit('UPDATE_PERK', { teamNum: team, teamName: teamName(team), perks: game.perks[team].map(p => p.label), latestPerk: null }); updateUI();
+    }
 
-        function updateScoreCardNames() {
-            const t1 = document.getElementById('team1Name').value || "الفريق الأول";
-            const t2 = document.getElementById('team2Name').value || "الفريق الثاني";
-            document.getElementById('scoreCardT1Name').innerText = t1;
-            document.getElementById('perkBoxTitle1').innerText = t1;
-            document.getElementById('scoreCardT2Name').innerText = t2;
-            document.getElementById('perkBoxTitle2').innerText = t2;
-        }
+    function canScore() { return ['question_open', 'answer_open'].includes(game.phase) && !game.finished; }
+    function awardPoints(team) {
+      if (!canScore() || !game.selected[team]) { showNotice('roundNotice', 'افتح السؤال أولًا واختر المتنافسين قبل احتساب النقاط.', 'error'); return; }
+      const base = Number($('questionPointsValue').value) || 1; const multiplier = game.pendingMultiplier[team] ? 2 : 1; const points = base * multiplier;
+      game.scores[team] += points; game.pendingMultiplier[team] = false;
+      const id = playerId(team, game.selected[team]); if (!game.playerStats[id]) game.playerStats[id] = { team, name: game.selected[team], correct: 0 }; game.playerStats[id].correct += 1;
+      game.streaks[team] += 1; game.streaks[team === 1 ? 2 : 1] = 0;
+      emit('SCORE', { s1: game.scores[1], s2: game.scores[2] });
+      setPhase('round_scored', 'تم احتساب الجولة', `${teamName(team)} أخذ ${points} نقطة${multiplier === 2 ? ' (مضاعفة)' : ''}. دوّر العجلة للجولة التالية.`, 'success');
+      if (game.streaks[team] >= 3) { game.streaks[team] = 0; triggerPerksWheel(team); }
+      updatePlayerChips(); updateStatsUI(); updateUI(); checkWinnerAndBroadcast();
+    }
 
-        function addMemberField(containerId, className) {
-            const container = document.getElementById(containerId);
-            const div = document.createElement('div');
-            div.className = 'member-row';
-            div.innerHTML = `<input type="text" class="${className}" placeholder="اسم العضو"><button class="btn-small" onclick="removeRow(this)">-</button>`;
-            container.appendChild(div);
-        }
+    function deductPoints(team) {
+      if (!canScore()) { showNotice('roundNotice', 'لا يمكن خصم نقطة قبل فتح سؤال الجولة.', 'error'); return; }
+      game.scores[team] = Math.max(0, game.scores[team] - 1); game.streaks[team] = 0;
+      emit('SCORE', { s1: game.scores[1], s2: game.scores[2] }); setPhase('round_scored', 'تم تعديل النقاط', `خُصمت نقطة من ${teamName(team)}. يمكنك بدء جولة جديدة.`, 'success'); updateUI();
+    }
 
-        function removeRow(btn) { btn.parentElement.remove(); }
+    function checkWinnerAndBroadcast() {
+      let winner = null; if (game.scores[1] >= game.target) winner = 1; else if (game.scores[2] >= game.target) winner = 2; if (!winner || game.finished) return;
+      game.finished = true;
+      const ranked = Object.values(game.playerStats).sort((a, b) => b.correct - a.correct); const mvp = ranked[0] || { name: 'لا يوجد', correct: 0 };
+      emit('GAME_OVER', { winner: teamName(winner), winScore: game.scores[winner], loseScore: game.scores[winner === 1 ? 2 : 1], mvp: mvp.name, mvpCount: mvp.correct, t1Name: teamName(1), t2Name: teamName(2), t1Members: members(1), t2Members: members(2), allStats: Object.fromEntries(Object.values(game.playerStats).map(p => [playerId(p.team, p.name), p.correct])) });
+      setPhase('finished', 'انتهت اللعبة', `فاز ${teamName(winner)}. ابدأ لعبة جديدة من الزر الأحمر.`, 'success');
+    }
 
-        function updatePlayerChips() {
-            const t1Name = document.getElementById('team1Name').value || "الفريق الأول";
-            const t2Name = document.getElementById('team2Name').value || "الفريق الثاني";
-            document.getElementById('t1LabelDisplay').innerText = t1Name;
-            document.getElementById('t2LabelDisplay').innerText = t2Name;
+    function resetScores() {
+      if (game.finished) { showNotice('roundNotice', 'بعد انتهاء اللعبة استخدم «بدء لعبة جديدة» لمسح النتائج وإغلاق شاشة الفائز.', 'error'); return; }
+      if (!confirm('هل تريد تصفير النقاط والستريك فقط؟ لن تُمسح الميزات أو إحصاءات اللاعبين.')) return;
+      game.scores = { 1: 0, 2: 0 }; game.streaks = { 1: 0, 2: 0 }; emit('SCORE', { s1: 0, s2: 0 }); updateUI(); showNotice('roundNotice', 'صُفرت النقاط والستريك فقط.', 'success');
+    }
 
-            const t1Members = Array.from(document.querySelectorAll('.t1-member')).map(i => i.value).filter(v => v.trim() !== "");
-            const t2Members = Array.from(document.querySelectorAll('.t2-member')).map(i => i.value).filter(v => v.trim() !== "");
+    function resetAndRestartGame() {
+      if (!confirm('هل تريد إنهاء الجولة الحالية وبدء لعبة جديدة؟ ستُمسح النقاط والميزات والإحصاءات.')) return;
+      game.currentCategory = ''; game.currentQuestion = null; game.usedQuestions = {}; game.selected = { 1: '', 2: '' }; game.last = { 1: '', 2: '' }; game.scores = { 1: 0, 2: 0 }; game.streaks = { 1: 0, 2: 0 }; game.perks = { 1: [], 2: [] }; game.pendingMultiplier = { 1: false, 2: false }; game.playerStats = {}; game.finished = false; game.isSpinning = false; game.isPerkSpinning = false;
+      emit('RESTART_GAME'); emit('SCORE', { s1: 0, s2: 0 }); setPhase('ready_to_spin', 'لعبة جديدة جاهزة', 'تمت إعادة البداية. دوّر العجلة لاختيار أول فئة.'); updatePlayerChips(); updateStatsUI(); updateUI();
+    }
 
-            t1Members.concat(t2Members).forEach(name => {
-                if(playerCorrectCounts[name] === undefined) playerCorrectCounts[name] = 0;
-            });
+    function updateStatsUI() {
+      const stats = Object.values(game.playerStats).filter(p => p.correct > 0).sort((a,b) => b.correct - a.correct); $('playerStatsDisplay').textContent = '';
+      if (!stats.length) { $('playerStatsDisplay').textContent = 'لم تسجل إجابات صحيحة حتى الآن.'; return; }
+      stats.forEach(player => { const line = document.createElement('div'); line.textContent = `★ ${player.name} (${teamName(player.team)}): ${player.correct} صحيحة`; $('playerStatsDisplay').appendChild(line); });
+    }
 
-            const t1Container = document.getElementById('t1ChipsContainer');
-            const t2Container = document.getElementById('t2ChipsContainer');
+    function updatePerksUI(team) {
+      const text = $(team === 1 ? 't1PerkText' : 't2PerkText'); const button = $(team === 1 ? 't1UsePerkBtn' : 't2UsePerkBtn'); const suffix = game.pendingMultiplier[team] ? '\n• مضاعفة مفعلة للجولة التالية' : '';
+      text.textContent = game.perks[team].length ? game.perks[team].map((perk, i) => `${i + 1}. ${perk.label}`).join('\n') + suffix : (suffix.trim() || 'لا توجد ميزات محفوظة'); text.style.whiteSpace = 'pre-line'; button.classList.toggle('hidden', !game.perks[team].length); button.disabled = game.finished || game.isPerkSpinning;
+    }
 
-            t1Container.innerHTML = t1Members.length === 0 ? '<span style="color:#64748b; font-size:12px;">لم تدخل أعضاء</span>' : "";
-            t1Members.forEach(name => {
-                const chip = document.createElement('div');
-                let isRecent = (lastPlayer1 === name);
-                chip.className = 'chip' + (selectedPlayer1 === name ? ' selected' : '') + (isRecent ? ' disabled-recent' : '');
-                chip.innerText = `${name} (${playerCorrectCounts[name]} صح)` + (isRecent ? ' [شارك]' : '');
-                chip.onclick = () => {
-                    if(isRecent) {
-                        alert("⚠️ هذا اللاعب شارك في الجولة الأخيرة! اختر عضواً آخر لكي لا يتكرر.");
-                        return;
-                    }
-                    selectedPlayer1 = name;
-                    document.getElementById('player1Input').value = name;
-                    updatePlayerChips();
-                };
-                t1Container.appendChild(chip);
-            });
-
-            t2Container.innerHTML = t2Members.length === 0 ? '<span style="color:#64748b; font-size:12px;">لم تدخل أعضاء</span>' : "";
-            t2Members.forEach(name => {
-                const chip = document.createElement('div');
-                let isRecent = (lastPlayer2 === name);
-                chip.className = 'chip' + (selectedPlayer2 === name ? ' selected' : '') + (isRecent ? ' disabled-recent' : '');
-                chip.innerText = `${name} (${playerCorrectCounts[name]} صح)` + (isRecent ? ' [شارك]' : '');
-                chip.onclick = () => {
-                    if(isRecent) {
-                        alert("⚠️ هذا اللاعب شارك في الجولة الأخيرة! اختر عضواً آخر لكي لا يتكرر.");
-                        return;
-                    }
-                    selectedPlayer2 = name;
-                    document.getElementById('player2Input').value = name;
-                    updatePlayerChips();
-                };
-                t2Container.appendChild(chip);
-            });
-        }
-
-        function updateStatsUI() {
-            const statsContainer = document.getElementById('playerStatsDisplay');
-            let html = "";
-            let sortedPlayers = Object.keys(playerCorrectCounts).sort((a,b) => playerCorrectCounts[b] - playerCorrectCounts[a]);
-            
-            if(sortedPlayers.length === 0 || sortedPlayers.every(p => playerCorrectCounts[p] === 0)) {
-                statsContainer.innerHTML = "لم يسجل أي لاعب إجابات صحيحة حتى الآن.";
-                return;
-            }
-
-            sortedPlayers.forEach(name => {
-                if(playerCorrectCounts[name] > 0) {
-                    html += `⭐ <b>${name}</b>: ${playerCorrectCounts[name]} إجابات صحيحة<br>`;
-                }
-            });
-            statsContainer.innerHTML = html;
-        }
-
-        function spinTheWheel() {
-            const categories = Object.keys(questionBank);
-            if(categories.length === 0) return;
-            socket.emit('game_action', { room: roomName, action: 'SPIN_WHEEL' });
-            document.getElementById('previewBox').innerHTML = "🎡 عجلة الحظ تدور الآن على الشاشة الكبيرة...";
-            document.getElementById('changeQBtn').style.display = 'none';
-
-            setTimeout(() => {
-                const randomCat = categories[Math.floor(Math.random() * categories.length)];
-                document.getElementById('categorySelect').value = randomCat;
-                currentCat = randomCat;
-                const list = questionBank[randomCat];
-                const rand = list[Math.floor(Math.random() * list.length)];
-                currentQ = rand.q;
-                currentA = rand.a;
-
-                document.getElementById('previewBox').innerHTML = `<b>الفئة:</b> <span style="color:#38bdf8">${currentCat}</span><br><b>السؤال:</b> ${currentQ}<br><span style="color:#34d399"><b>الجواب:</b> ${currentA}</span>`;
-                document.getElementById('changeQBtn').style.display = 'block';
-                socket.emit('game_action', { room: roomName, action: 'SHOW_CATEGORY', cat: currentCat });
-            }, 3000);
-        }
-
-        function changeQuestionLocally() {
-            if (!currentCat || !questionBank[currentCat]) return;
-            const list = questionBank[currentCat];
-            const rand = list[Math.floor(Math.random() * list.length)];
-            currentQ = rand.q;
-            currentA = rand.a;
-            document.getElementById('previewBox').innerHTML = `<b>الفئة:</b> <span style="color:#38bdf8">${currentCat}</span><br><b>السؤال <span style="color:#ef4444">(بديل)</span>:</b> ${currentQ}<br><span style="color:#34d399"><b>الجواب:</b> ${currentA}</span>`;
-        }
-
-        function triggerPerksWheel(targetTeamNum) {
-            const perksList = ["🎯 الهدية المفاجئة (+ نقطة واحدة)", "👥 استشارة الفريق (60 ثانية)", "⭐ نقطة مضاعفة"];
-            const randomPerk = perksList[Math.floor(Math.random() * perksList.length)];
-            
-            const t1RealName = document.getElementById('team1Name').value || "الفريق الأول";
-            const t2RealName = document.getElementById('team2Name').value || "الفريق الثاني";
-            let winningTeamName = (targetTeamNum === 1) ? t1RealName : t2RealName;
-
-            if(randomPerk.includes("الهدية المفاجئة")) {
-                if(targetTeamNum === 1) {
-                    score1 += 1;
-                    document.getElementById('liveScore1').innerText = score1;
-                } else {
-                    score2 += 1;
-                    document.getElementById('liveScore2').innerText = score2;
-                }
-                socket.emit('game_action', { room: roomName, action: 'SCORE', s1: score1, s2: score2 });
-                checkWinnerAndBroadcast();
-            }
-
-            if(targetTeamNum === 1) {
-                team1Perks.push(randomPerk);
-                document.getElementById('t1PerkText').innerHTML = team1Perks.join('<br>');
-                document.getElementById('t1UsePerkBtn').style.display = 'block';
-            } else {
-                team2Perks.push(randomPerk);
-                document.getElementById('t2PerkText').innerHTML = team2Perks.join('<br>');
-                document.getElementById('t2UsePerkBtn').style.display = 'block';
-            }
-
-            socket.emit('game_action', { room: roomName, action: 'SPIN_PERKS_WHEEL' });
-            socket.emit('game_action', { 
-                room: roomName, 
-                action: 'UPDATE_PERK', 
-                teamNum: targetTeamNum, 
-                teamName: winningTeamName, 
-                perks: (targetTeamNum === 1 ? team1Perks : team2Perks), 
-                latestPerk: randomPerk 
-            });
-            
-            document.getElementById('previewBox').innerHTML = `🎁 <span style="color:#10b981">مساعدة جديدة لـ (${winningTeamName}):</span> <b>${randomPerk}</b>`;
-        }
-
-        function usePerk(teamNum) {
-            let perksList = teamNum === 1 ? team1Perks : team2Perks;
-            if(perksList.length === 0) return;
-
-            let perkToUse = perksList.shift(); 
-            const t1RealName = document.getElementById('team1Name').value || "الفريق الأول";
-            const t2RealName = document.getElementById('team2Name').value || "الفريق الثاني";
-            let teamName = teamNum === 1 ? t1RealName : t2RealName;
-            
-            if(perkToUse.includes("استشارة")) {
-                socket.emit('game_action', { room: roomName, action: 'START_CONSULTATION_TIMER' });
-            }
-
-            alert(`تم تطبيق مساعدة (${teamName}): ` + perkToUse);
-
-            if(teamNum === 1) {
-                document.getElementById('t1PerkText').innerHTML = team1Perks.length > 0 ? team1Perks.join('<br>') : "لا توجد ميزات محفوظة";
-                if(team1Perks.length === 0) document.getElementById('t1UsePerkBtn').style.display = 'none';
-                socket.emit('game_action', { room: roomName, action: 'UPDATE_PERK', teamNum: 1, teamName: t1RealName, perks: team1Perks, latestPerk: null });
-            } else {
-                document.getElementById('t2PerkText').innerHTML = team2Perks.length > 0 ? team2Perks.join('<br>') : "لا توجد ميزات محفوظة";
-                if(team2Perks.length === 0) document.getElementById('t2UsePerkBtn').style.display = 'none';
-                socket.emit('game_action', { room: roomName, action: 'UPDATE_PERK', teamNum: 2, teamName: t2RealName, perks: team2Perks, latestPerk: null });
-            }
-        }
-
-        function awardPoints(teamNumber) {
-            const pointsValue = parseInt(document.getElementById('questionPointsValue').value) || 1;
-            const t1RealName = document.getElementById('team1Name').value || "الفريق الأول";
-            const t2RealName = document.getElementById('team2Name').value || "الفريق الثاني";
-            
-            if(teamNumber === 1 && selectedPlayer1) {
-                playerCorrectCounts[selectedPlayer1] = (playerCorrectCounts[selectedPlayer1] || 0) + 1;
-            } else if(teamNumber === 2 && selectedPlayer2) {
-                playerCorrectCounts[selectedPlayer2] = (playerCorrectCounts[selectedPlayer2] || 0) + 1;
-            }
-            updatePlayerChips();
-            updateStatsUI();
-
-            if(teamNumber === 1) {
-                score1 += pointsValue;
-                document.getElementById('liveScore1').innerText = score1;
-                
-                streak1++;
-                if(streak1 >= 3) {
-                    streak1 = 0;
-                    alert(`🔥 (${t1RealName}) حقق 3 إجابات صحيحة ورا بعض! تفعيل عجلة المساعدات تلقائياً!`);
-                    triggerPerksWheel(1); 
-                }
-                document.getElementById('streak1Display').innerText = `الستريك: ${streak1}/3 🔥`;
-                streak2 = 0;
-                document.getElementById('streak2Display').innerText = `الستريك: ${streak2}/3 🔥`;
-
-            } else {
-                score2 += pointsValue;
-                document.getElementById('liveScore2').innerText = score2;
-                
-                streak2++;
-                if(streak2 >= 3) {
-                    streak2 = 0;
-                    alert(`🔥 (${t2RealName}) حقق 3 إجابات صحيحة ورا بعض! تفعيل عجلة المساعدات تلقائياً!`);
-                    triggerPerksWheel(2); 
-                }
-                document.getElementById('streak2Display').innerText = `الستريك: ${streak2}/3 🔥`;
-                streak1 = 0;
-                document.getElementById('streak1Display').innerText = `الستريك: ${streak1}/3 🔥`;
-            }
-
-            socket.emit('game_action', { room: roomName, action: 'SCORE', s1: score1, s2: score2 });
-            checkWinnerAndBroadcast();
-        }
-
-        function checkWinnerAndBroadcast() {
-            const t1RealName = document.getElementById('team1Name').value || "الفريق الأول";
-            const t2RealName = document.getElementById('team2Name').value || "الفريق الثاني";
-            
-            let winningTeam = null;
-            let losingTeam = null;
-            let winningScore = 0;
-            let losingScore = 0;
-
-            if(score1 >= targetWinningPoints) {
-                winningTeam = t1RealName; losingTeam = t2RealName; winningScore = score1; losingScore = score2;
-            } else if(score2 >= targetWinningPoints) {
-                winningTeam = t2RealName; losingTeam = t1RealName; winningScore = score2; losingScore = score1;
-            }
-
-            if(winningTeam) {
-                let mvpName = "لا يوجد";
-                let maxCount = -1;
-                for(let p in playerCorrectCounts) {
-                    if(playerCorrectCounts[p] > maxCount) {
-                        maxCount = playerCorrectCounts[p];
-                        mvpName = p;
-                    }
-                }
-                if(maxCount <= 0) mvpName = "لم يسجل إجابات";
-
-                const t1Members = Array.from(document.querySelectorAll('.t1-member')).map(i => i.value).filter(v => v.trim() !== "");
-                const t2Members = Array.from(document.querySelectorAll('.t2-member')).map(i => i.value).filter(v => v.trim() !== "");
-
-                socket.emit('game_action', {
-                    room: roomName,
-                    action: 'GAME_OVER',
-                    winner: winningTeam,
-                    loser: losingTeam,
-                    winScore: winningScore,
-                    loseScore: losingScore,
-                    mvp: mvpName,
-                    mvpCount: maxCount > 0 ? maxCount : 0,
-                    t1Name: t1RealName,
-                    t2Name: t2RealName,
-                    t1Members: t1Members,
-                    t2Members: t2Members,
-                    allStats: playerCorrectCounts
-                });
-                alert(`🏆 وانتهت اللعبة بفوز (${winningTeam})! تم إرسال النتائج للشاشة الكبيرة.`);
-            }
-        }
-
-        function resetAndRestartGame() {
-            if(confirm("هل تريد إنهاء الجولة والعودة للبداية لبدء لعبة جديدة؟")) {
-                score1 = 0; score2 = 0;
-                streak1 = 0; streak2 = 0;
-                team1Perks = []; team2Perks = [];
-                playerCorrectCounts = {};
-                lastPlayer1 = ""; lastPlayer2 = "";
-                selectedPlayer1 = ""; selectedPlayer2 = "";
-                document.getElementById('liveScore1').innerText = 0;
-                document.getElementById('liveScore2').innerText = 0;
-                document.getElementById('streak1Display').innerText = `الستريك: 0/3 🔥`;
-                document.getElementById('streak2Display').innerText = `الستريك: 0/3 🔥`;
-                document.getElementById('t1PerkText').innerText = "لا توجد ميزات محفوظة";
-                document.getElementById('t1UsePerkBtn').style.display = 'none';
-                document.getElementById('t2PerkText').innerText = "لا توجد ميزات محفوظة";
-                document.getElementById('t2UsePerkBtn').style.display = 'none';
-                updateStatsUI();
-                socket.emit('game_action', { room: roomName, action: 'RESTART_GAME' });
-                switchTab(0);
-                alert("تمت العودة للبداية بنجاح! جاهزون لجولة جديدة.");
-            }
-        }
-
-        function deductPoints(teamNumber) {
-            if(teamNumber === 1) {
-                score1 = Math.max(0, score1 - 1);
-                document.getElementById('liveScore1').innerText = score1;
-                streak1 = 0;
-                document.getElementById('streak1Display').innerText = `الستريك: ${streak1}/3 🔥`;
-            } else {
-                score2 = Math.max(0, score2 - 1);
-                document.getElementById('liveScore2').innerText = score2;
-                streak2 = 0;
-                document.getElementById('streak2Display').innerText = `الستريك: ${streak2}/3 🔥`;
-            }
-            socket.emit('game_action', { room: roomName, action: 'SCORE', s1: score1, s2: score2 });
-        }
-
-        function resetScores() {
-            if(confirm("هل أنت متأكد من تصفير النقاط والستريك والميزات؟")) {
-                score1 = 0; score2 = 0;
-                streak1 = 0; streak2 = 0;
-                team1Perks = []; team2Perks = [];
-                playerCorrectCounts = {};
-                document.getElementById('liveScore1').innerText = 0;
-                document.getElementById('liveScore2').innerText = 0;
-                document.getElementById('streak1Display').innerText = `الستريك: 0/3 🔥`;
-                document.getElementById('streak2Display').innerText = `الستريك: 0/3 🔥`;
-                document.getElementById('t1PerkText').innerText = "لا توجد ميزات محفوظة";
-                document.getElementById('t1UsePerkBtn').style.display = 'none';
-                document.getElementById('t2PerkText').innerText = "لا توجد ميزات محفوظة";
-                document.getElementById('t2UsePerkBtn').style.display = 'none';
-                updateStatsUI();
-                socket.emit('game_action', { room: roomName, action: 'SCORE', s1: 0, s2: 0 });
-            }
-        }
-
-        function saveTeamsAndSync() {
-            targetWinningPoints = parseInt(document.getElementById('targetWinningPoints').value) || 10;
-            const t1Members = Array.from(document.querySelectorAll('.t1-member')).map(i => i.value).filter(v => v.trim() !== "");
-            const t2Members = Array.from(document.querySelectorAll('.t2-member')).map(i => i.value).filter(v => v.trim() !== "");
-            socket.emit('game_action', {
-                room: roomName, action: 'UPDATE_TEAMS',
-                t1: document.getElementById('team1Name').value,
-                t2: document.getElementById('team2Name').value,
-                m1: t1Members, m2: t2Members
-            });
-            updateScoreCardNames();
-            updatePlayerChips();
-            switchTab(1);
-            alert("تم حفظ وتحديث الفرق والأهداف بنجاح!");
-        }
-
-        function sendNomination() {
-            const p1 = document.getElementById('player1Input').value;
-            const p2 = document.getElementById('player2Input').value;
-            if(!p1 || !p2) { alert("الرجاء اختيار لاعب من الفريق الأول ولاعب من الفريق الثاني أولاً!"); return; }
-            
-            lastPlayer1 = p1;
-            lastPlayer2 = p2;
-            
-            socket.emit('game_action', { room: roomName, action: 'NOMINATE', cat: currentCat || document.getElementById('categorySelect').value, p1: p1, p2: p2 });
-            updatePlayerChips();
-        }
-
-        function showQuestion() {
-            socket.emit('game_action', { room: roomName, action: 'SHOW_Q', q: currentQ, a: currentA });
-        }
-
-        function showAnswer() {
-            socket.emit('game_action', { room: roomName, action: 'SHOW_A' });
-        }
-    </script>
+    function updateUI() {
+      const canStartNextRound = ['ready_to_spin', 'round_scored'].includes(game.phase) && !game.finished; const categoryReady = game.phase === 'category_ready'; const nominated = game.phase === 'nominated'; const scoring = canScore();
+      $('categorySelect').disabled = true; $('spinBtn').disabled = !canStartNextRound || game.isSpinning || game.isPerkSpinning; $('spinBtn').textContent = game.isSpinning ? 'العجلة تدور…' : 'تدوير العجلة واختيار الفئة'; $('changeQBtn').classList.toggle('hidden', !categoryReady); $('nominateBtn').disabled = !categoryReady || !game.selected[1] || !game.selected[2]; $('showQuestionBtn').disabled = !nominated; $('showAnswerBtn').disabled = game.phase !== 'question_open';
+      [1, 2].forEach(team => { $('liveScore' + team).textContent = game.scores[team]; $('streak' + team + 'Display').textContent = `الستريك: ${game.streaks[team]}/3`; $('award' + team + 'Btn').disabled = !scoring; $('deduct' + team + 'Btn').disabled = !scoring; });
+      $('scoreCardT1Name').textContent = teamName(1); $('scoreCardT2Name').textContent = teamName(2); $('perkBoxTitle1').textContent = teamName(1); $('perkBoxTitle2').textContent = teamName(2); updatePerksUI(1); updatePerksUI(2);
+    }
+  </script>
 </body>
 </html>
