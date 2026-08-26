@@ -1,475 +1,112 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صدام الأفكار.. مع عمار الدمار</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://samra-server.onrender.com/socket.io/socket.io.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
-        body {
-            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #311042, #0f172a);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
-            color: #ffffff; height: 100vh; display: flex; flex-direction: column;
-            align-items: center; justify-content: space-between; padding: 15px; overflow: hidden;
-        }
-        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        
-        .header-container { display: flex; align-items: center; gap: 15px; margin-top: 5px; }
-        .header-logo { width: 70px; height: 70px; object-fit: cover; border-radius: 50%; border: 2px solid #f59e0b; box-shadow: 0 0 15px rgba(245, 158, 11, 0.6); }
-        h1 { font-size: 1.8rem; color: #f59e0b; text-shadow: 0 0 20px rgba(245, 158, 11, 0.4); font-weight: 900; }
-        
-        .main-container { display: flex; flex-direction: row-reverse; width: 100%; max-width: 1400px; height: 80vh; gap: 20px; align-items: stretch; }
-        
-        .card {
-            flex: 3; background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(12px);
-            border: 2px solid rgba(59, 130, 246, 0.4); border-radius: 20px; padding: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.6); display: flex; flex-direction: column;
-            justify-content: center; align-items: center; text-align: center; position: relative; overflow: hidden;
-        }
-        .card::before {
-            content: ''; position: absolute; top: 0; right: 0; width: 100%; height: 6px;
-            background: linear-gradient(90deg, #3b82f6, #f59e0b, #10b981);
-        }
-        
-        .category-tag { font-size: 1.4rem; color: #38bdf8; font-weight: 700; margin-bottom: 15px; background: rgba(56, 189, 248, 0.1); padding: 6px 25px; border-radius: 50px; border: 1px solid rgba(56,189,248,0.3); }
-        
-        .wheel-container { position: relative; width: 220px; height: 220px; margin: 15px auto; display: none; }
-        .wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #f59e0b; background: conic-gradient(#ef4444 0deg 90deg, #3b82f6 90deg 180deg, #10b981 180deg 270deg, #8b5cf6 270deg 360deg); box-shadow: 0 0 25px rgba(245,158,11,0.6); }
-        .wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-bottom: 25px solid #f59e0b; z-index: 10; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
-
-        .perks-wheel-container { position: relative; width: 220px; height: 220px; margin: 15px auto; display: none; }
-        .perks-wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #10b981; background: conic-gradient(#f59e0b 0deg 120deg, #3b82f6 120deg 240deg, #8b5cf6 240deg 360deg); box-shadow: 0 0 30px rgba(16,185,129,0.7); }
-
-        #perkResultBanner { font-size: 1.8rem; font-weight: 900; color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 15px 30px; border-radius: 16px; border: 2px dashed #10b981; margin: 20px 0; display: none; box-shadow: 0 0 30px rgba(16,185,129,0.4); animation: popIn 0.5s ease; }
-        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-
-        #gameTimerDisplay { font-size: 1.6rem; font-weight: 900; color: #38bdf8; margin-top: 15px; background: rgba(56, 189, 248, 0.1); padding: 5px 18px; border-radius: 50px; border: 2px solid rgba(56, 189, 248, 0.3); display: none; }
-
-        .clash-container { display: flex; align-items: center; justify-content: center; gap: 20px; width: 100%; margin: 15px 0; }
-        .clash-container.shake { animation: shakeScreen 0.5s cubic-bezier(.36,.07,.19,.97) both; }
-        
-        .fighter {
-            font-size: 1.8rem; font-weight: 900; padding: 25px 30px; border-radius: 16px; background: rgba(15, 23, 42, 0.95);
-            border: 3px solid #3b82f6; box-shadow: 0 0 25px rgba(59,130,246,0.5); width: 42%; word-break: break-word; opacity: 0;
-        }
-        .fighter.team2 { border-color: #f59e0b; box-shadow: 0 0 25px rgba(245,158,11,0.5); }
-        
-        .fighter.team1.clash-anim { animation: slideInRight 0.6s ease-in forwards; }
-        .fighter.team2.clash-anim { animation: slideInLeft 0.6s ease-in forwards; }
-        
-        @keyframes slideInRight { 0% { transform: translateX(200%); opacity: 0; } 70% { transform: translateX(-10%); opacity: 1; } 100% { transform: translateX(0); opacity: 1; } }
-        @keyframes slideInLeft { 0% { transform: translateX(-200%); opacity: 0; } 70% { transform: translateX(10%); opacity: 1; } 100% { transform: translateX(0); opacity: 1; } }
-        @keyframes shakeScreen { 10%, 90% { transform: translate3d(-2px, 2px, 0); } 20%, 80% { transform: translate3d(4px, -4px, 0); } 30%, 50%, 70% { transform: translate3d(-8px, 8px, 0); } 40%, 60% { transform: translate3d(8px, -8px, 0); } }
-
-        .vs-badge { font-size: 2.5rem; font-weight: 900; color: #ef4444; text-shadow: 0 0 30px rgba(239,68,68,0.8); opacity: 0; transition: opacity 0.3s; }
-        .vs-badge.show { opacity: 1; }
-
-        .content-box { display: none; width: 100%; flex-direction: column; gap: 15px; align-items: center; }
-        .question-text { font-size: 2rem; line-height: 1.4; color: #f8fafc; font-weight: 700; }
-        .answer-text {
-            font-size: 1.6rem; color: #34d399; background: rgba(16, 185, 129, 0.15);
-            padding: 12px 25px; border-radius: 14px; border: 2px dashed #10b981; display: none;
-            box-shadow: 0 0 20px rgba(16,185,129,0.2);
-        }
-
-        #gameOverModal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(15px);
-            display: none; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 100; padding: 20px; text-align: center; animation: fadeIn 0.5s ease;
-        }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        .game-over-title { font-size: 2.5rem; color: #f59e0b; font-weight: 900; margin-bottom: 10px; text-shadow: 0 0 25px rgba(245,158,11,0.6); }
-        .mvp-banner { font-size: 1.4rem; color: #fde047; font-weight: 700; margin-bottom: 20px; background: rgba(245,158,11,0.15); padding: 8px 25px; border-radius: 14px; border: 1px dashed #f59e0b; }
-        
-        .teams-summary-row { display: flex; justify-content: center; gap: 20px; width: 100%; max-width: 900px; margin-bottom: 15px; }
-        .team-summary-card { flex: 1; background: rgba(30, 41, 59, 0.9); border: 2px solid #334155; border-radius: 16px; padding: 15px; text-align: right; }
-        .team-summary-card.winner { border-color: #10b981; box-shadow: 0 0 20px rgba(16,185,129,0.3); }
-        .team-summary-card.loser { border-color: #ef4444; opacity: 0.85; }
-        .team-summary-title { font-size: 1.3rem; font-weight: 900; margin-bottom: 8px; display: flex; justify-content: space-between; }
-        .team-members-stats { font-size: 0.95rem; color: #cbd5e1; line-height: 1.6; max-height: 150px; overflow-y: auto; }
-        
-        .sidebar { flex: 1; display: flex; flex-direction: column; gap: 12px; max-width: 320px; }
-        .score-box { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; padding: 15px; display: flex; flex-direction: column; gap: 6px; }
-        .team1-box { border-right: 5px solid #3b82f6; }
-        .team2-box { border-right: 5px solid #f59e0b; }
-        .team-header { display: flex; justify-content: space-between; align-items: center; }
-        .team-name { font-size: 1.1rem; color: #94a3b8; font-weight: 700; }
-        .team-score { font-size: 1.8rem; font-weight: 900; color: #fff; }
-        .members-list { font-size: 0.85rem; color: #cbd5e1; background: rgba(15,23,42,0.5); padding: 8px; border-radius: 8px; min-height: 35px; line-height: 1.5; }
-        
-        .perk-display-box { background: rgba(245, 158, 11, 0.15); border: 1px dashed #f59e0b; color: #fde047; padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; text-align: right; margin-top: 6px; display: none; max-height: 90px; overflow-y: auto; line-height: 1.4; }
-
-        .qr-section { background: rgba(30, 41, 59, 0.85); border-radius: 18px; padding: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;}
-        #qrcode { background: #fff; padding: 6px; border-radius: 10px; margin-bottom: 4px; }
-        .status { font-size: 0.85rem; color: #34d399; font-weight: 700; margin-top: 6px; }
-        .audio-hint { font-size: 0.7rem; color: #f59e0b; margin-top: 4px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>صدام الأفكار — مع عمار الدمار</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://samra-server.onrender.com/socket.io/socket.io.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg1:#0f172a; --bg2:#1e1b4b; --panel:rgba(30,41,59,.88); --blue:#3b82f6; --gold:#f59e0b; --green:#10b981; --red:#ef4444; --muted:#cbd5e1; }
+    * { box-sizing:border-box; margin:0; padding:0; font-family:'Cairo',sans-serif; }
+    body { min-height:100vh; background:linear-gradient(-45deg,#0f172a,#1e1b4b,#311042,#0f172a); background-size:400% 400%; animation:gradientBG 15s ease infinite; color:#fff; padding:15px; }
+    @keyframes gradientBG { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+    .page { width:min(1400px,100%); min-height:calc(100vh - 30px); margin:auto; display:flex; flex-direction:column; gap:14px; }
+    .header { display:flex; flex-wrap:wrap; gap:11px; align-items:center; justify-content:center; text-align:center; }
+    h1 { color:var(--gold); font-size:clamp(1.35rem,3vw,2rem); font-weight:900; text-shadow:0 0 20px rgba(245,158,11,.4); }
+    .connection { color:#94a3b8; font-size:.78rem; font-weight:700; }.connection.online{color:#6ee7b7}.connection.offline{color:#fca5a5}.connection.connecting{color:#fde68a}
+    .main-container { display:flex; flex:1; flex-direction:row-reverse; align-items:stretch; gap:18px; min-height:0; }
+    .card { flex:3; min-height:520px; background:var(--panel); backdrop-filter:blur(12px); border:2px solid rgba(59,130,246,.4); border-radius:20px; padding:28px; box-shadow:0 20px 40px rgba(0,0,0,.55); display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; position:relative; overflow:hidden; }
+    .card::before { content:''; position:absolute; inset:0 0 auto; height:6px; background:linear-gradient(90deg,var(--blue),var(--gold),var(--green)); }
+    .category-tag { max-width:100%; font-size:clamp(1rem,2.4vw,1.35rem); color:#7dd3fc; font-weight:700; margin-bottom:12px; background:rgba(56,189,248,.1); padding:6px 22px; border-radius:50px; border:1px solid rgba(56,189,248,.3); overflow-wrap:anywhere; }
+    .wheel-container,.perks-wheel-container { position:relative; width:min(230px,65vw); aspect-ratio:1; margin:12px auto; display:none; }.wheel,.perks-wheel { width:100%; height:100%; border-radius:50%; display:grid; place-items:center; text-align:center; padding:30px; border:8px solid var(--gold); background:conic-gradient(#ef4444 0 25%,#3b82f6 25% 50%,#10b981 50% 75%,#8b5cf6 75%); box-shadow:0 0 28px rgba(245,158,11,.62); font-weight:900; font-size:1.05rem; }.perks-wheel{border-color:var(--green);background:conic-gradient(#f59e0b 0 33%,#3b82f6 33% 66%,#8b5cf6 66%);box-shadow:0 0 28px rgba(16,185,129,.65)}.wheel-inner{background:#0f172a;border-radius:50%;width:76%;height:76%;display:grid;place-items:center;padding:8px}.wheel-pointer{position:absolute;top:-15px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;border-bottom:25px solid var(--gold);z-index:2;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
+    #perkResultBanner { display:none; font-size:clamp(1.1rem,2.4vw,1.6rem); font-weight:900; color:#6ee7b7; background:rgba(16,185,129,.15); padding:13px 23px; border-radius:14px; border:2px dashed var(--green); margin:15px 0; box-shadow:0 0 28px rgba(16,185,129,.35); }
+    .clash-container { display:flex; align-items:center; justify-content:center; gap:18px; width:100%; margin:14px 0; }.clash-container.shake{animation:shakeScreen .5s both}.fighter{font-size:clamp(1.1rem,2.6vw,1.75rem);font-weight:900;padding:22px;border-radius:16px;background:rgba(15,23,42,.96);border:3px solid var(--blue);box-shadow:0 0 25px rgba(59,130,246,.5);width:42%;overflow-wrap:anywhere;opacity:0}.fighter.team2{border-color:var(--gold);box-shadow:0 0 25px rgba(245,158,11,.5)}.fighter.team1.clash-anim{animation:slideInRight .6s ease-in forwards}.fighter.team2.clash-anim{animation:slideInLeft .6s ease-in forwards}.vs-badge{font-size:2.3rem;font-weight:900;color:var(--red);text-shadow:0 0 30px rgba(239,68,68,.8);opacity:0;transition:opacity .3s}.vs-badge.show{opacity:1}@keyframes slideInRight{0%{transform:translateX(200%);opacity:0}70%{transform:translateX(-10%);opacity:1}100%{transform:translateX(0);opacity:1}}@keyframes slideInLeft{0%{transform:translateX(-200%);opacity:0}70%{transform:translateX(10%);opacity:1}100%{transform:translateX(0);opacity:1}}@keyframes shakeScreen{10%,90%{transform:translate3d(-2px,2px,0)}20%,80%{transform:translate3d(4px,-4px,0)}30%,50%,70%{transform:translate3d(-8px,8px,0)}40%,60%{transform:translate3d(8px,-8px,0)}}
+    .content-box { display:none; width:100%; flex-direction:column; gap:14px; align-items:center; }.question-text { max-width:100%; font-size:clamp(1.35rem,3.1vw,2rem); line-height:1.55; color:#f8fafc; font-weight:700; overflow-wrap:anywhere; }.answer-text { font-size:clamp(1.05rem,2.5vw,1.45rem); color:#6ee7b7; background:rgba(16,185,129,.15); padding:11px 22px; border-radius:14px; border:2px dashed var(--green); display:none; max-width:100%; overflow-wrap:anywhere; }
+    #gameTimerDisplay { font-size:1.25rem; font-weight:900; color:#7dd3fc; margin-top:13px; background:rgba(56,189,248,.1); padding:5px 16px; border-radius:50px; border:2px solid rgba(56,189,248,.3); display:none; }
+    .sidebar { flex:1; display:flex; flex-direction:column; gap:11px; max-width:320px; }.score-box,.qr-section { background:var(--panel); border:1px solid rgba(255,255,255,.12); border-radius:18px; padding:14px; }.team1-box{border-right:5px solid var(--blue)}.team2-box{border-right:5px solid var(--gold)}.team-header{display:flex;justify-content:space-between;align-items:center;gap:8px}.team-name{font-size:1.05rem;color:#cbd5e1;font-weight:700;overflow-wrap:anywhere}.team-score{font-size:1.75rem;font-weight:900;color:#fff}.members-list{font-size:.82rem;color:#cbd5e1;background:rgba(15,23,42,.5);padding:8px;border-radius:8px;min-height:35px;line-height:1.6;overflow-wrap:anywhere}.perk-display-box{background:rgba(245,158,11,.15);border:1px dashed var(--gold);color:#fde68a;padding:8px;border-radius:8px;font-size:.75rem;font-weight:700;text-align:right;margin-top:7px;display:none;max-height:100px;overflow-y:auto;line-height:1.5}.perk-display-box div+div{margin-top:4px}
+    .qr-section{display:flex;flex-direction:column;align-items:center;text-align:center}.qr-section #qrcode{background:#fff;padding:6px;border-radius:10px;min-height:97px}.audio-hint{font-size:.68rem;color:#fde68a;margin-top:7px}.room-hint{font-size:.68rem;color:#cbd5e1;margin-top:5px;overflow-wrap:anywhere}
+    #gameOverModal { position:fixed;inset:0;background:rgba(15,23,42,.96);backdrop-filter:blur(15px);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;padding:20px;text-align:center;animation:fadeIn .5s ease;overflow-y:auto}.game-over-title{font-size:clamp(1.8rem,4vw,2.5rem);color:var(--gold);font-weight:900;margin-bottom:10px;text-shadow:0 0 25px rgba(245,158,11,.6)}.mvp-banner{font-size:1.15rem;color:#fde047;font-weight:700;margin-bottom:18px;background:rgba(245,158,11,.15);padding:8px 20px;border-radius:14px;border:1px dashed var(--gold)}.teams-summary-row{display:flex;justify-content:center;gap:16px;width:100%;max-width:900px}.team-summary-card{flex:1;background:rgba(30,41,59,.9);border:2px solid #334155;border-radius:16px;padding:14px;text-align:right}.team-summary-card.winner{border-color:var(--green);box-shadow:0 0 20px rgba(16,185,129,.3)}.team-summary-card.loser{border-color:var(--red);opacity:.85}.team-summary-title{font-size:1.1rem;font-weight:900;margin-bottom:7px;display:flex;justify-content:space-between;gap:5px}.team-members-stats{font-size:.9rem;color:#cbd5e1;line-height:1.65;max-height:160px;overflow-y:auto}.member-stat b{color:#fff}@keyframes fadeIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+    @media(max-width:800px){.main-container{flex-direction:column}.sidebar{max-width:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.qr-section{grid-column:1/-1}.card{min-height:440px}.teams-summary-row{flex-direction:column;max-width:480px}}@media(max-width:480px){body{padding:9px}.page{min-height:calc(100vh - 18px)}.card{padding:18px;min-height:410px}.sidebar{grid-template-columns:1fr}.qr-section{grid-column:auto}.clash-container{gap:8px}.fighter{padding:15px 8px}.vs-badge{font-size:1.8rem}.teams-summary-row{gap:10px}}
+  </style>
 </head>
 <body>
+  <audio id="soundClash" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" preload="auto"></audio>
+  <audio id="soundPop" src="https://assets.mixkit.co/active_storage/sfx/1114/1114-preview.mp3" preload="auto"></audio>
+  <audio id="soundWin" src="https://assets.mixkit.co/active_storage/sfx/2701/2701-preview.mp3" preload="auto"></audio>
+  <audio id="soundTick" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+  <audio id="soundBell" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" preload="auto"></audio>
+  <audio id="soundSpin" src="https://assets.mixkit.co/active_storage/sfx/2020/2020-preview.mp3" preload="auto"></audio>
 
-    <!-- عناصر الأصوات المحدثة والمنسقة بالكامل -->
-    <audio id="soundClash" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" preload="auto"></audio>
-    <audio id="soundPop" src="https://assets.mixkit.co/active_storage/sfx/1114/1114-preview.mp3" preload="auto"></audio>
-    <audio id="soundWin" src="https://assets.mixkit.co/active_storage/sfx/2701/2701-preview.mp3" preload="auto"></audio>
-    <audio id="soundTick" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
-    <audio id="soundBell" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" preload="auto"></audio>
-    <audio id="soundSpin" src="https://assets.mixkit.co/active_storage/sfx/2020/2020-preview.mp3" preload="auto"></audio>
+  <div id="gameOverModal"><div class="game-over-title">نهاية المعركة الكبرى</div><div class="mvp-banner" id="modalMvpDisplay">نجم المعركة: …</div><div class="teams-summary-row"><div class="team-summary-card" id="teamCard1"><div class="team-summary-title" id="summaryTeam1Name"></div><div class="team-members-stats" id="summaryTeam1Members"></div></div><div class="team-summary-card" id="teamCard2"><div class="team-summary-title" id="summaryTeam2Name"></div><div class="team-members-stats" id="summaryTeam2Members"></div></div></div></div>
 
-    <div id="gameOverModal">
-        <div class="game-over-title">🏆 نهاية المعركة الكبرى 🏆</div>
-        <div class="mvp-banner" id="modalMvpDisplay">⭐ نجم المعركة (MVP): ...</div>
-        
-        <div class="teams-summary-row">
-            <div class="team-summary-card" id="teamCard1">
-                <div class="team-summary-title" id="summaryTeam1Name">الفريق الأول <span>0</span></div>
-                <div class="team-members-stats" id="summaryTeam1Members">الأعضاء...</div>
-            </div>
-            <div class="team-summary-card" id="teamCard2">
-                <div class="team-summary-title" id="summaryTeam2Name">الفريق الثاني <span>0</span></div>
-                <div class="team-members-stats" id="summaryTeam2Members">الأعضاء...</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="header-container">
-        <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="" class="header-logo" id="headerLogoImg" style="display:none;">
-        <h1>🔥 صدام الأفكار.. مع عمار الدمار 🔥</h1>
-    </div>
-
+  <main class="page">
+    <header class="header"><h1>صدام الأفكار — مع عمار الدمار</h1><div id="connectionStatus" class="connection connecting">◌ جارٍ الاتصال…</div></header>
     <div class="main-container">
-        <div class="card" id="mainCard">
-            <div class="category-tag" id="categoryTag">امسح كود الجوال للبدء 📱</div>
-            
-            <div class="wheel-container" id="wheelContainer">
-                <div class="wheel-pointer"></div>
-                <div class="wheel" id="spinningWheel"></div>
-            </div>
-
-            <div class="perks-wheel-container" id="perksWheelContainer">
-                <div class="wheel-pointer"></div>
-                <div class="perks-wheel" id="spinningPerksWheel"></div>
-            </div>
-
-            <div id="perkResultBanner">🎁 البيرك القادم: ...</div>
-
-            <div class="clash-container" id="clashContainer">
-                <div class="fighter team1" id="displayPlayer1">الفريق الأول</div>
-                <div class="vs-badge" id="vsBadge">VS</div>
-                <div class="fighter team2" id="displayPlayer2">الفريق الثاني</div>
-            </div>
-
-            <div class="content-box" id="questionContentBox">
-                <div class="question-text" id="questionText">السؤال يظهر هنا...</div>
-                <div class="answer-text" id="answerText">💡 الإجابة: ...</div>
-            </div>
-
-            <div id="gameTimerDisplay"></div>
-        </div>
-
-        <div class="sidebar">
-            <div class="score-box team1-box">
-                <div class="team-header">
-                    <span class="team-name" id="displayTeamName1">الفريق الأول</span>
-                    <span class="team-score" id="score1">0</span>
-                </div>
-                <div class="members-list" id="displayMembers1">الأعضاء: لم يتم الإضافة</div>
-                <div class="perk-display-box" id="team1PerkDisplay">✨ الميزات: لا توجد</div>
-            </div>
-
-            <div class="score-box team2-box">
-                <div class="team-header">
-                    <span class="team-name" id="displayTeamName2">الفريق الثاني</span>
-                    <span class="team-score" id="score2">0</span>
-                </div>
-                <div class="members-list" id="displayMembers2">الأعضاء: لم يتم الإضافة</div>
-                <div class="perk-display-box" id="team2PerkDisplay">✨ الميزات: لا توجد</div>
-            </div>
-
-            <div class="qr-section">
-                <div id="qrcode"></div>
-                <div class="status"><span>🟢</span> متصل بالسحابية</div>
-                <div class="audio-hint">⚠️ اضغط أي مكان بالشاشة مرة واحدة لتفعيل الأصوات</div>
-            </div>
-        </div>
+      <section class="card" id="mainCard">
+        <div class="category-tag" id="categoryTag">امسح رمز الجوال لإعداد الفرق والبدء</div>
+        <div class="wheel-container" id="wheelContainer"><div class="wheel-pointer"></div><div class="wheel" id="spinningWheel"><div class="wheel-inner">اختيار الفئة</div></div></div>
+        <div class="perks-wheel-container" id="perksWheelContainer"><div class="wheel-pointer"></div><div class="perks-wheel" id="spinningPerksWheel"><div class="wheel-inner">عجلة المساعدات</div></div></div>
+        <div id="perkResultBanner"></div>
+        <div class="clash-container" id="clashContainer" style="display:none"><div class="fighter team1" id="displayPlayer1">الفريق الأول</div><div class="vs-badge" id="vsBadge">VS</div><div class="fighter team2" id="displayPlayer2">الفريق الثاني</div></div>
+        <div class="content-box" id="questionContentBox"><div class="question-text" id="questionText">السؤال يظهر هنا…</div><div class="answer-text" id="answerText">الإجابة: …</div></div>
+        <div id="gameTimerDisplay"></div>
+      </section>
+      <aside class="sidebar">
+        <div class="score-box team1-box"><div class="team-header"><span class="team-name" id="displayTeamName1">الفريق الأول</span><span class="team-score" id="score1">0</span></div><div class="members-list" id="displayMembers1">الأعضاء: لم تتم الإضافة</div><div class="perk-display-box" id="team1PerkDisplay"></div></div>
+        <div class="score-box team2-box"><div class="team-header"><span class="team-name" id="displayTeamName2">الفريق الثاني</span><span class="team-score" id="score2">0</span></div><div class="members-list" id="displayMembers2">الأعضاء: لم تتم الإضافة</div><div class="perk-display-box" id="team2PerkDisplay"></div></div>
+        <div class="qr-section"><div id="qrcode"></div><div class="audio-hint">اضغط مرة واحدة في الشاشة لتفعيل الأصوات</div><div class="room-hint" id="roomHint"></div></div>
+      </aside>
     </div>
+  </main>
 
-    <script>
-        const socket = io("https://samra-server.onrender.com");
-        const roomName = "samra_room_1";
-        let countdownInterval;
+  <script>
+    const SERVER_URL = 'https://samra-server.onrender.com';
+    const roomName = new URLSearchParams(location.search).get('room') || 'samra_room_1';
+    const socket = io(SERVER_URL, { transports: ['websocket', 'polling'] });
+    let countdownInterval = null;
+    const $ = id => document.getElementById(id);
 
-        socket.on('connect', () => {
-            socket.emit('join_room', roomName);
-        });
+    function setConnection(text, state) { const el = $('connectionStatus'); el.textContent = text; el.className = `connection ${state}`; }
+    socket.on('connect', () => { socket.emit('join_room', roomName); setConnection('● متصل بالشاشة', 'online'); });
+    socket.on('disconnect', () => setConnection('● انقطع الاتصال', 'offline'));
+    socket.on('connect_error', () => setConnection('● تعذّر الاتصال بالسيرفر', 'offline'));
 
-        const currentUrl = window.location.href;
-        const mobileUrl = new URL('mobile.html', currentUrl).href;
+    const mobileUrl = new URL('mobile.html', location.href); mobileUrl.searchParams.set('room', roomName);
+    $('roomHint').textContent = `غرفة اللعبة: ${roomName}`;
+    if (window.QRCode) new QRCode($('qrcode'), { text: mobileUrl.href, width:85, height:85, colorDark:'#0f172a', colorLight:'#ffffff' }); else $('qrcode').textContent = 'تعذّر تحميل رمز QR';
 
-        new QRCode(document.getElementById("qrcode"), { 
-            text: mobileUrl, width: 85, height: 85, colorDark: "#0f172a", colorLight: "#ffffff" 
-        });
+    function playSound(id) { const audio = $(id); if (!audio) return; audio.currentTime = 0; audio.play().catch(() => {}); }
+    document.body.addEventListener('click', () => ['soundPop','soundClash','soundWin','soundTick','soundBell','soundSpin'].forEach(id => { const audio = $(id); if (!audio) return; audio.play().then(() => { audio.pause(); audio.currentTime = 0; }).catch(() => {}); }), { once:true });
 
-        function playSound(id) {
-            const audio = document.getElementById(id);
-            if(audio) {
-                audio.currentTime = 0;
-                audio.play().catch(e => console.log("المتصفح منع الصوت:", e));
-            }
-        }
+    function stopAndHideTimer() { clearInterval(countdownInterval); countdownInterval = null; const display = $('gameTimerDisplay'); display.style.display = 'none'; display.textContent = ''; }
+    function startTimer(duration) {
+      stopAndHideTimer(); let remaining = duration; const display = $('gameTimerDisplay'); display.style.display = 'inline-block';
+      const render = () => { display.textContent = `الوقت المتبقي: ${remaining} ثانية`; const danger = remaining <= 5; display.style.color = danger ? '#f87171' : '#7dd3fc'; display.style.borderColor = danger ? '#ef4444' : 'rgba(56,189,248,.3)'; };
+      render(); countdownInterval = setInterval(() => { remaining -= 1; if (remaining <= 0) { clearInterval(countdownInterval); countdownInterval = null; display.textContent = 'انتهى الوقت!'; display.style.color = '#f59e0b'; playSound('soundBell'); return; } if (remaining <= 10) playSound('soundTick'); render(); }, 1000);
+    }
+    function hideRoundContent() { $('wheelContainer').style.display = 'none'; $('perksWheelContainer').style.display = 'none'; $('perkResultBanner').style.display = 'none'; $('clashContainer').style.display = 'none'; $('questionContentBox').style.display = 'none'; }
+    function spin(elementId) { const wheel = $(elementId); wheel.style.transition = 'none'; wheel.style.transform = 'rotate(0deg)'; requestAnimationFrame(() => requestAnimationFrame(() => { wheel.style.transition = 'transform 3s cubic-bezier(.15,.9,.2,1)'; wheel.style.transform = `rotate(${1440 + Math.floor(Math.random() * 1080)}deg)`; })); }
+    function setMembers(elementId, members) { const el = $(elementId); el.textContent = `الأعضاء: ${(Array.isArray(members) && members.length) ? members.join('، ') : 'لا يوجد'}`; }
+    function setPerks(teamNum, perks) { const box = $(teamNum === 1 ? 'team1PerkDisplay' : 'team2PerkDisplay'); box.textContent = ''; if (!Array.isArray(perks) || !perks.length) { box.style.display = 'none'; return; } const title = document.createElement('div'); title.textContent = 'الميزات:'; box.appendChild(title); perks.forEach(perk => { const row = document.createElement('div'); row.textContent = `• ${perk}`; box.appendChild(row); }); box.style.display = 'block'; }
+    function fillSummary(elementId, members, teamNum, stats) { const container = $(elementId); container.textContent = ''; const title = document.createElement('b'); title.textContent = 'أعضاء الفريق وإجاباتهم:'; container.appendChild(title); container.appendChild(document.createElement('br')); if (!Array.isArray(members) || !members.length) { container.append('لا توجد أسماء مسجلة'); return; } members.forEach(member => { const row = document.createElement('div'); row.className = 'member-stat'; const count = (stats && (stats[`${teamNum}::${member}`] ?? stats[member])) || 0; row.textContent = `• ${member}: `; const bold = document.createElement('b'); bold.textContent = `${count} صحيحة`; row.appendChild(bold); container.appendChild(row); }); }
 
-        // فك حماية المتصفح للأصوات عند الضغط بأي مكان لأول مرة
-        document.body.addEventListener('click', () => {
-            ['soundPop', 'soundClash', 'soundWin', 'soundTick', 'soundBell', 'soundSpin'].forEach(id => {
-                const aud = document.getElementById(id);
-                if(aud) {
-                    aud.play().then(() => {
-                        aud.pause();
-                        aud.currentTime = 0;
-                    }).catch(()=>{});
-                }
-            });
-        }, { once: true });
-
-        function startTimer(duration = 30) {
-            let timer = duration;
-            const display = document.getElementById('gameTimerDisplay');
-            if (!display) return;
-            
-            display.style.display = 'inline-block';
-            clearInterval(countdownInterval);
-            
-            countdownInterval = setInterval(function () {
-                display.textContent = `⏳ الوقت باقي: ${timer} ثانية`;
-                
-                if (timer <= 10 && timer > 0) {
-                    playSound('soundTick');
-                }
-
-                if (timer <= 5) {
-                    display.style.color = '#ef4444';
-                    display.style.borderColor = '#ef4444';
-                } else {
-                    display.style.color = '#38bdf8';
-                    display.style.borderColor = 'rgba(56, 189, 248, 0.3)';
-                }
-
-                if (--timer < 0) {
-                    clearInterval(countdownInterval);
-                    display.textContent = `⏰ انتهى الوقت!`;
-                    display.style.color = '#f59e0b';
-                    playSound('soundBell');
-                }
-            }, 1000);
-        }
-
-        function stopAndHideTimer() {
-            clearInterval(countdownInterval);
-            const display = document.getElementById('gameTimerDisplay');
-            if (display) {
-                display.style.display = 'none';
-            }
-        }
-
-        socket.on('game_update', (data) => {
-            const wheelContainer = document.getElementById('wheelContainer');
-            const perksWheelContainer = document.getElementById('perksWheelContainer');
-            const clashCont = document.getElementById('clashContainer');
-            const qBox = document.getElementById('questionContentBox');
-            const perkBanner = document.getElementById('perkResultBanner');
-
-            if (data.action === 'SPIN_WHEEL') {
-                stopAndHideTimer();
-                playSound('soundSpin'); // تشغيل صوت العجلة
-                clashCont.style.display = 'none';
-                qBox.style.display = 'none';
-                perksWheelContainer.style.display = 'none';
-                perkBanner.style.display = 'none';
-                wheelContainer.style.display = 'block';
-                document.getElementById('categoryTag').innerText = "🎡 عجلة الحظ تدور لاختيار الفئة...";
-                
-                const wheel = document.getElementById('spinningWheel');
-                wheel.style.transition = 'none';
-                wheel.style.transform = 'rotate(0deg)';
-                
-                setTimeout(() => {
-                    wheel.style.transition = 'transform 3s cubic-bezier(0.15, 0.9, 0.2, 1)';
-                    const randomDegree = Math.floor(1440 + Math.random() * 1080);
-                    wheel.style.transform = `rotate(${randomDegree}deg)`;
-                }, 50);
-            }
-            else if (data.action === 'SPIN_PERKS_WHEEL') {
-                stopAndHideTimer();
-                playSound('soundSpin'); // تشغيل صوت العجلة
-                clashCont.style.display = 'none';
-                qBox.style.display = 'none';
-                wheelContainer.style.display = 'none';
-                perkBanner.style.display = 'none';
-                perksWheelContainer.style.display = 'block';
-                document.getElementById('categoryTag').innerText = "🎁 عجلة المساعدات تدور بسبب الستريك 🔥...";
-
-                const perksWheel = document.getElementById('spinningPerksWheel');
-                perksWheel.style.transition = 'none';
-                perksWheel.style.transform = 'rotate(0deg)';
-
-                setTimeout(() => {
-                    perksWheel.style.transition = 'transform 3s cubic-bezier(0.15, 0.9, 0.2, 1)';
-                    const randomDegree = Math.floor(1440 + Math.random() * 1080);
-                    perksWheel.style.transform = `rotate(${randomDegree}deg)`;
-                }, 50);
-            }
-            else if (data.action === 'SHOW_CATEGORY') {
-                stopAndHideTimer();
-                wheelContainer.style.display = 'none';
-                perksWheelContainer.style.display = 'none';
-                document.getElementById('categoryTag').innerText = "🎯 الفئة المختارة: " + data.cat;
-            }
-            else if (data.action === 'NOMINATE') {
-                stopAndHideTimer();
-                wheelContainer.style.display = 'none';
-                perksWheelContainer.style.display = 'none';
-                perkBanner.style.display = 'none';
-                document.getElementById('categoryTag').innerText = "🎯 الفئة: " + data.cat;
-                
-                const p1 = document.getElementById('displayPlayer1');
-                const p2 = document.getElementById('displayPlayer2');
-                const vs = document.getElementById('vsBadge');
-                
-                p1.innerText = data.p1;
-                p2.innerText = data.p2;
-                
-                qBox.style.display = 'none';
-                clashCont.style.display = 'flex';
-                
-                p1.classList.remove('clash-anim');
-                p2.classList.remove('clash-anim');
-                clashCont.classList.remove('shake');
-                vs.classList.remove('show');
-                
-                void p1.offsetWidth; 
-                
-                p1.classList.add('clash-anim');
-                p2.classList.add('clash-anim');
-                
-                setTimeout(() => {
-                    clashCont.classList.add('shake');
-                    vs.classList.add('show');
-                    playSound('soundClash');
-                }, 600);
-            } 
-            else if (data.action === 'SHOW_Q') {
-                playSound('soundPop');
-                wheelContainer.style.display = 'none';
-                perksWheelContainer.style.display = 'none';
-                perkBanner.style.display = 'none';
-                clashCont.style.display = 'none';
-                qBox.style.display = 'flex';
-                document.getElementById('questionText').innerText = data.q;
-                document.getElementById('answerText').innerText = "💡 الإجابة: " + data.a;
-                document.getElementById('answerText').style.display = 'none';
-                
-                startTimer(30);
-            } 
-            else if (data.action === 'START_CONSULTATION_TIMER') {
-                startTimer(60);
-            }
-            else if (data.action === 'SHOW_A') {
-                stopAndHideTimer();
-                playSound('soundWin'); // صوت الفوز/الإجابة
-                document.getElementById('answerText').style.display = 'block';
-            } 
-            else if (data.action === 'UPDATE_TEAMS') {
-                stopAndHideTimer();
-                document.getElementById('displayTeamName1').innerText = data.t1;
-                document.getElementById('displayTeamName2').innerText = data.t2;
-                document.getElementById('displayMembers1').innerHTML = "الأعضاء: " + (data.m1 && data.m1.length > 0 ? data.m1.join('، ') : "لا يوجد");
-                document.getElementById('displayMembers2').innerHTML = "الأعضاء: " + (data.m2 && data.m2.length > 0 ? data.m2.join('، ') : "لا يوجد");
-            } 
-            else if (data.action === 'SCORE') {
-                document.getElementById('score1').innerText = data.s1;
-                document.getElementById('score2').innerText = data.s2;
-            }
-            else if (data.action === 'UPDATE_PERK') {
-                const perkBox1 = document.getElementById('team1PerkDisplay');
-                const perkBox2 = document.getElementById('team2PerkDisplay');
-                
-                if(data.latestPerk) {
-                    perkBanner.style.display = 'block';
-                    perkBanner.innerText = `🎁 ميزة جديدة لـ (${data.teamName}): ${data.latestPerk}`;
-                } else {
-                    perkBanner.style.display = 'none';
-                }
-
-                if(data.teamNum === 1) {
-                    if(data.perks && data.perks.length > 0) {
-                        perkBox1.style.display = 'block';
-                        perkBox1.innerHTML = "✨ الميزات:<br>" + data.perks.join('<br>');
-                    } else {
-                        perkBox1.style.display = 'none';
-                    }
-                } else if(data.teamNum === 2) {
-                    if(data.perks && data.perks.length > 0) {
-                        perkBox2.style.display = 'block';
-                        perkBox2.innerHTML = "✨ الميزات:<br>" + data.perks.join('<br>');
-                    } else {
-                        perkBox2.style.display = 'none';
-                    }
-                }
-            }
-            else if (data.action === 'GAME_OVER') {
-                stopAndHideTimer();
-                playSound('soundWin');
-                
-                document.getElementById('modalMvpDisplay').innerText = `⭐ نجم المعركة (MVP): ${data.mvp} (${data.mvpCount} إجابات صحيحة)`;
-
-                let t1Card = document.getElementById('teamCard1');
-                let t2Card = document.getElementById('teamCard2');
-                
-                document.getElementById('summaryTeam1Name').innerHTML = `${data.t1Name} <span>(${data.t1Name === data.winner ? data.winScore : data.loseScore})</span>`;
-                document.getElementById('summaryTeam2Name').innerHTML = `${data.t2Name} <span>(${data.t2Name === data.winner ? data.winScore : data.loseScore})</span>`;
-
-                if(data.t1Name === data.winner) {
-                    t1Card.className = "team-summary-card winner";
-                    t2Card.className = "team-summary-card loser";
-                } else {
-                    t1Card.className = "team-summary-card loser";
-                    t2Card.className = "team-summary-card winner";
-                }
-
-                let t1Html = "<b>أعضاء الفريق وإجاباتهم:</b><br>";
-                if(data.t1Members && data.t1Members.length > 0) {
-                    data.t1Members.forEach(m => {
-                        let count = data.allStats[m] || 0;
-                        t1Html += `• ${m}: <b>${count}</b> صح<br>`;
-                    });
-                } else { t1Html += "لا توجد أعضاء مسجلة"; }
-                document.getElementById('summaryTeam1Members').innerHTML = t1Html;
-
-                let t2Html = "<b>أعضاء الفريق وإجاباتهم:</b><br>";
-                if(data.t2Members && data.t2Members.length > 0) {
-                    data.t2Members.forEach(m => {
-                        let count = data.allStats[m] || 0;
-                        t2Html += `• ${m}: <b>${count}</b> صح<br>`;
-                    });
-                } else { t2Html += "لا توجد أعضاء مسجلة"; }
-                document.getElementById('summaryTeam2Members').innerHTML = t2Html;
-
-                document.getElementById('gameOverModal').style.display = 'flex';
-            }
-            else if (data.action === 'RESTART_GAME') {
-                stopAndHideTimer();
-                document.getElementById('gameOverModal').style.display = 'none';
-                document.getElementById('score1').innerText = '0';
-                document.getElementById('score2').innerText = '0';
-                document.getElementById('categoryTag').innerText = "امسح كود الجوال للبدء 📱";
-                document.getElementById('questionContentBox').style.display = 'none';
-                document.getElementById('clashContainer').style.display = 'none';
-            }
-        });
-    </script>
+    socket.on('game_update', data => {
+      if (!data || !data.action) return;
+      if (data.action === 'SPIN_WHEEL') { stopAndHideTimer(); hideRoundContent(); $('wheelContainer').style.display = 'block'; $('categoryTag').textContent = 'العجلة تدور لاختيار الفئة…'; playSound('soundSpin'); spin('spinningWheel'); return; }
+      if (data.action === 'SHOW_CATEGORY') { stopAndHideTimer(); $('wheelContainer').style.display = 'none'; $('categoryTag').textContent = `الفئة المختارة: ${data.cat || ''}`; return; }
+      if (data.action === 'SPIN_PERKS_WHEEL') { stopAndHideTimer(); hideRoundContent(); $('perksWheelContainer').style.display = 'block'; $('categoryTag').textContent = 'عجلة المساعدات تدور…'; playSound('soundSpin'); spin('spinningPerksWheel'); return; }
+      if (data.action === 'NOMINATE') { stopAndHideTimer(); hideRoundContent(); $('categoryTag').textContent = `الفئة: ${data.cat || ''}`; const p1 = $('displayPlayer1'), p2 = $('displayPlayer2'), vs = $('vsBadge'); p1.textContent = data.p1 || ''; p2.textContent = data.p2 || ''; $('clashContainer').style.display = 'flex'; p1.classList.remove('clash-anim'); p2.classList.remove('clash-anim'); vs.classList.remove('show'); $('clashContainer').classList.remove('shake'); void p1.offsetWidth; p1.classList.add('clash-anim'); p2.classList.add('clash-anim'); setTimeout(() => { $('clashContainer').classList.add('shake'); vs.classList.add('show'); playSound('soundClash'); }, 600); return; }
+      if (data.action === 'SHOW_Q') { hideRoundContent(); $('questionText').textContent = data.q || 'لا يوجد سؤال'; $('answerText').textContent = `الإجابة: ${data.a || ''}`; $('answerText').style.display = 'none'; $('questionContentBox').style.display = 'flex'; playSound('soundPop'); startTimer(30); return; }
+      if (data.action === 'SHOW_A') { stopAndHideTimer(); $('answerText').style.display = 'block'; playSound('soundWin'); return; }
+      if (data.action === 'START_CONSULTATION_TIMER') { startTimer(60); return; }
+      if (data.action === 'UPDATE_TEAMS') { $('displayTeamName1').textContent = data.t1 || 'الفريق الأول'; $('displayTeamName2').textContent = data.t2 || 'الفريق الثاني'; setMembers('displayMembers1', data.m1); setMembers('displayMembers2', data.m2); return; }
+      if (data.action === 'SCORE') { $('score1').textContent = Number.isFinite(data.s1) ? data.s1 : 0; $('score2').textContent = Number.isFinite(data.s2) ? data.s2 : 0; return; }
+      if (data.action === 'UPDATE_PERK') { setPerks(data.teamNum, data.perks); if (data.latestPerk) { $('perkResultBanner').textContent = `ميزة جديدة لـ ${data.teamName || 'الفريق'}: ${data.latestPerk}`; $('perkResultBanner').style.display = 'block'; } return; }
+      if (data.action === 'GAME_OVER') { stopAndHideTimer(); playSound('soundWin'); $('modalMvpDisplay').textContent = `نجم المعركة: ${data.mvp || 'لا يوجد'} (${data.mvpCount || 0} إجابات صحيحة)`; const t1Winner = data.t1Name === data.winner; $('teamCard1').className = `team-summary-card ${t1Winner ? 'winner' : 'loser'}`; $('teamCard2').className = `team-summary-card ${t1Winner ? 'loser' : 'winner'}`; $('summaryTeam1Name').textContent = `${data.t1Name || 'الفريق الأول'} (${t1Winner ? data.winScore : data.loseScore})`; $('summaryTeam2Name').textContent = `${data.t2Name || 'الفريق الثاني'} (${t1Winner ? data.loseScore : data.winScore})`; fillSummary('summaryTeam1Members', data.t1Members, 1, data.allStats); fillSummary('summaryTeam2Members', data.t2Members, 2, data.allStats); $('gameOverModal').style.display = 'flex'; return; }
+      if (data.action === 'RESTART_GAME') { stopAndHideTimer(); hideRoundContent(); $('gameOverModal').style.display = 'none'; $('score1').textContent = '0'; $('score2').textContent = '0'; $('categoryTag').textContent = 'امسح رمز الجوال لإعداد الفرق والبدء'; setPerks(1, []); setPerks(2, []); }
+    });
+  </script>
 </body>
 </html>
