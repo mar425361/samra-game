@@ -27,6 +27,7 @@
     .btn-small { padding:5px 10px; background:var(--red); border:none; color:#fff; border-radius:6px; cursor:pointer; font-weight:700; font-size:.76rem; }
     .member-row { display:flex; gap:6px; margin-bottom:7px; }.member-row input { min-width:0; }
     .section-title { color:var(--gold); font-size:.86rem; font-weight:900; margin:2px 0 9px; }
+    .presenter-preview { border-color:#8b5cf6; background:rgba(76,29,149,.18); }.presenter-preview .private-label { color:#c4b5fd; font-weight:900; font-size:.82rem; margin-bottom:8px; }.presenter-preview .presenter-question { color:#fff; font-weight:700; line-height:1.65; margin-bottom:9px; }.presenter-preview .presenter-answer { color:#86efac; background:rgba(16,185,129,.14); border:1px dashed var(--green); padding:9px; border-radius:8px; font-weight:700; line-height:1.6; }
     .hint { color:var(--muted); font-size:.76rem; line-height:1.6; }.notice { background:rgba(245,158,11,.12); border:1px dashed var(--gold); border-radius:8px; padding:10px; color:#fde68a; line-height:1.55; font-size:.8rem; text-align:center; margin:10px 0; }
     .notice.error { border-color:var(--red); color:#fecaca; background:rgba(239,68,68,.1); }.notice.success { border-color:var(--green); color:#bbf7d0; background:rgba(16,185,129,.1); }
     .players-picker-container { display:flex; gap:9px; margin:12px 0; }.picker-box { flex:1; margin:0; padding:10px; }.picker-box h4 { margin:0 0 8px; font-size:.78rem; color:#7dd3fc; text-align:center; }
@@ -35,6 +36,11 @@
     .perk-grid { display:flex; gap:10px; margin:14px 0; }.perk-management-box { flex:1; border-color:rgba(245,158,11,.7); margin:0; padding:10px; }.perk-management-box h4 { color:var(--gold); margin-bottom:6px; font-size:.76rem; text-align:center; }.perk-status-text { font-size:.72rem; color:#cbd5e1; min-height:38px; max-height:90px; overflow-y:auto; text-align:right; line-height:1.5; }.use-perk { width:100%; margin-top:7px; background:var(--blue); color:#fff; border:none; padding:6px; border-radius:6px; font-size:.7rem; cursor:pointer; font-weight:700; }
     .stats-box { border-color:#38bdf8; font-size:.78rem; line-height:1.6; }.stats-box h4 { color:#7dd3fc; text-align:center; margin-bottom:6px; }
     hr { border:0; border-top:1px solid var(--line); margin:18px 0; }.hidden { display:none !important; }
+    /* Design: نشرة الساحة — سطح تحكيم مباشر بعاجي تحريري وإشارات قرمزية حاسمة. */
+    :root{--ink:#0c2239;--paper:#f4eddf;--paper2:#fffaf0;--crimson:#e4573d;--emerald:#147b69;--muted:#607080;--line:rgba(12,34,57,.16)}body{background:radial-gradient(circle at 85% 5%,rgba(228,87,61,.16),transparent 25%),linear-gradient(130deg,#0a2036,#123653);color:#f6f8fa;padding:18px max(14px,4vw) 92px;min-height:100vh}body::before{content:'';position:fixed;inset:0;pointer-events:none;opacity:.18;background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:32px 32px}h1{position:relative;z-index:1;text-align:right;color:#fff;font-family:'Cairo';font-size:1.75rem;margin:0 0 3px}.connection{position:relative;z-index:1;text-align:right;margin-bottom:17px;color:#d9e6ee;font-size:.72rem}.tabs{position:relative;z-index:1;border-radius:0;background:transparent;padding:0;border:0;border-bottom:1px solid rgba(255,255,255,.24);justify-content:flex-start;gap:22px}.tab-btn{flex:0 0 auto;color:#aabfcc;padding:10px 2px;font-size:.75rem}.tab-btn.active{color:#fff;border-bottom:3px solid var(--crimson)}
+    .card,.modern-score-panel,.perk-management-box,.stats-box,.picker-box{position:relative;z-index:1;border-radius:0;border:0;background:var(--paper2);color:var(--ink);box-shadow:8px 9px 0 rgba(0,0,0,.18);padding:18px;margin-bottom:14px}.card::after,.modern-score-panel::after,.stats-box::after{content:'';position:absolute;top:0;right:0;width:5px;height:100%;background:var(--crimson)}.section-title{color:var(--ink);font-family:'Cairo';font-size:1.05rem}.notice{border-radius:0;background:#f8eee1;color:#7e412f;border:1px dashed var(--crimson);text-align:right}.notice.success{border-color:var(--emerald);color:#176757;background:#e3f3ed}.notice.error{border-color:var(--crimson);color:#9c3525;background:#fff0eb}input,select{border-radius:0;border:1px solid var(--line);background:#f1ede5;color:var(--ink)}.btn-main{border-radius:0;background:var(--ink);color:#fff;font-size:.82rem}.btn-danger{background:var(--crimson);color:#fff}.btn-blue{background:#316a9f}.btn-green{background:var(--emerald)}.btn-purple{background:#48336d}.btn-slate{background:#5c6976}.btn-small{border-radius:0}
+    .presenter-preview{border-top:4px solid #b8a3e4;background:linear-gradient(135deg,#2f214d,#17304d);color:#fff}.presenter-preview .private-label{color:#d7c8fa}.presenter-preview .presenter-question{color:#fff;font-family:'Cairo';font-size:1.02rem}.presenter-preview .presenter-answer{border-radius:0;background:rgba(20,123,105,.22);color:#dff8f1}.perk-grid{position:relative;z-index:1}.perk-management-box{background:#f6eee1;box-shadow:none;border-top:3px solid #d7a852}.perk-management-box h4{color:var(--ink)}.perk-status-text{color:#526271}.use-perk{border-radius:0;background:var(--ink)}.stats-box{border-top:3px solid #7aa9d9}.stats-box h4{color:var(--ink)}.players-picker-container{position:relative;z-index:1}.picker-box{box-shadow:none;background:#f4eddf;border-top:3px solid #7aa9d9}.picker-box:last-child{border-top-color:var(--crimson)}.picker-box h4{color:var(--ink)}.chip{border-radius:0;background:transparent;color:var(--ink)}.chip.selected{background:var(--ink);border-color:var(--ink)}.chip.recent{border-color:var(--crimson);color:#9c3525}.chip.disabled{background:#f6d7d0;color:#7f2d20}.team-score-card{border-radius:0;background:var(--ink);color:#fff;border:0}.team-score-card.t1{border-right:0;border-top:4px solid #7aa9d9}.team-score-card.t2{border-right:0;border-top:4px solid var(--crimson)}.team-score-title{color:#d6e0e8}.team-score-value{font-family:'Cairo'}.streak-indicator{border-radius:0;background:rgba(255,255,255,.14)}.quick-award-btn,.btn-minus{border-radius:0}.quick-award-btn{background:var(--emerald)}.btn-minus{background:var(--crimson)}
+    @media(max-width:560px){body{padding:14px 13px 88px}h1{font-size:1.45rem}.tabs{gap:14px}.players-picker-container,.perk-grid,.teams-score-row{gap:8px}.card,.modern-score-panel,.stats-box{padding:16px}.team-score-value{font-size:1.55rem}}
   </style>
 </head>
 <body>
@@ -87,6 +93,12 @@
       </div>
       <button id="spinBtn" class="btn-main btn-danger" onclick="spinTheWheel()" disabled>تدوير العجلة واختيار الفئة</button>
       <button id="changeQBtn" class="btn-main btn-slate hidden" onclick="changeQuestionLocally()">تغيير السؤال بسؤال جديد من نفس الفئة</button>
+    </div>
+
+    <div id="presenterPreview" class="card presenter-preview hidden">
+      <div class="private-label">بطاقة المقدّم الخاصة — لا تظهر على الشاشة الكبيرة</div>
+      <div id="presenterQuestion" class="presenter-question"></div>
+      <div id="presenterAnswer" class="presenter-answer"></div>
     </div>
 
     <div class="perk-grid">
@@ -210,6 +222,7 @@
       window.setTimeout(() => {
         game.currentCategory = categories[Math.floor(Math.random() * categories.length)];
         game.currentQuestion = drawQuestion(game.currentCategory);
+        updatePresenterPreview();
         $('categorySelect').value = game.currentCategory;
         game.isSpinning = false;
         emit('SHOW_CATEGORY', { cat: game.currentCategory });
@@ -218,10 +231,19 @@
       }, 3000);
     }
 
+    function updatePresenterPreview() {
+      const preview = $('presenterPreview');
+      if (!game.currentQuestion) { preview.classList.add('hidden'); return; }
+      $('presenterQuestion').textContent = `السؤال: ${game.currentQuestion.q}`;
+      $('presenterAnswer').textContent = `الإجابة الصحيحة: ${game.currentQuestion.a}`;
+      preview.classList.remove('hidden');
+    }
+
     function changeQuestionLocally() {
       if (game.phase !== 'category_ready' || !game.currentCategory) return;
       const next = drawQuestion(game.currentCategory); if (!next) return;
       game.currentQuestion = next;
+      updatePresenterPreview();
       showNotice('roundNotice', 'تم اختيار سؤال جديد غير مكرر من الفئة نفسها.', 'success');
     }
 
@@ -328,7 +350,7 @@
 
     function resetAndRestartGame() {
       if (!confirm('هل تريد إنهاء الجولة الحالية وبدء لعبة جديدة؟ ستُمسح النقاط والميزات والإحصاءات.')) return;
-      game.currentCategory = ''; game.currentQuestion = null; game.usedQuestions = {}; game.selected = { 1: '', 2: '' }; game.last = { 1: '', 2: '' }; game.scores = { 1: 0, 2: 0 }; game.streaks = { 1: 0, 2: 0 }; game.perks = { 1: [], 2: [] }; game.pendingMultiplier = { 1: false, 2: false }; game.playerStats = {}; game.finished = false; game.isSpinning = false; game.isPerkSpinning = false;
+      game.currentCategory = ''; game.currentQuestion = null; $('presenterPreview').classList.add('hidden'); game.usedQuestions = {}; game.selected = { 1: '', 2: '' }; game.last = { 1: '', 2: '' }; game.scores = { 1: 0, 2: 0 }; game.streaks = { 1: 0, 2: 0 }; game.perks = { 1: [], 2: [] }; game.pendingMultiplier = { 1: false, 2: false }; game.playerStats = {}; game.finished = false; game.isSpinning = false; game.isPerkSpinning = false;
       emit('RESTART_GAME'); emit('SCORE', { s1: 0, s2: 0 }); setPhase('ready_to_spin', 'لعبة جديدة جاهزة', 'تمت إعادة البداية. دوّر العجلة لاختيار أول فئة.'); updatePlayerChips(); updateStatsUI(); updateUI();
     }
 
